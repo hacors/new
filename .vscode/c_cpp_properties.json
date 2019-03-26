@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}",
+                "D:/software/MinGW/include/*",
+                "D:/software/MinGW/lib/gcc/mingw32/6.3.0/include/*",
+                "D:/software/MinGW/lib/gcc/mingw32/6.3.0/include/c++",
+                "D:/software/MinGW/lib/gcc/mingw32/6.3.0/include/c++/tr1",
+                "D:/software/MinGW/lib/gcc/mingw32/6.3.0/include/c++/backward"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "intelliSenseMode": "msvc-x64"
+        }
+    ],
+    "version": 4
+}
