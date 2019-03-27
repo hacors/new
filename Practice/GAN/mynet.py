@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-class mycnn():  # 只是生成模型，确定计算方式，而与数据无关
+class cnn():  # 只是生成模型，确定计算方式，而与数据无关
     '''
     convshape: [[7, 7, 16], [5, 5, 16]]
     fullconnshape: [[16], [10]]
@@ -52,7 +52,6 @@ class mycnn():  # 只是生成模型，确定计算方式，而与数据无关
             with tf.name_scope('fullcon_%s' % count):
                 logits = tf.matmul(last_activ, layer[0])
                 logits = tf.add(logits, layer[1])
-                logits = tf.nn.sigmoid(logits)
                 last_activ = logits
         return last_activ
 
