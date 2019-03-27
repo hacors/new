@@ -5,7 +5,6 @@ import networkx as nx
 import numpy as np
 from matplotlib import pyplot as plt
 
-import support as sup
 import naivenet
 
 # from multiprocessing import process
@@ -22,7 +21,6 @@ class movenet(naivenet.mynetwork):
         super().__init__(gratps, nodenum)
         self.breaklist = self.takebreak(breaknum)
 
-    @sup.log
     def takebreak(self, breaknum):
         breaklist = list()
         alllinks = list(self.network.edges)
@@ -36,7 +34,6 @@ class movenet(naivenet.mynetwork):
             self.network[bedge[0]][bedge[1]]['work'] = False
         return(breaklist)
 
-    @sup.log
     def getpath(self):  # 通过这一个做控制
         tempnet = self.network.copy()
         for v0, v1 in self.network.edges:
@@ -51,7 +48,6 @@ class movenet(naivenet.mynetwork):
                     temp_dict[target] = temp_path[target][1]
             self.network.node[source]['choice'] = temp_dict
 
-    @sup.log
     def takemove(self, epoch, generate):
         '''
         epoch:代数,
@@ -99,7 +95,6 @@ class movenet(naivenet.mynetwork):
             sumlist.append(sumofpa)
         return(sumlist)
 
-    @sup.log
     def showbadnet(self, network, name='default'):
         plt.cla()  # 清除画布
         pos = nx.kamada_kawai_layout(network)
@@ -113,7 +108,6 @@ class movenet(naivenet.mynetwork):
         plt.savefig(direct)
         plt.close()  # 关闭
 
-    @sup.log
     def recovery(self, recstr, epoch, generate):
         '''
         recstr:链路权重的选择,
@@ -130,7 +124,7 @@ class movenet(naivenet.mynetwork):
         # self.showbadnet(self.network, recstr+'0')
         self.getpath()
         partnumsum = self.takemove(epoch, generate)[-1]
-        print(partnumsum, 'have rec 0')
+        print('finaly num=', partnumsum, '%s have rec %s' % (recstr, 0))
         sumlist = list()
         sumlist.append(partnumsum)
         while(templist):  # 每恢复一条计算一次
@@ -141,8 +135,9 @@ class movenet(naivenet.mynetwork):
             # self.showbadnet(self.network, recstr+str(recovednum))
             self.getpath()
             partnumsum = self.takemove(epoch, generate)[-1]
-            print(partnumsum, 'have rec %s' % recovednum)
+            print('finaly num=', partnumsum, '%s have rec %s' % (recstr, recovednum))
             sumlist.append(partnumsum)
+        print('-------------finish-----------')
         for v0, v1 in self.breaklist:
             self.network[v0][v1]['work'] = False  # 恢复为开始的状态
         return(sumlist)

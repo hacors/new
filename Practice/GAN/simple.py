@@ -8,7 +8,7 @@ class simple_net():
         self.mnist = tf.keras.datasets.mnist.load_data()
         self.train_itor = self.get_data(0).make_one_shot_iterator()
         self.test_itor = self.get_data(1).make_one_shot_iterator()
-
+        
     def get_data(self, data_type, data_size=None, batch_size=100):
         datas = tf.expand_dims(tf.cast(self.mnist[data_type][0][:data_size], tf.float32), -1)
         labels = tf.cast(self.mnist[data_type][1][:data_size], tf.int32)

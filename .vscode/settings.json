@@ -9,6 +9,9 @@
     "python.formatting.autopep8Args": [
         "--max-line-length=200"
     ],
+    "editor.fontFamily": "consolas, 'Courier New', monospace",
+    "editor.fontSize": 16,
+    "editor.fontLigatures": true,
     "files.associations": {
         "algorithm": "cpp",
         "vector": "cpp",
