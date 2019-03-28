@@ -152,6 +152,7 @@ class mynetwork():  # 图类
             arrays[trave] = temparray
             temparray = np.dot(temparray, arrays[0])
         return(arrays)
+    def get_deepwalk
 
     def edgetoindex(self, etuple):  # 由于边的编号不一定对应自然数，所以需要排序后重新依据编号获取信息
         nodes = list(self.network.nodes)
@@ -161,5 +162,6 @@ class mynetwork():  # 图类
 
 
 if __name__ == '__main__':
-    net = mynetwork(4, 20)
-    net.shownet(net.network)
+    mygraph = nx.Graph()
+    mygraph.add_edges_from([(1, 3), (1, 4), (1, 5), (1, 5), (2, 3), (2, 4), (2, 5), (2, 5)])
+    mydeepwalk = getresult(mygraph)
