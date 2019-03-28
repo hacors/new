@@ -12,8 +12,8 @@ graph_director = 'LINKRE/python/temp/'
 
 
 class experiment():
-    # def __init__(self, gratp=1, breaknum=30, nodenum=15, epoch=50, generate=1.2, repeat=200):
     def __init__(self, gratp=1, breaknum=20, nodenum=10, epoch=30, generate=1.2, repeat=50):
+        # def __init__(self, gratp=1, breaknum=20, nodenum=10, epoch=30, generate=1.2, repeat=50):
         self.gratp = gratp
         self.breaknum = breaknum
         self.nodenum = nodenum
@@ -35,7 +35,9 @@ class experiment():
 
     def give_rank(self, alllist):
         temp_array = np.array(alllist)
-        rank_array = np.argsort(temp_array, axis=0,)  # /len(sup.rec_types)
+        rank_array = np.argsort(temp_array, axis=0)
+        rank_array = np.argsort(rank_array, axis=0)
+        rank_array = (len(sup.rec_types)-rank_array)/len(sup.rec_types)  # 将index与数据绑定
         rank_array = rank_array.flatten()
         return rank_array
 
@@ -54,7 +56,8 @@ class experiment():
 
     def simpledraw(self, thelist, name='default'):
         plt.figure(figsize=(19, 12))
-        plt.title(name)
+        title_name = name+'(gratp:%s breaknum:%s nodenum:%s repeat:%s)' % (sup.net_types(self.gratp), self.breaknum, self.nodenum, self.repeat)
+        plt.title(title_name)
         reclist = range(self.breaknum+1)  # 需要0恢复完成所有list，所以+1
         for recindex, trave in enumerate(thelist):
             recstr = str(sup.rec_types(recindex+1)).split('.')[-1]
@@ -70,7 +73,5 @@ class experiment():
 
 if __name__ == '__main__':
     myexp = experiment()
-    # myexp.allexp()
-    myexp.singleexp(0)
-    myexp.read_show('temp')
-    # myexp.read_show('merged_graph')
+    myexp.allexp()
+    myexp.read_show('merged_graph')
