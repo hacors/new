@@ -12,7 +12,7 @@ graph_director = 'LINKRE/python/temp/'
 
 
 class experiment():
-    def __init__(self, gratp=1, breaknum=30, nodenum=15, epoch=50, generate=1.2, repeat=200):
+    def __init__(self, gratp=1, breaknum=40, nodenum=20, epoch=80, generate=1.2, repeat=200):
         self.gratp = gratp
         self.breaknum = breaknum
         self.nodenum = nodenum
@@ -20,7 +20,8 @@ class experiment():
         self.generate = generate
         self.repeat = repeat
 
-    def singleexp(self):
+    def singleexp(self, index):
+        print('run', index)
         net = movenet.movenet(self.gratp, self.breaknum, nodenum=self.nodenum)
         alllist = list()
         rec_num = len(sup.rec_types)
@@ -31,8 +32,13 @@ class experiment():
         return alllist
 
     def allexp(self):
-        result = np.zeros((len(sup.rec_types), self.breaknum+1))
+        pool_process = mp.pool.Pool()
+        results = pool_process.map(self.singleexp, range(self.repeat))
+        np.savetxt(data_director, results)
+        '''
+        # result = np.zeros((len(sup.rec_types), self.breaknum+1))
         for repe in range(self.repeat):
+            process = mp.process.BaseProcess(target=self.singleexp(), args=(self.result,))
             temp_list = self.singleexp()
             temp_array = np.array(temp_list)
             smallest_index = temp_array.argmin(axis=0)
@@ -40,6 +46,7 @@ class experiment():
                 result[choose][index] += 1
             print(repe)
             np.savetxt(data_director, result)
+        '''
 
     def read_show(self, name):
         datas = np.loadtxt(data_director)
@@ -64,6 +71,5 @@ class experiment():
 
 if __name__ == '__main__':
     myexp = experiment()
-    templist = myexp.singleexp()
-    myexp.simpledraw(templist, 'single_graph')
+    myexp.allexp()
     # myexp.read_show('merged_graph')
