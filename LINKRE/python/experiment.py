@@ -12,7 +12,8 @@ graph_director = 'LINKRE/python/temp/'
 
 
 class experiment():
-    def __init__(self, gratp=1, breaknum=40, nodenum=20, epoch=80, generate=1.2, repeat=200):
+    # def __init__(self, gratp=1, breaknum=30, nodenum=15, epoch=50, generate=1.2, repeat=200):
+    def __init__(self, gratp=1, breaknum=20, nodenum=10, epoch=30, generate=1.2, repeat=50):
         self.gratp = gratp
         self.breaknum = breaknum
         self.nodenum = nodenum
@@ -29,29 +30,27 @@ class experiment():
             recstr = str(sup.rec_types(recindex)).split('.')[-1]
             templist = net.recovery(recstr, self.epoch, self.generate)
             alllist.append(templist)
-        return alllist
+        ranks = self.give_rank(alllist)
+        return ranks
+
+    def give_rank(self, alllist):
+        temp_array = np.array(alllist)
+        rank_array = np.argsort(temp_array, axis=0,)  # /len(sup.rec_types)
+        rank_array = rank_array.flatten()
+        return rank_array
 
     def allexp(self):
         pool_process = mp.pool.Pool()
-        results = pool_process.map(self.singleexp, range(self.repeat))
-        np.savetxt(data_director, results)
-        '''
-        # result = np.zeros((len(sup.rec_types), self.breaknum+1))
-        for repe in range(self.repeat):
-            process = mp.process.BaseProcess(target=self.singleexp(), args=(self.result,))
-            temp_list = self.singleexp()
-            temp_array = np.array(temp_list)
-            smallest_index = temp_array.argmin(axis=0)
-            for index, choose in enumerate(smallest_index):
-                result[choose][index] += 1
-            print(repe)
-            np.savetxt(data_director, result)
-        '''
+        result = pool_process.map(self.singleexp, range(self.repeat))
+        np.savetxt(data_director, result)
 
     def read_show(self, name):
+        result = np.zeros((len(sup.rec_types), self.breaknum+1))
         datas = np.loadtxt(data_director)
-        datas = datas.reshape((len(sup.rec_types), self.breaknum+1))
-        self.simpledraw(datas, name)
+        for data in datas:
+            stru_data = data.reshape((len(sup.rec_types), self.breaknum+1))
+            result = result+stru_data
+        self.simpledraw(result, name)
 
     def simpledraw(self, thelist, name='default'):
         plt.figure(figsize=(19, 12))
@@ -71,5 +70,7 @@ class experiment():
 
 if __name__ == '__main__':
     myexp = experiment()
-    myexp.allexp()
+    # myexp.allexp()
+    myexp.singleexp(0)
+    myexp.read_show('temp')
     # myexp.read_show('merged_graph')
