@@ -19,7 +19,6 @@ class mynetwork():  # 图类
         self.network = self.get_networkx(self.types, nodenum)
         self.setallparas()
 
-    @sup.log
     def get_networkx(self, nettypes, nodenum):
         '''
         nodenum只在BA有作用
@@ -31,7 +30,6 @@ class mynetwork():  # 图类
             director = 'LINKRE/python/networks/%s' % nettypes.name
             return(self.get_fromfile(nodenum, director))
 
-    @sup.log
     def get_ba(self, nodenum, linknum):  # BA的实现，最小结点数为2
         assert(nodenum >= 2)
         network = nx.Graph()
@@ -51,7 +49,6 @@ class mynetwork():  # 图类
             degreesum += needlink*2
         return(network)
 
-    @sup.log
     def get_fromfile(self, nodenum, director):  # 读取网络
         network = nx.Graph()
         file = open(director, 'r')
@@ -90,7 +87,6 @@ class mynetwork():  # 图类
             frontiers = nexts
         return newnet
 
-    @sup.log
     def shownet(self, network, name='default'):  # 简单展示网络
         plt.cla()
         position = nx.kamada_kawai_layout(network)
@@ -102,14 +98,12 @@ class mynetwork():  # 图类
         plt.savefig(direct)
         plt.close()
 
-    @sup.log
     def showimfo(self):
         network = self.network
         print(self.types)
         print('# nodenum:', len(network.nodes))
         print('# edgenum:', len(network.edges))
 
-    @sup.log
     def setallparas(self):  # 设定所有相关参数
         samax = sup.rec_paras['samax']
         lpmax = sup.rec_paras['lpmax']

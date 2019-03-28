@@ -124,20 +124,20 @@ class movenet(naivenet.mynetwork):
         # self.showbadnet(self.network, recstr+'0')
         self.getpath()
         partnumsum = self.takemove(epoch, generate)[-1]
-        print('finaly num=', partnumsum, '%s have rec %s' % (recstr, 0))
+        # print('finaly num=', partnumsum, '%s have rec %s' % (recstr, 0))
         sumlist = list()
         sumlist.append(partnumsum)
         while(templist):  # 每恢复一条计算一次
             recovering = templist[0]
             self.network[recovering[0]][recovering[1]]['work'] = True
             templist.pop(0)
-            recovednum = len(self.breaklist)-len(templist)
+            # recovednum = len(self.breaklist)-len(templist)
             # self.showbadnet(self.network, recstr+str(recovednum))
             self.getpath()
             partnumsum = self.takemove(epoch, generate)[-1]
-            print('finaly num=', partnumsum, '%s have rec %s' % (recstr, recovednum))
+            # print('finaly num=', partnumsum, '%s have rec %s' % (recstr, recovednum))
             sumlist.append(partnumsum)
-        print('-------------finish-----------')
+        # print('-------------finish-----------')
         for v0, v1 in self.breaklist:
             self.network[v0][v1]['work'] = False  # 恢复为开始的状态
         return(sumlist)
