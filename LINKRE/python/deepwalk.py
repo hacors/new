@@ -1,45 +1,11 @@
-import random as rd
-
-from gensim.models import Word2Vec
+import os
 import networkx as nx
 
 
-class deepwalk():
-    def __init__(self, network: nx.Graph):
-        self.network = network
+def getresult(net: nx.Graph):
+    alledge=net.edges
 
-    def one_walk(self, node, network: nx.Graph, length, alpha):
-        path = list([node])
-        while len(path) < length:
-            cur = path[-1]
-            if rd.random() >= alpha:
-                neighbors = [nei for nei in network.neighbors(cur)]
-                choice = rd.choice(neighbors)
-                path.append(choice)
-            else:
-                path.append(path[0])
-        path = [str(node) for node in path]
-        return path
-
-    def all_walk(self, repe, network: nx.Graph, length, alpha):
-        walks = list()
-        nodes = [node for node in network.nodes()]
-        for trave in range(repe):
-            rd.shuffle(nodes)
-            for node in nodes:
-                path = self.one_walk(node, network, length, alpha)
-                walks.append(path)
-        return walks
-
-    def train(self, walks):
-        model = Word2Vec(sentences=walks)
-        return model
-
-    def getresult(self, repe, alpha):
-        length = len(self.network.nodes())*2
-        walks = self.all_walk(repe, self.network, length, alpha)
-        model = self.train(walks)
-        return model
+    return
 
 
 if __name__ == '__main__':

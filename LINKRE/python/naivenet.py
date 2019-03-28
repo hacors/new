@@ -108,12 +108,9 @@ class mynetwork():  # 图类
         samax = sup.rec_paras['samax']
         lpmax = sup.rec_paras['lpmax']
         lpmult = sup.rec_paras['lpmult']
-        dwrepe = sup.rec_paras['dwrepe']
-        dwalpha = sup.rec_paras['dwalpha']
         dilipara1, dilipara2 = sup.mov_paras['dilipara1'], sup.mov_paras['dilipara2']  # 结点邻居度的和加载一起，但是度需要一定的修饰
         lparrays = self.getarrayspa(lpmax)
-        mywalk = dw.deepwalk(self.network)
-        models = mywalk.getresult(dwrepe, dwalpha)
+        models = dw.getresult(self.network)
         for nodeindex in self.network.nodes:
             tempneis = self.network.neighbors(nodeindex)
             count = 0
