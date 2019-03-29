@@ -1,3 +1,4 @@
+import os
 import random as rd
 
 import networkx as nx
@@ -5,7 +6,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 import support as sup
-import deepwalk as dw
+
+edge_director = 'LINKRE/python/temp/edges'
+vector_director = 'LINKRE/python/temp/vectors'
 
 
 class mynetwork():  # 图类
@@ -17,7 +20,7 @@ class mynetwork():  # 图类
     def __init__(self, gratps, nodenum):  # 初始化
         self.types = sup.net_types(gratps)
         self.network = self.get_networkx(self.types, nodenum)
-        self.setallparas()
+        # self.setallparas()
 
     def get_networkx(self, nettypes, nodenum):
         '''
@@ -110,7 +113,7 @@ class mynetwork():  # 图类
         lpmult = sup.rec_paras['lpmult']
         dilipara1, dilipara2 = sup.mov_paras['dilipara1'], sup.mov_paras['dilipara2']  # 结点邻居度的和加载一起，但是度需要一定的修饰
         lparrays = self.getarrayspa(lpmax)
-        models = dw.getresult(self.network)
+        models = self.get_deepwalk(self.network)
         for nodeindex in self.network.nodes:
             tempneis = self.network.neighbors(nodeindex)
             count = 0
@@ -152,7 +155,15 @@ class mynetwork():  # 图类
             arrays[trave] = temparray
             temparray = np.dot(temparray, arrays[0])
         return(arrays)
-    def get_deepwalk
+
+    def get_deepwalk(self):
+        edgelist = list()
+        edgelist = self.network.edges()
+        result = np.array(edgelist)
+        np.savetxt(edge_director, result, fmt='%i')
+        os.system('deepwalk --input %s --output %s' % (edge_director, vector_director))
+        vector = np.loadtxt(vector_director)
+        print(vector)
 
     def edgetoindex(self, etuple):  # 由于边的编号不一定对应自然数，所以需要排序后重新依据编号获取信息
         nodes = list(self.network.nodes)
@@ -162,6 +173,5 @@ class mynetwork():  # 图类
 
 
 if __name__ == '__main__':
-    mygraph = nx.Graph()
-    mygraph.add_edges_from([(1, 3), (1, 4), (1, 5), (1, 5), (2, 3), (2, 4), (2, 5), (2, 5)])
-    mydeepwalk = getresult(mygraph)
+    net = mynetwork(1, 20)
+    net.get_deepwalk()

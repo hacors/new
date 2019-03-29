@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 import movenet
 import support as sup
 
-data_director = 'LINKRE/python/temp/data.txt'
+data_director = 'LINKRE/python/temp/data'
 graph_director = 'LINKRE/python/temp/'
 
 
