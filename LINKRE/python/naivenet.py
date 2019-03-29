@@ -1,3 +1,4 @@
+import math
 import os
 import random as rd
 
@@ -20,7 +21,7 @@ class mynetwork():  # 图类
     def __init__(self, gratps, nodenum):  # 初始化
         self.types = sup.net_types(gratps)
         self.network = self.get_networkx(self.types, nodenum)
-        # self.setallparas()
+        self.setallparas()
 
     def get_networkx(self, nettypes, nodenum):
         '''
@@ -113,7 +114,7 @@ class mynetwork():  # 图类
         lpmult = sup.rec_paras['lpmult']
         dilipara1, dilipara2 = sup.mov_paras['dilipara1'], sup.mov_paras['dilipara2']  # 结点邻居度的和加载一起，但是度需要一定的修饰
         lparrays = self.getarrayspa(lpmax)
-        models = self.get_deepwalk(self.network)
+        dpmodels = self.get_deepwalk()
         for nodeindex in self.network.nodes:
             tempneis = self.network.neighbors(nodeindex)
             count = 0
@@ -127,11 +128,9 @@ class mynetwork():  # 图类
             # self.network[v0][v1]['distance'] = int(pow(self.network.degree(v0)*self.network.degree(v1), distancepara))
             self.network[v0][v1]['pa'] = self.network.degree(v0)*self.network.degree(v1)
             self.network[v0][v1]['apa'] = self.network.degree(v0)+self.network.degree(v1)
-            self.network[v0][v1]['lp'] = lparrays[1][v0index][v1index] + \
-                lparrays[2][v0index][v1index]*lpmult
-            self.network[v0][v1]['sa'] = len(
-                self.network.node[v0]['nneibs'] & self.network.node[v1]['nneibs'])
-            self.network[v0][v1]['dw'] = models.similarity(str(v0), str(v1))*100
+            self.network[v0][v1]['lp'] = lparrays[1][v0index][v1index] + lparrays[2][v0index][v1index]*lpmult
+            self.network[v0][v1]['sa'] = len(self.network.node[v0]['nneibs'] & self.network.node[v1]['nneibs'])
+            self.network[v0][v1]['dw'] = self.get_cosin(dpmodels.get(v0), dpmodels.get(v1))
             self.network[v0][v1]['contra'] = rd.random()*self.network.number_of_nodes()
 
     def getneinum(self, node, deep):  # 得到某一个结点n度的邻居数
@@ -157,13 +156,36 @@ class mynetwork():  # 图类
         return(arrays)
 
     def get_deepwalk(self):
-        edgelist = list()
-        edgelist = self.network.edges()
-        result = np.array(edgelist)
-        np.savetxt(edge_director, result, fmt='%i')
+        all_str = str()
+        for node in self.network.nodes:
+            neighbors = nx.neighbors(self.network, node)
+            nei_str = str(node)
+            for nei in neighbors:
+                nei_str += ' '+str(nei)
+            nei_str += '\n'
+            all_str += nei_str
+        fd_edge = open(edge_director, 'w')
+        fd_edge.write(all_str)
+        fd_edge.close()
         os.system('deepwalk --input %s --output %s' % (edge_director, vector_director))
-        vector = np.loadtxt(vector_director)
-        print(vector)
+        fd_vector = open(vector_director, 'r')
+        temp = str(fd_vector.read())
+        struc_data = temp.splitlines()[1:]
+        node_result = dict()
+        for node_vec in struc_data:
+            node_vec = node_vec.split(' ')
+            node, vec = int(node_vec[0]), list(map(float, node_vec[1:]))
+            node_result[node] = vec
+        return(node_result)
+
+    def get_cosin(self, lista, listb):
+        arraya = np.array(lista)
+        arrayb = np.array(listb)
+        suma = (arraya**2).sum()
+        sumb = (arrayb**2).sum()
+        sum_merge = (arraya*arrayb).sum()
+        cosin = sum_merge/(math.sqrt(suma)*math.sqrt(sumb))
+        return cosin
 
     def edgetoindex(self, etuple):  # 由于边的编号不一定对应自然数，所以需要排序后重新依据编号获取信息
         nodes = list(self.network.nodes)
