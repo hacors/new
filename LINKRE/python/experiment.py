@@ -1,11 +1,12 @@
 import random as rd
+import time
+from multiprocessing import pool
 
 import numpy as np
 from matplotlib import pyplot as plt
 
 import movenet
 import support as sup
-from multiprocessing import pool
 
 data_director = 'LINKRE/python/temp/data'
 graph_director = 'LINKRE/python/temp/'
@@ -19,11 +20,11 @@ generate = 1.2
 repeat = 100
 '''
 gratp = 1
-breaknum = 100
-nodenum = 50
-epoch = 100
+breaknum = 60
+nodenum = 30
+epoch = 80
 generate = 1.5
-repeat = 800
+repeat = 400
 
 net = movenet.movenet(gratp, breaknum, nodenum=nodenum)
 rec_num = len(sup.rec_types)
@@ -31,7 +32,8 @@ gra_name = str(sup.net_types(gratp)).split('.')[-1]
 
 
 def singleexp(index):
-    print('run', index)
+    strtime = time.strftime("%H:%M %m-%d", time.localtime())
+    print('run %s at time(%s)' % (index, strtime))
     alllist = list()
     for recindex in range(1, rec_num+1):
         recstr = str(sup.rec_types(recindex)).split('.')[-1]
@@ -46,7 +48,7 @@ def singleexp(index):
 
 
 def allexp():
-    pool_process = pool.Pool()
+    pool_process = pool.Pool(processes=10)
     result = pool_process.map(singleexp, range(repeat))
     np.savetxt(data_director, result)
 
