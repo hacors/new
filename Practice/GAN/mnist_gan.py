@@ -40,12 +40,13 @@ def def_discrimanator(input_shape=(28, 28, 1), conv_list=[16, 16], dens_list=[10
 def do_train():
     model = def_discrimanator()
     opti = tf.train.AdamOptimizer()
-    tape = tf.GradientTape()
     iters = get_train_iter()
     while True:
         image, label = iters.get_next()
-        logits = model(image)
-        loss = tf.losses.softmax_cross_entropy(label, logits)
+        with tf.GradientTape() as tape:
+            logits = model(image)
+            loss = tf.losses.softmax_cross_entropy(label, logits)
+            print(loss.numpy())
         grads = tape.gradient(loss, model.variables)
         opti.apply_gradients(zip(grads, model.variables))
 
