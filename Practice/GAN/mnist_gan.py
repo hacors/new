@@ -47,7 +47,7 @@ def do_train():
             logits = model(image)
             loss = tf.losses.softmax_cross_entropy(label, logits)
             print(loss.numpy())
-        grads = tape.gradient(loss, model.variables)
+            grads = tape.gradient(loss, model.variables)
         opti.apply_gradients(zip(grads, model.variables))
 
 
