@@ -5,6 +5,7 @@ from tensorflow import keras
 
 tf.enable_eager_execution()
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 print('version: tensorflow %s,keras %s\n' % (tf.VERSION, tf.keras.__version__))
 
 ker_init = tf.initializers.random_normal(mean=0.0, stddev=0.1)
@@ -46,6 +47,7 @@ def do_train():
         with tf.GradientTape() as tape:
             logits = model(image)
             loss = tf.losses.softmax_cross_entropy(label, logits)
+            print(loss.numpy())
             grads = tape.gradient(loss, model.variables)
         opti.apply_gradients(zip(grads, model.variables))
 
