@@ -61,6 +61,7 @@ def passive_learning(p_train_datas, p_train_targets, p_test_datas, p_test_target
             targets = p_train_targets[:rangeofdata]
             para_C = get_grided_para(datas, targets)
             tempsvc = svm.LinearSVC(penalty='l1', dual=False, C=para_C)
+            tempsvc.fit(datas, targets)
             predicts = tempsvc.predict(p_test_datas)
             accu = sum(predicts == p_test_targets)/472
             accuracy.append(accu)
