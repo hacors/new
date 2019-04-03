@@ -148,12 +148,16 @@ def get_grided_model(p_datas, p_targets):
     return(grid_search.best_estimator_)
 
 
-datas, targets = getdata()
-# datas = datas[:, :2]
-(train_data, train_target), (test_data, test_target) = get_train_test(datas, targets)
-accu_passive = passive_learning(train_data, train_target, test_data, test_target)
-accu_active = active_learning(train_data, train_target, test_data, test_target)
-accu_passive = np.array(accu_passive).reshape(50, 90)
-accu_active = np.array(accu_active).reshape(50, 90)
-np.savetxt(save_passive, accu_passive)
-np.savetxt(save_active, accu_active)
+def run():
+    datas, targets = getdata()
+    # datas = datas[:, :2]
+    (train_data, train_target), (test_data, test_target) = get_train_test(datas, targets)
+    accu_passive = passive_learning(train_data, train_target, test_data, test_target)
+    accu_active = active_learning(train_data, train_target, test_data, test_target)
+    accu_passive = np.array(accu_passive).reshape(50, 90)
+    accu_active = np.array(accu_active).reshape(50, 90)
+    np.savetxt(save_passive, accu_passive)
+    np.savetxt(save_active, accu_active)
+
+
+# run()
