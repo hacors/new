@@ -10,9 +10,10 @@ from sklearn import model_selection, svm
 
 # from sklearn import preprocessing
 
-txtdirector = 'Practice/Bills/Active/data_banknote_authentication.txt'
-save_passive = 'Practice/Bills/Active/save_passive.txt'
-save_active = 'Practice/Bills/Active/save_active.txt'
+# txtdirector = 'Practice/Bills/Active/data_banknote_authentication.txt'
+# save_passive = 'Practice/Bills/Active/save_passive.txt'
+# save_active = 'Practice/Bills/Active/save_active.txt'
+txtdirector = 'data_banknote_authentication.txt''
 C_grid = [{'C': list(10**i for i in range(-6, 6))}]
 
 
@@ -26,8 +27,6 @@ def getdata():
         p_targets.append(int(line[-1]))
     p_datas = np.array(p_datas)
     p_targets = np.array(p_targets)
-    # standarder = preprocessing.StandardScaler()
-    # p_datas = standarder.fit_transform(p_datas)
     return(p_datas, p_targets)
 
 
@@ -82,7 +81,7 @@ def get_distance(coef, intercept, data):
     '''
     return abs(np.sum(coef*data)+intercept)/sums
 
-
+'''
 def show_scatter(p_datas, p_targets):
     plt.scatter(p_datas[p_targets == 0, 0], p_datas[p_targets == 0, 1], color='red')
     plt.scatter(p_datas[p_targets == 1, 0], p_datas[p_targets == 1, 1], color='blue')
@@ -99,12 +98,12 @@ def show_boundary(model, p_datas, p_targets):
     custom = colors.ListedColormap(['orange', 'black', 'green'])
     plt.contourf(x_matrix, y_matrix, predict, cmap=custom)
     show_scatter(p_datas, p_targets)
-
+'''
 
 def passive_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets):
     accuracy = list()
     for repeat in range(50):
-        print('passive', repeat)
+        # print('passive', repeat)
         shuffled_train_datas, shuffled_train_targets = do_shuffle(p_train_datas, p_train_targets)
         for i in range(90):
             rangeofdata = 10*(i+1)
@@ -122,7 +121,7 @@ def passive_learning(p_train_datas, p_train_targets, p_test_datas, p_test_target
 def active_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets):
     accuracy = list()
     for repeat in range(50):
-        print('active', repeat)
+        # print('active', repeat)
         shuffled_train_datas, shuffled_train_targets = do_shuffle(p_train_datas, p_train_targets)
         pool_datas, pool_targets = shuffled_train_datas[:10], shuffled_train_targets[:10]
         rest_datas, rest_targets = shuffled_train_datas[10:], shuffled_train_targets[10:]
@@ -154,17 +153,18 @@ def get_grided_model(p_datas, p_targets):
 def run():
     datas, targets = getdata()
     (train_data, train_target), (test_data, test_target) = get_train_test(datas, targets)
-    # accu_passive = passive_learning(train_data, train_target, test_data, test_target)
+    accu_passive = passive_learning(train_data, train_target, test_data, test_target)
     accu_active = active_learning(train_data, train_target, test_data, test_target)
-    # accu_passive = np.array(accu_passive).reshape(50, 90)
+    accu_passive = np.array(accu_passive).reshape(50, 90)
     accu_active = np.array(accu_active).reshape(50, 90)
+    return accu_passive, accu_active
     # np.savetxt(save_passive, accu_passive)
-    np.savetxt(save_active, accu_active)
+    # np.savetxt(save_active, accu_active)
 
 
-def show():
-    accu_passive = np.loadtxt(save_passive)
-    acc_active = np.loadtxt(save_active)
+def show(accu_passive, acc_active):
+    # accu_passive = np.loadtxt(save_passive)
+    # acc_active = np.loadtxt(save_active)
     passive_list = np.mean(accu_passive, axis=0)
     active_list = np.mean(acc_active, axis=0)
     x_list = list(range(len(passive_list)))
@@ -174,5 +174,5 @@ def show():
     plt.show()
 
 
-run()
-show()
+passive, acctive = run()
+show(passive, acctive)
