@@ -1,3 +1,5 @@
+import heapq
+import math
 import random
 from collections import Counter
 
@@ -47,17 +49,32 @@ def do_shuffle(p_datas, p_targets):
     return(shuffled_datas, shuffled_targets)
 
 
-def get_nearst(conef, intercept, p_datas, p_labels):
-    if(len(p_datas == 0)):
-        return(p_datas, p_labels, p_datas, p_labels)
+def get_nearst(coef, intercept, p_datas, p_targets):
+    if len(p_datas) == 0:
+        return(p_datas, p_targets, p_datas, p_targets)
     else:
+        selected_datas = list()
+        selected_targets = list()
+        rest_datas = list(p_datas.copy())
+        rest_targets = list(p_targets.copy())
         distance_list = list()
-        for data in datas:
-            distance_list.append(get_distance(conef, intercept, data))
+        for data in p_datas:
+            distance_list.append(get_distance(coef, intercept, data))
+        smallest_index = list(map(distance_list.index, heapq.nsmallest(10, distance_list)))
+        smallest_index.sort(key=None, reverse=True)
+        for index in smallest_index:
+            selected_datas.append(p_datas[index])
+            selected_targets.append(p_targets[index])
+            rest_datas.pop(index)
+            rest_targets.pop(index)
+        return(np.array(selected_datas), np.array(selected_targets), np.array(rest_datas), np.array(rest_targets))
 
 
-def get_distance(conef, intercept, data):
-    return 1
+def get_distance(coef, intercept, data):
+    sums = math.sqrt(np.sum(coef**2))
+    dis_a = abs(np.sum(coef*data)+intercept-1)/sums
+    dis_b = abs(np.sum(coef*data)+intercept+1)/sums
+    return min([dis_a, dis_b])
 
 
 def show_scatter(p_datas, p_targets):
@@ -104,13 +121,12 @@ def active_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets
         for i in range(90):
             tempsvc = get_grided_model(pool_datas, pool_targets)
             tempsvc.fit(pool_datas, pool_targets)
-            tempsvc.
             predicts = tempsvc.predict(p_test_datas)
             accu = sum(predicts == p_test_targets)/472
             accuracy.append(accu)
-            choosed_datas, choosed_labels, rest_datas, rest_targets = get_nearst(tempsvc.conef_(), tempsvc.intercept_(), rest_datas, rest_targets)
-            pool_datas += choosed_datas
-            pool_targets += choosed_labels
+            choosed_datas, choosed_targets, rest_datas, rest_targets = get_nearst(tempsvc.coef_[0], tempsvc.intercept_[0], rest_datas, rest_targets)
+            pool_datas = np.vstack((pool_datas, choosed_datas))
+            pool_targets = np.hstack((pool_targets, choosed_targets))
     return(accuracy)
 
 
