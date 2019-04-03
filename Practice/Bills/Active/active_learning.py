@@ -132,7 +132,7 @@ def active_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets
             predicts = tempsvc.predict(p_test_datas)
             accu = sum(predicts == p_test_targets)/472
             accuracy.append(accu)
-            print(accu, len(pool_datas))
+            # print(accu, len(pool_datas))
             choosed_datas, choosed_targets, rest_datas, rest_targets = get_nearst(tempsvc.coef_[0], tempsvc.intercept_[0], rest_datas, rest_targets)
             if not len(choosed_datas) == 0:
                 pool_datas = np.vstack((pool_datas, choosed_datas))
