@@ -75,9 +75,12 @@ def get_nearst(coef, intercept, p_datas, p_targets):
 
 def get_distance(coef, intercept, data):
     sums = math.sqrt(np.sum(coef**2))
+    '''
     dis_a = abs(np.sum(coef*data)+intercept-1)/sums
     dis_b = abs(np.sum(coef*data)+intercept+1)/sums
     return min([dis_a, dis_b])
+    '''
+    return abs(np.sum(coef*data)+intercept)/sums
 
 
 def show_scatter(p_datas, p_targets):
@@ -129,7 +132,7 @@ def active_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets
             predicts = tempsvc.predict(p_test_datas)
             accu = sum(predicts == p_test_targets)/472
             accuracy.append(accu)
-            # print(accu, len(pool_datas))
+            print(accu, len(pool_datas))
             choosed_datas, choosed_targets, rest_datas, rest_targets = get_nearst(tempsvc.coef_[0], tempsvc.intercept_[0], rest_datas, rest_targets)
             if not len(choosed_datas) == 0:
                 pool_datas = np.vstack((pool_datas, choosed_datas))
@@ -138,7 +141,7 @@ def active_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets
 
 
 def get_grided_model(p_datas, p_targets):
-    grid_svc = svm.LinearSVC(penalty='l1', dual=False, max_iter=10000, tol=1e-3)
+    grid_svc = svm.LinearSVC(penalty='l1', dual=False, max_iter=20000, tol=1e-3)
     if len(p_targets) == 10:
         cv_num = 5
     else:
@@ -150,14 +153,26 @@ def get_grided_model(p_datas, p_targets):
 
 def run():
     datas, targets = getdata()
-    # datas = datas[:, :2]
     (train_data, train_target), (test_data, test_target) = get_train_test(datas, targets)
-    accu_passive = passive_learning(train_data, train_target, test_data, test_target)
+    # accu_passive = passive_learning(train_data, train_target, test_data, test_target)
     accu_active = active_learning(train_data, train_target, test_data, test_target)
-    accu_passive = np.array(accu_passive).reshape(50, 90)
+    # accu_passive = np.array(accu_passive).reshape(50, 90)
     accu_active = np.array(accu_active).reshape(50, 90)
-    np.savetxt(save_passive, accu_passive)
+    # np.savetxt(save_passive, accu_passive)
     np.savetxt(save_active, accu_active)
 
 
-# run()
+def show():
+    accu_passive = np.loadtxt(save_passive)
+    acc_active = np.loadtxt(save_active)
+    passive_list = np.mean(accu_passive, axis=0)
+    active_list = np.mean(acc_active, axis=0)
+    x_list = list(range(len(passive_list)))
+    plt.scatter(x_list, passive_list, label='passive')
+    plt.scatter(x_list, active_list, label='active')
+    plt.legend()
+    plt.show()
+
+
+run()
+show()
