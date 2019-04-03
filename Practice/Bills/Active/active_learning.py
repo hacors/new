@@ -11,6 +11,8 @@ from sklearn import model_selection, svm
 # from sklearn import preprocessing
 
 txtdirector = 'Practice/Bills/Active/data_banknote_authentication.txt'
+save_passive = 'Practice/Bills/Active/save_passive.txt'
+save_active = 'Practice/Bills/Active/save_active.txt'
 C_grid = [{'C': list(10**i for i in range(-6, 6))}]
 
 
@@ -44,7 +46,8 @@ def do_shuffle(p_datas, p_targets):
         shuffled_datas = p_datas[indexlist]
         shuffled_targets = p_targets[indexlist]
         check = shuffled_targets[:10]
-        if len(Counter(check)) > 1:
+        count = Counter(check)
+        if count[0] >= 3 and count[1] >= 3:
             success = True
     return(shuffled_datas, shuffled_targets)
 
@@ -98,23 +101,25 @@ def show_boundary(model, p_datas, p_targets):
 def passive_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets):
     accuracy = list()
     for repeat in range(50):
+        print('passive', repeat)
         shuffled_train_datas, shuffled_train_targets = do_shuffle(p_train_datas, p_train_targets)
         for i in range(90):
             rangeofdata = 10*(i+1)
-            datas = shuffled_train_datas[:rangeofdata]
-            targets = shuffled_train_targets[:rangeofdata]
-            tempsvc = get_grided_model(datas, targets)
-            tempsvc.fit(datas, targets)
+            pool_datas = shuffled_train_datas[:rangeofdata]
+            pool_targets = shuffled_train_targets[:rangeofdata]
+            tempsvc = get_grided_model(pool_datas, pool_targets)
+            tempsvc.fit(pool_datas, pool_targets)
             predicts = tempsvc.predict(p_test_datas)
             accu = sum(predicts == p_test_targets)/472
             accuracy.append(accu)
-            print(accu)
+            # print(accu, len())
     return(accuracy)
 
 
 def active_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets):
     accuracy = list()
     for repeat in range(50):
+        print('active', repeat)
         shuffled_train_datas, shuffled_train_targets = do_shuffle(p_train_datas, p_train_targets)
         pool_datas, pool_targets = shuffled_train_datas[:10], shuffled_train_targets[:10]
         rest_datas, rest_targets = shuffled_train_datas[10:], shuffled_train_targets[10:]
@@ -124,9 +129,11 @@ def active_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets
             predicts = tempsvc.predict(p_test_datas)
             accu = sum(predicts == p_test_targets)/472
             accuracy.append(accu)
+            # print(accu, len(pool_datas))
             choosed_datas, choosed_targets, rest_datas, rest_targets = get_nearst(tempsvc.coef_[0], tempsvc.intercept_[0], rest_datas, rest_targets)
-            pool_datas = np.vstack((pool_datas, choosed_datas))
-            pool_targets = np.hstack((pool_targets, choosed_targets))
+            if not len(choosed_datas) == 0:
+                pool_datas = np.vstack((pool_datas, choosed_datas))
+                pool_targets = np.hstack((pool_targets, choosed_targets))
     return(accuracy)
 
 
@@ -144,5 +151,9 @@ def get_grided_model(p_datas, p_targets):
 datas, targets = getdata()
 # datas = datas[:, :2]
 (train_data, train_target), (test_data, test_target) = get_train_test(datas, targets)
-# accu_passive = passive_learning(train_data, train_target, test_data, test_target)
+accu_passive = passive_learning(train_data, train_target, test_data, test_target)
 accu_active = active_learning(train_data, train_target, test_data, test_target)
+accu_passive = np.array(accu_passive).reshape(50, 90)
+accu_active = np.array(accu_active).reshape(50, 90)
+np.savetxt(save_passive, accu_passive)
+np.savetxt(save_active, accu_active)
