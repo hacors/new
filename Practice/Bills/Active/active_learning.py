@@ -1,11 +1,12 @@
 import random
+from collections import Counter
 
 import numpy as np
 from matplotlib import colors
 from matplotlib import pyplot as plt
-from sklearn import svm
-from sklearn import model_selection
-from sklearn import preprocessing
+from sklearn import model_selection, svm
+
+# from sklearn import preprocessing
 
 txtdirector = 'Practice/Bills/Active/data_banknote_authentication.txt'
 C_grid = [{'C': list(10**i for i in range(-6, 6))}]
@@ -21,17 +22,42 @@ def getdata():
         p_targets.append(int(line[-1]))
     p_datas = np.array(p_datas)
     p_targets = np.array(p_targets)
-    standarder = preprocessing.StandardScaler()
-    p_datas = standarder.fit_transform(p_datas)
+    # standarder = preprocessing.StandardScaler()
+    # p_datas = standarder.fit_transform(p_datas)
     return(p_datas, p_targets)
 
 
 def get_train_test(p_datas, p_targets):
-    indexlist = list(range(1372))
-    random.shuffle(indexlist)
-    train_data, train_target = p_datas[indexlist[:900]], p_targets[indexlist[:900]]
-    test_data, test_target = p_datas[indexlist[900:]], p_targets[indexlist[900:]]
+    shuffled_datas, shuffled_targets = do_shuffle(p_datas, p_targets)
+    train_data, train_target = shuffled_datas[:900], shuffled_targets[:900]
+    test_data, test_target = shuffled_datas[900:], shuffled_targets[900:]
     return (train_data, train_target), (test_data, test_target)
+
+
+def do_shuffle(p_datas, p_targets):
+    indexlist = list(range(len(p_datas)))
+    success = False
+    while not success:
+        random.shuffle(indexlist)
+        shuffled_datas = p_datas[indexlist]
+        shuffled_targets = p_targets[indexlist]
+        check = shuffled_targets[:10]
+        if len(Counter(check)) > 1:
+            success = True
+    return(shuffled_datas, shuffled_targets)
+
+
+def get_nearst(conef, intercept, p_datas, p_labels):
+    if(len(p_datas == 0)):
+        return(p_datas, p_labels, p_datas, p_labels)
+    else:
+        distance_list = list()
+        for data in datas:
+            distance_list.append(get_distance(conef, intercept, data))
+
+
+def get_distance(conef, intercept, data):
+    return 1
 
 
 def show_scatter(p_datas, p_targets):
@@ -55,12 +81,12 @@ def show_boundary(model, p_datas, p_targets):
 def passive_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets):
     accuracy = list()
     for repeat in range(50):
+        shuffled_train_datas, shuffled_train_targets = do_shuffle(p_train_datas, p_train_targets)
         for i in range(90):
             rangeofdata = 10*(i+1)
-            datas = p_train_datas[:rangeofdata]
-            targets = p_train_targets[:rangeofdata]
-            para_C = get_grided_para(datas, targets)
-            tempsvc = svm.LinearSVC(penalty='l1', dual=False, C=para_C)
+            datas = shuffled_train_datas[:rangeofdata]
+            targets = shuffled_train_targets[:rangeofdata]
+            tempsvc = get_grided_model(datas, targets)
             tempsvc.fit(datas, targets)
             predicts = tempsvc.predict(p_test_datas)
             accu = sum(predicts == p_test_targets)/472
@@ -69,19 +95,38 @@ def passive_learning(p_train_datas, p_train_targets, p_test_datas, p_test_target
     return(accuracy)
 
 
-def get_grided_para(p_datas, p_targets):
-    grid_svc = svm.LinearSVC(penalty='l1', dual=False)
+def active_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets):
+    accuracy = list()
+    for repeat in range(50):
+        shuffled_train_datas, shuffled_train_targets = do_shuffle(p_train_datas, p_train_targets)
+        pool_datas, pool_targets = shuffled_train_datas[:10], shuffled_train_targets[:10]
+        rest_datas, rest_targets = shuffled_train_datas[10:], shuffled_train_targets[10:]
+        for i in range(90):
+            tempsvc = get_grided_model(pool_datas, pool_targets)
+            tempsvc.fit(pool_datas, pool_targets)
+            tempsvc.
+            predicts = tempsvc.predict(p_test_datas)
+            accu = sum(predicts == p_test_targets)/472
+            accuracy.append(accu)
+            choosed_datas, choosed_labels, rest_datas, rest_targets = get_nearst(tempsvc.conef_(), tempsvc.intercept_(), rest_datas, rest_targets)
+            pool_datas += choosed_datas
+            pool_targets += choosed_labels
+    return(accuracy)
+
+
+def get_grided_model(p_datas, p_targets):
+    grid_svc = svm.LinearSVC(penalty='l1', dual=False, max_iter=10000, tol=1e-3)
     if len(p_targets) == 10:
         cv_num = 5
     else:
         cv_num = 10
     grid_search = model_selection.GridSearchCV(grid_svc, C_grid, n_jobs=-1, cv=cv_num, iid=True)
     grid_search.fit(p_datas, p_targets)
-    return(grid_search.best_params_['C'])
+    return(grid_search.best_estimator_)
 
 
 datas, targets = getdata()
 # datas = datas[:, :2]
 (train_data, train_target), (test_data, test_target) = get_train_test(datas, targets)
-accu = passive_learning(train_data, train_target, test_data, test_target)
-print(accu)
+# accu_passive = passive_learning(train_data, train_target, test_data, test_target)
+accu_active = active_learning(train_data, train_target, test_data, test_target)
