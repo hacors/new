@@ -4,16 +4,16 @@ import random
 from collections import Counter
 
 import numpy as np
-from matplotlib import colors
+# from matplotlib import colors
 from matplotlib import pyplot as plt
 from sklearn import model_selection, svm
 
 # from sklearn import preprocessing
 
+# txtdirector = 'Practice/Bills/Active/data_banknote_authentication.txt'
+# save_passive = 'Practice/Bills/Active/save_passive.txt'
+# save_active = 'Practice/Bills/Active/save_active.txt'
 txtdirector = 'Practice/Bills/Active/data_banknote_authentication.txt'
-save_passive = 'Practice/Bills/Active/save_passive.txt'
-save_active = 'Practice/Bills/Active/save_active.txt'
-# txtdirector = 'data_banknote_authentication.txt'
 C_grid = [{'C': list(10**i for i in range(-6, 6))}]
 
 
@@ -105,7 +105,7 @@ def show_boundary(model, p_datas, p_targets):
 def passive_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets):
     accuracy = list()
     for repeat in range(50):
-        # print('passive', repeat)
+        print('passive', repeat)
         shuffled_train_datas, shuffled_train_targets = do_shuffle(p_train_datas, p_train_targets)
         for i in range(90):
             rangeofdata = 10*(i+1)
@@ -123,7 +123,7 @@ def passive_learning(p_train_datas, p_train_targets, p_test_datas, p_test_target
 def active_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets):
     accuracy = list()
     for repeat in range(50):
-        # print('active', repeat)
+        print('active', repeat)
         shuffled_train_datas, shuffled_train_targets = do_shuffle(p_train_datas, p_train_targets)
         pool_datas, pool_targets = shuffled_train_datas[:10], shuffled_train_targets[:10]
         rest_datas, rest_targets = shuffled_train_datas[10:], shuffled_train_targets[10:]
@@ -174,6 +174,6 @@ def show(accu_passive, acc_active):
     plt.show()
 
 
-# passive, acctive = run()
-passive, acctive = np.loadtxt(save_passive), np.loadtxt(save_active)
-show(passive, acctive)
+passive, active = run()
+# passive, active = np.loadtxt(save_passive), np.loadtxt(save_active)
+show(passive, active)
