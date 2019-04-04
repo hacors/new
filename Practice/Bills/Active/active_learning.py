@@ -11,8 +11,8 @@ from sklearn import model_selection, svm
 # from sklearn import preprocessing
 
 # txtdirector = 'Practice/Bills/Active/data_banknote_authentication.txt'
-# save_passive = 'Practice/Bills/Active/save_passive.txt'
-# save_active = 'Practice/Bills/Active/save_active.txt'
+save_passive = 'Practice/Bills/Active/save_passive.txt'
+save_active = 'Practice/Bills/Active/save_active.txt'
 txtdirector = 'Practice/Bills/Active/data_banknote_authentication.txt'
 C_grid = [{'C': list(10**i for i in range(-6, 6))}]
 
