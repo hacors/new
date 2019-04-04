@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import tensorflow as tf
 from tensorflow import keras
@@ -11,12 +12,15 @@ print('version: tensorflow %s,keras %s\n' % (tf.VERSION, tf.keras.__version__))
 ker_init = tf.initializers.random_normal(mean=0.0, stddev=0.1)
 bia_init = tf.initializers.constant(value=0.1)
 
-model_dir = 'D:/myfile/data/eager/temp'
+# model_dir = 'D:/myfile/data/eager/temp'
+model_dir = 'Practice/GAN/model/temp'
 
 
 class simplegan():
     def __init__(self):
         self.discri = self.def_discrimanator()
+        self.do_train()
+        self.store()
 
     def get_train_iter(self):
         with tf.name_scope('train_iter'):
@@ -46,14 +50,25 @@ class simplegan():
         model = self.discri
         iters = self.get_train_iter()
         opti = tf.train.AdamOptimizer(learning_rate=0.001)
-        while True:
-            image, label = iters.get_next()
-            with tf.GradientTape() as tape:
-                logits = model(image)
-                loss = tf.losses.softmax_cross_entropy(label, logits)
-                print(loss.numpy())
-                grads = tape.gradient(loss, model.variables)
-            opti.apply_gradients(zip(grads, model.variables))
+        try:
+            while True:
+                image, label = iters.get_next()
+                with tf.GradientTape() as tape:
+                    logits = model(image)
+                    loss = tf.losses.softmax_cross_entropy(label, logits)
+                    print(loss.numpy())
+                    grads = tape.gradient(loss, model.variables)
+                opti.apply_gradients(zip(grads, model.variables))
+        except tf.errors.OutOfRangeError:
+            print('iter end')
+        finally:
+            print('train stop')
 
     def store(self):
-        self.do_train()
+        shutil.rmtree(model_dir)
+        builder = tf.saved_model.builder.SavedModelBuilder(model_dir)
+        builder.add_meta_graph_and_variables(self.discri, ['saved_graph'])
+        builder.save()
+
+
+mysimple = simplegan()

@@ -10,10 +10,10 @@ from sklearn import model_selection, svm
 
 # from sklearn import preprocessing
 
-# txtdirector = 'Practice/Bills/Active/data_banknote_authentication.txt'
-# save_passive = 'Practice/Bills/Active/save_passive.txt'
-# save_active = 'Practice/Bills/Active/save_active.txt'
-txtdirector = 'data_banknote_authentication.txt''
+txtdirector = 'Practice/Bills/Active/data_banknote_authentication.txt'
+save_passive = 'Practice/Bills/Active/save_passive.txt'
+save_active = 'Practice/Bills/Active/save_active.txt'
+# txtdirector = 'data_banknote_authentication.txt'
 C_grid = [{'C': list(10**i for i in range(-6, 6))}]
 
 
@@ -81,6 +81,7 @@ def get_distance(coef, intercept, data):
     '''
     return abs(np.sum(coef*data)+intercept)/sums
 
+
 '''
 def show_scatter(p_datas, p_targets):
     plt.scatter(p_datas[p_targets == 0, 0], p_datas[p_targets == 0, 1], color='red')
@@ -99,6 +100,7 @@ def show_boundary(model, p_datas, p_targets):
     plt.contourf(x_matrix, y_matrix, predict, cmap=custom)
     show_scatter(p_datas, p_targets)
 '''
+
 
 def passive_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets):
     accuracy = list()
@@ -163,8 +165,6 @@ def run():
 
 
 def show(accu_passive, acc_active):
-    # accu_passive = np.loadtxt(save_passive)
-    # acc_active = np.loadtxt(save_active)
     passive_list = np.mean(accu_passive, axis=0)
     active_list = np.mean(acc_active, axis=0)
     x_list = list(range(len(passive_list)))
@@ -174,5 +174,6 @@ def show(accu_passive, acc_active):
     plt.show()
 
 
-passive, acctive = run()
+# passive, acctive = run()
+passive, acctive = np.loadtxt(save_passive), np.loadtxt(save_active)
 show(passive, acctive)
