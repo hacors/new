@@ -4,16 +4,11 @@ import random
 from collections import Counter
 
 import numpy as np
-# from matplotlib import colors
 from matplotlib import pyplot as plt
 from sklearn import model_selection, svm
 
-# from sklearn import preprocessing
 
-# txtdirector = 'Practice/Bills/Active/data_banknote_authentication.txt'
-save_passive = 'Practice/Bills/Active/save_passive.txt'
-save_active = 'Practice/Bills/Active/save_active.txt'
-txtdirector = 'Practice/Bills/Active/data_banknote_authentication.txt'
+txtdirector = 'data_banknote_authentication.txt'
 C_grid = [{'C': list(10**i for i in range(-6, 6))}]
 
 
@@ -74,38 +69,12 @@ def get_nearst(coef, intercept, p_datas, p_targets):
 
 def get_distance(coef, intercept, data):
     sums = math.sqrt(np.sum(coef**2))
-    '''
-    dis_a = abs(np.sum(coef*data)+intercept-1)/sums
-    dis_b = abs(np.sum(coef*data)+intercept+1)/sums
-    return min([dis_a, dis_b])
-    '''
     return abs(np.sum(coef*data)+intercept)/sums
-
-
-'''
-def show_scatter(p_datas, p_targets):
-    plt.scatter(p_datas[p_targets == 0, 0], p_datas[p_targets == 0, 1], color='red')
-    plt.scatter(p_datas[p_targets == 1, 0], p_datas[p_targets == 1, 1], color='blue')
-    plt.show()
-
-
-def show_boundary(model, p_datas, p_targets):
-    x_min, x_max = p_datas[:, 0].min()-0.5, p_datas[:, 0].max()+0.5
-    y_min, y_max = p_datas[:, 1].min()-0.5, p_datas[:, 1].max()+0.5
-    step = 0.01
-    x_matrix, y_matrix = np.meshgrid(np.arange(x_min, x_max, step), np.arange(y_min, y_max, step))
-    coordinate = np.c_[x_matrix.ravel(), y_matrix.ravel()]
-    predict = model.predict(coordinate).reshape(x_matrix.shape)
-    custom = colors.ListedColormap(['orange', 'black', 'green'])
-    plt.contourf(x_matrix, y_matrix, predict, cmap=custom)
-    show_scatter(p_datas, p_targets)
-'''
 
 
 def passive_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets):
     accuracy = list()
     for repeat in range(50):
-        print('passive', repeat)
         shuffled_train_datas, shuffled_train_targets = do_shuffle(p_train_datas, p_train_targets)
         for i in range(90):
             rangeofdata = 10*(i+1)
@@ -116,14 +85,12 @@ def passive_learning(p_train_datas, p_train_targets, p_test_datas, p_test_target
             predicts = tempsvc.predict(p_test_datas)
             accu = sum(predicts == p_test_targets)/472
             accuracy.append(accu)
-            # print(accu, len())
     return(accuracy)
 
 
 def active_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets):
     accuracy = list()
     for repeat in range(50):
-        print('active', repeat)
         shuffled_train_datas, shuffled_train_targets = do_shuffle(p_train_datas, p_train_targets)
         pool_datas, pool_targets = shuffled_train_datas[:10], shuffled_train_targets[:10]
         rest_datas, rest_targets = shuffled_train_datas[10:], shuffled_train_targets[10:]
@@ -133,7 +100,6 @@ def active_learning(p_train_datas, p_train_targets, p_test_datas, p_test_targets
             predicts = tempsvc.predict(p_test_datas)
             accu = sum(predicts == p_test_targets)/472
             accuracy.append(accu)
-            # print(accu, len(pool_datas))
             choosed_datas, choosed_targets, rest_datas, rest_targets = get_nearst(tempsvc.coef_[0], tempsvc.intercept_[0], rest_datas, rest_targets)
             if not len(choosed_datas) == 0:
                 pool_datas = np.vstack((pool_datas, choosed_datas))
@@ -160,8 +126,6 @@ def run():
     accu_passive = np.array(accu_passive).reshape(50, 90)
     accu_active = np.array(accu_active).reshape(50, 90)
     return accu_passive, accu_active
-    # np.savetxt(save_passive, accu_passive)
-    # np.savetxt(save_active, accu_active)
 
 
 def show(accu_passive, acc_active):
@@ -177,5 +141,4 @@ def show(accu_passive, acc_active):
 
 
 passive, active = run()
-# passive, active = np.loadtxt(save_passive), np.loadtxt(save_active)
 show(passive, active)
