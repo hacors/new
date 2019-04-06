@@ -11,7 +11,6 @@ print('version: tensorflow %s,keras %s\n' % (tf.VERSION, tf.keras.__version__))
 ker_init = tf.initializers.random_normal(mean=0.0, stddev=0.1)
 bia_init = tf.initializers.constant(value=0.1)
 
-# model_dir = 'D:/myfile/data/eager/temp'
 model_dir = 'Practice/GAN/model/temp'
 
 
@@ -79,7 +78,6 @@ class simplegan():
             while True:
                 images, labels = iters.get_next()
                 logits = test_model(images)
-
         except tf.errors.OutOfRangeError:
             print('iters end')
         finally:
