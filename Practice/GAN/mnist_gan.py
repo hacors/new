@@ -38,15 +38,19 @@ print(discri)
 def generator(input_shape=(10, 1), conv_list=[16, 16, 1], dens_list=[784, 3136]):
     input_data = keras.layers.Input(shape=input_shape)
     digits = input_data
+    digits = keras.layers.Flatten()(digits)
     for dim in dens_list:
         digits = keras.layers.Dense(
             dim, kernel_initializer=ker_init, bias_initializer=bia_init)(digits)
+        digits = keras.layers.BatchNormalization()(digits)
         digits = keras.layers.LeakyReLU()(digits)
-    digits = keras.layers.Reshape((56, 56, 1))
+    digits = keras.layers.Reshape((56, 56, 1))(digits)
     for dim in conv_list:
         digits = keras.layers.Conv2D(
             dim, (5, 5), padding='same', kernel_initializer=ker_init, bias_initializer=bia_init)(digits)
-        digits = keras.layers.MaxPool2D()(digits)
+        digits = keras.layers.BatchNormalization()(digits)
+        digits = keras.layers.LeakyReLU()(digits)
+    digits = keras.layers.MaxPool2D()(digits)
     prediction = digits
     model = keras.Model(inputs=input_data, outputs=prediction)
     return(model)
@@ -54,3 +58,5 @@ def generator(input_shape=(10, 1), conv_list=[16, 16, 1], dens_list=[784, 3136])
 
 gener = generator()
 print(gener)
+
+d_loss_real=tf.reduce_mean(keras.losses.categorical_crossentropy())
