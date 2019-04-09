@@ -1,203 +1,140 @@
-# Tensorflow Eager on GAN
+<div align="center">
+  <img src="https://www.tensorflow.org/images/tf_logo_transp.png"><br><br>
+</div>
 
-## Basic usage
-* [Eager Documentation](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/eager)
-    * [User guide](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/eager/python/g3doc/guide.md)
-    * [Basic usage](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/eager/python/examples/notebooks/1_basics.ipynb)
-    * [Gradient usage](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/eager/python/examples/notebooks/2_gradients.ipynb)
-    * [Data usage](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/eager/python/examples/notebooks/3_datasets.ipynb)
+-----------------
 
-## GAN implementation from official example
-* https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/eager/python/examples/gan
 
-## How I did it
-* Tensorflow version: 1.6
+| **`Documentation`** |
+|-----------------|
+| [![Documentation](https://img.shields.io/badge/api-reference-blue.svg)](https://www.tensorflow.org/api_docs/) |
 
-## What needs to be done
-* Tensorflow 1.6 doesn't have tfe.Checkpoint class to save variables and more. (master branch does)
-    * Which makes difficult to save & load variables
-    * Use tfe.Saver() & tfe.restore_variables_on_create() -> works but not handy.
+**TensorFlow** is an open source software library for numerical computation
+using data flow graphs. The graph nodes represent mathematical operations, while
+the graph edges represent the multidimensional data arrays (tensors) that flow
+between them. This flexible architecture enables you to deploy computation to
+one or more CPUs or GPUs in a desktop, server, or mobile device without
+rewriting code. TensorFlow also includes
+[TensorBoard](https://github.com/tensorflow/tensorboard), a data visualization
+toolkit.
 
-### Create classes for generator & discriminator
-* Note: You can use tfe.Network class to subclass it and get the benefit of self.track_layer(), and Network.variables properties.
-```python
-# Generator class
-class Generator(object):
-    def __init__(self):
-        self.n_f = 512
-        self.n_k = 4
+TensorFlow was originally developed by researchers and engineers
+working on the Google Brain team within Google's Machine Intelligence Research
+organization for the purposes of conducting machine learning and deep neural
+networks research.  The system is general enough to be applicable in a wide
+variety of other domains, as well.
 
-        # input z vector is [None, 100]
-        self.dense1 = tf.layers.Dense(3 * 3 * self.n_f)
-        self.conv2 = tf.layers.Conv2DTranspose(self.n_f // 2, 3, 2, 'valid')
-        self.bn2 = tf.layers.BatchNormalization()
-        self.conv3 = tf.layers.Conv2DTranspose(self.n_f // 4, self.n_k, 2, 'same')
-        self.bn3 = tf.layers.BatchNormalization()
-        self.conv4 = tf.layers.Conv2DTranspose(1, self.n_k, 2, 'same')
-        return
+TensorFlow provides stable Python API and C APIs as well as without API backwards compatibility guarantee like C++, Go, Java, JavaScript and Swift.
 
-    def forward(self, inputs, is_trainig):
-        with tf.variable_scope('generator'):
-            x = tf.nn.leaky_relu(tf.reshape(self.dense1(inputs), shape=[-1, 3, 3, self.n_f]))
-            x = tf.nn.leaky_relu(self.bn2(self.conv2(x), training=is_trainig))
-            x = tf.nn.leaky_relu(self.bn3(self.conv3(x), training=is_trainig))
-            x = tf.tanh(self.conv4(x))
-        return x
+Keep up to date with release announcements and security updates by
+subscribing to
+[announce@tensorflow.org](https://groups.google.com/a/tensorflow.org/forum/#!forum/announce).
 
-# Discriminator class
-class Discriminator(object):
-    def __init__(self):
-        self.n_f = 64
-        self.n_k = 4
+## Installation
 
-        # input image is [-1, 28, 28, 1]
-        self.conv1 = tf.layers.Conv2D(self.n_f, self.n_k, 2, 'same')
-        self.conv2 = tf.layers.Conv2D(self.n_f * 2, self.n_k, 2, 'same')
-        self.bn2 = tf.layers.BatchNormalization()
-        self.conv3 = tf.layers.Conv2D(self.n_f * 4, self.n_k, 2, 'same')
-        self.bn3 = tf.layers.BatchNormalization()
-        self.flatten4 = tf.layers.Flatten()
-        self.dense4 = tf.layers.Dense(1)
-        return
-
-    def forward(self, inputs, is_trainig):
-        with tf.variable_scope('discriminator'):
-            x = tf.nn.leaky_relu(self.conv1(inputs))
-            x = tf.nn.leaky_relu(self.bn2(self.conv2(x), training=is_trainig))
-            x = tf.nn.leaky_relu(self.bn3(self.conv3(x), training=is_trainig))
-            x = self.dense4(self.flatten4(x))
-        return x
+To install the current release for CPU-only:
 
 ```
-
-### Define loss function
-* Note: All examples that I read had single loss function, but in this case(GAN) didn't worked. 
-```python
-# shorten sigmoid cross entropy loss calculation
-def celoss_ones(logits, smooth=0.0):
-    return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits,
-                                                                  labels=tf.ones_like(logits)*(1.0 - smooth)))
-
-
-def celoss_zeros(logits, smooth=0.0):
-    return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits,
-                                                                  labels=tf.zeros_like(logits)*(1.0 - smooth)))
-
-
-# discriminator loss function
-def d_loss_fn(generator, discriminator, input_noise, real_image, is_trainig):
-    fake_image = generator.forward(input_noise, is_trainig)
-    d_real_logits = discriminator.forward(real_image, is_trainig)
-    d_fake_logits = discriminator.forward(fake_image, is_trainig)
-
-    d_loss_real = celoss_ones(d_real_logits, smooth=0.1)
-    d_loss_fake = celoss_zeros(d_fake_logits, smooth=0.0)
-    loss = d_loss_real + d_loss_fake
-    return loss
-
-
-# generator loss function
-def g_loss_fn(generator, discriminator, input_noise, is_trainig):
-    fake_image = generator.forward(input_noise, is_trainig)
-    d_fake_logits = discriminator.forward(fake_image, is_trainig)
-    loss = celoss_ones(d_fake_logits, smooth=0.1)
-    return loss
+pip install tensorflow
 ```
 
-### Training
-* Note: in tensorflow eager mode, you must specify to use GPU. Otherwise it uses CPU. 
-```python
-def train(device):
-    # hyper parameters
-    z_dim = 100
-    epochs = 30
-    batch_size = 128
-    learning_rate = 0.0002
-    beta1 = 0.5
-    is_training = True
+Use the GPU package for CUDA-enabled GPU cards:
 
-    # for validation purpose
-    assets_dir = './assets'
-    if not os.path.isdir(assets_dir):
-        os.makedirs(assets_dir)
-    val_block_size = 10
-    val_size = val_block_size * val_block_size
-
-    # load mnist data
-    mnist = input_data.read_data_sets('mnist-data', one_hot=True)
-    inputs_shape = [-1, 28, 28, 1]
-
-    # wrap with available device
-    with tf.device(device):
-        # create generator & discriminator
-        generator = Generator()
-        discriminator = Discriminator()
-
-        # prepare optimizer
-        d_val_grad = tfe.implicit_value_and_gradients(d_loss_fn)
-        g_val_grad = tfe.implicit_value_and_gradients(g_loss_fn)
-        d_optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=beta1)
-        g_optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=beta1)
-
-        # for loss savings
-        d_loss_at_steps = []
-        g_loss_at_steps = []
-
-        for e in range(epochs):
-            t = trange(mnist.train.num_examples // batch_size)
-            # t = trange(1)
-            for ii in t:
-                t.set_description("{:04d}/{:04d}: ".format(e + 1, epochs))
-
-                # no need labels
-                batch_x, _ = mnist.train.next_batch(batch_size)
-
-                # rescale images to -1 ~ 1
-                batch_x = tf.reshape(batch_x, shape=inputs_shape)
-                batch_x = batch_x * 2.0 - 1.0
-
-                # Sample random noise for G
-                batch_z = tf.random_uniform(shape=[batch_size, z_dim], minval=-1., maxval=1.)
-
-                # get loss related values & (gradients & vars)
-                d_loss_val, d_grad_vars = d_val_grad(generator, discriminator, batch_z, batch_x, is_training)
-                g_loss_val, g_grad_vars = g_val_grad(generator, discriminator, batch_z, is_training)
-
-                # get appropriate gradients & variable pairs
-                d_vars = [(grad, var) for (grad, var) in d_grad_vars if var.name.startswith('discriminator')]
-                g_vars = [(grad, var) for (grad, var) in g_grad_vars if var.name.startswith('generator')]
-
-                # save loss
-                d_loss_at_steps.append(np.asscalar(d_loss_val.numpy()))
-                g_loss_at_steps.append(np.asscalar(g_loss_val.numpy()))
-
-                # apply gradient via pre-defined optimizer
-                d_optimizer.apply_gradients(d_vars)
-                g_optimizer.apply_gradients(g_vars)
-
-                # display current losses
-                if ii % 5 == 0:
-                    t.set_postfix(d_loss=d_loss_val.numpy(), g_loss=g_loss_val.numpy())
-
-            # validation results at every epoch
-            val_z = np.random.uniform(-1, 1, size=(val_size, z_dim))
-            fake_image = generator.forward(val_z, is_trainig=False)
-            image_fn = os.path.join(assets_dir, 'gan-val-e{:03d}.png'.format(e + 1))
-            save_result(fake_image.numpy(), val_block_size, image_fn, color_mode='L')
-    return
+```
+pip install tensorflow-gpu
 ```
 
-### Main function to start training
-```python
-def main():
-    # Enable eager execution
-    tfe.enable_eager_execution()
+*See [Installing TensorFlow](https://www.tensorflow.org/install) for detailed
+instructions, and how to build from source.*
 
-    # check gpu availability
-    device = '/gpu:0'
-    if tfe.num_gpus() <= 0:
-        device = '/cpu:0'
+People who are a little more adventurous can also try our nightly binaries:
 
-    train(device)
-    return
+**Nightly pip packages**
+* We are pleased to announce that TensorFlow now offers nightly pip packages
+under the [tf-nightly](https://pypi.python.org/pypi/tf-nightly) and
+[tf-nightly-gpu](https://pypi.python.org/pypi/tf-nightly-gpu) project on pypi.
+Simply run `pip install tf-nightly` or `pip install tf-nightly-gpu` in a clean
+environment to install the nightly TensorFlow build. We support CPU and GPU
+packages on Linux, Mac, and Windows.
+
+
+#### *Try your first TensorFlow program*
+```shell
+$ python
 ```
+```python
+>>> import tensorflow as tf
+>>> tf.enable_eager_execution()
+>>> tf.add(1, 2)
+3
+>>> hello = tf.constant('Hello, TensorFlow!')
+>>> hello.numpy()
+'Hello, TensorFlow!'
+```
+Learn more examples about how to do specific tasks in TensorFlow at the [tutorials page of tensorflow.org](https://www.tensorflow.org/tutorials/).
+
+## Contribution guidelines
+
+**If you want to contribute to TensorFlow, be sure to review the [contribution
+guidelines](CONTRIBUTING.md). This project adheres to TensorFlow's
+[code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to
+uphold this code.**
+
+**We use [GitHub issues](https://github.com/tensorflow/tensorflow/issues) for
+tracking requests and bugs, so please see
+[TensorFlow Discuss](https://groups.google.com/a/tensorflow.org/forum/#!forum/discuss)
+for general questions and discussion, and please direct specific questions to
+[Stack Overflow](https://stackoverflow.com/questions/tagged/tensorflow).**
+
+The TensorFlow project strives to abide by generally accepted best practices in open-source software development:
+
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1486/badge)](https://bestpractices.coreinfrastructure.org/projects/1486)
+
+
+## Continuous build status
+
+### Official Builds
+
+| Build Type      | Status | Artifacts |
+| ---             | ---    | ---       |
+| **Linux CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/ubuntu-cc.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/ubuntu-cc.html) | [pypi](https://pypi.org/project/tf-nightly/) |
+| **Linux GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/ubuntu-gpu-py3.html) | [pypi](https://pypi.org/project/tf-nightly-gpu/) |
+| **Linux XLA**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/ubuntu-xla.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/ubuntu-xla.html) | TBA |
+| **MacOS**       | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/macos-py2-cc.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/macos-py2-cc.html) | [pypi](https://pypi.org/project/tf-nightly/) |
+| **Windows CPU** | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/windows-cpu.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/windows-cpu.html) | [pypi](https://pypi.org/project/tf-nightly/) |
+| **Windows GPU** | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/windows-gpu.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/windows-gpu.html) | [pypi](https://pypi.org/project/tf-nightly-gpu/) |
+| **Android**     | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/android.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/android.html) | [![Download](https://api.bintray.com/packages/google/tensorflow/tensorflow/images/download.svg)](https://bintray.com/google/tensorflow/tensorflow/_latestVersion) |
+| **Raspberry Pi 0 and 1** | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/rpi01-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/rpi01-py2.html) [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/rpi01-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/rpi01-py3.html) | [Py2](https://storage.googleapis.com/tensorflow-nightly/tensorflow-1.10.0-cp27-none-linux_armv6l.whl) [Py3](https://storage.googleapis.com/tensorflow-nightly/tensorflow-1.10.0-cp34-none-linux_armv6l.whl) |
+| **Raspberry Pi 2 and 3** | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/rpi23-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/rpi23-py2.html) [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/rpi23-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/rpi23-py3.html) | [Py2](https://storage.googleapis.com/tensorflow-nightly/tensorflow-1.10.0-cp27-none-linux_armv7l.whl) [Py3](https://storage.googleapis.com/tensorflow-nightly/tensorflow-1.10.0-cp34-none-linux_armv7l.whl) |
+
+
+### Community Supported Builds
+
+Build Type                                                                                                                                                                                      | Status                                                                                                                                                                                   | Artifacts
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------
+**IBM s390x**                                                                                                                                                                                   | [![Build Status](http://ibmz-ci.osuosl.org/job/TensorFlow_IBMZ_CI/badge/icon)](http://ibmz-ci.osuosl.org/job/TensorFlow_IBMZ_CI/)                                                        | TBA
+**Linux ppc64le CPU** Nightly                                                                                                                                                                   | [![Build Status](https://powerci.osuosl.org/job/TensorFlow_PPC64LE_CPU_Build/badge/icon)](https://powerci.osuosl.org/job/TensorFlow_PPC64LE_CPU_Build/)                                  | [Nightly](https://powerci.osuosl.org/job/TensorFlow_PPC64LE_CPU_Nightly_Artifact/)
+**Linux ppc64le CPU** Stable Release                                                                                                                                                            | [![Build Status](https://powerci.osuosl.org/job/TensorFlow_PPC64LE_CPU_Release_Build/badge/icon)](https://powerci.osuosl.org/job/TensorFlow_PPC64LE_CPU_Release_Build/)                  | [Release](https://powerci.osuosl.org/job/TensorFlow_PPC64LE_CPU_Release_Build/)
+**Linux ppc64le GPU** Nightly                                                                                                                                                                   | [![Build Status](https://powerci.osuosl.org/job/TensorFlow_PPC64LE_GPU_Build/badge/icon)](https://powerci.osuosl.org/job/TensorFlow_PPC64LE_GPU_Build/)                                  | [Nightly](https://powerci.osuosl.org/job/TensorFlow_PPC64LE_GPU_Nightly_Artifact/)
+**Linux ppc64le GPU** Stable Release                                                                                                                                                            | [![Build Status](https://powerci.osuosl.org/job/TensorFlow_PPC64LE_GPU_Release_Build/badge/icon)](https://powerci.osuosl.org/job/TensorFlow_PPC64LE_GPU_Release_Build/)                  | [Release](https://powerci.osuosl.org/job/TensorFlow_PPC64LE_GPU_Release_Build/)
+**Linux CPU with Intel® MKL-DNN** Nightly                                                                                                                                                       | [![Build Status](https://tensorflow-ci.intel.com/job/tensorflow-mkl-linux-cpu/badge/icon)](https://tensorflow-ci.intel.com/job/tensorflow-mkl-linux-cpu/)                                | [Nightly](https://tensorflow-ci.intel.com/job/tensorflow-mkl-build-whl-nightly/)
+**Linux CPU with Intel® MKL-DNN** Python 2.7<br> **Linux CPU with Intel® MKL-DNN** Python 3.4<br> **Linux CPU with Intel® MKL-DNN** Python 3.5<br> **Linux CPU with Intel® MKL-DNN** Python 3.6 | [![Build Status](https://tensorflow-ci.intel.com/job/tensorflow-mkl-build-release-whl/badge/icon)](https://tensorflow-ci.intel.com/job/tensorflow-mkl-build-release-whl/lastStableBuild) | [1.11.0 py2.7](https://storage.googleapis.com/intel-optimized-tensorflow/tensorflow-1.11.0-cp27-cp27mu-linux_x86_64.whl)<br>[1.11.0 py3.4](https://storage.googleapis.com/intel-optimized-tensorflow/tensorflow-1.11.0-cp34-cp34m-linux_x86_64.whl)<br>[1.11.0 py3.5](https://storage.googleapis.com/intel-optimized-tensorflow/tensorflow-1.11.0-cp35-cp35m-linux_x86_64.whl)<br>[1.11.0 py3.6](https://storage.googleapis.com/intel-optimized-tensorflow/tensorflow-1.11.0-cp36-cp36m-linux_x86_64.whl)
+
+## For more information
+
+*   [TensorFlow Website](https://www.tensorflow.org)
+*   [TensorFlow Tutorials](https://www.tensorflow.org/tutorials/)
+*   [TensorFlow Model Zoo](https://github.com/tensorflow/models)
+*   [TensorFlow Twitter](https://twitter.com/tensorflow)
+*   [TensorFlow Blog](https://medium.com/tensorflow)
+*   [TensorFlow Course at Stanford](https://web.stanford.edu/class/cs20si)
+*   [TensorFlow Roadmap](https://www.tensorflow.org/community/roadmap)
+*   [TensorFlow White Papers](https://www.tensorflow.org/about/bib)
+*   [TensorFlow YouTube Channel](https://www.youtube.com/channel/UC0rqucBdTuFTjJiefW5t-IQ)
+*   [TensorFlow Visualization Toolkit](https://github.com/tensorflow/tensorboard)
+
+Learn more about the TensorFlow community at the [community page of tensorflow.org](https://www.tensorflow.org/community) for a few ways to participate.
+
+## License
+
+[Apache License 2.0](LICENSE)
