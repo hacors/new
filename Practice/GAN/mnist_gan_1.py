@@ -94,7 +94,7 @@ try:
             g_opti.apply_gradients(zip(g_gradiens, gener.variables))
         if(step % 10 == 0):
             showimages(fake_images)
-            print('d_loss:', d_loss, 'g_loss:', g_loss)
+            print('d_loss:', d_loss.numpy(), 'g_loss:', g_loss.numpy())
 except tf.errors.OutOfRangeError:
     print('iters end')
 finally:

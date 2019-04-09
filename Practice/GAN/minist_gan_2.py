@@ -22,26 +22,6 @@ random_datas_iter = tf.data.Dataset.from_tensor_slices(random_datas_casted).shuf
 '''
 
 
-def discriminator_model(input_shape=(28, 28, 1), conv_list=[16, 16], dens_list=[128, 1]):
-    input_data = keras.layers.Input(shape=input_shape)
-    digits = input_data
-    for dim in conv_list:
-        digits = keras.layers.Conv2D(
-            dim, (5, 5), padding='same', kernel_initializer=ker_init, bias_initializer=bia_init)(digits)
-        digits = keras.layers.BatchNormalization()(digits)
-        digits = keras.layers.LeakyReLU()(digits)
-        digits = keras.layers.MaxPool2D()(digits)
-    digits = keras.layers.Flatten()(digits)
-    for dim in dens_list:
-        digits = keras.layers.Dense(
-            dim, kernel_initializer=ker_init, bias_initializer=bia_init)(digits)
-        digits = keras.layers.BatchNormalization()(digits)
-        digits = keras.layers.LeakyReLU()(digits)
-    prediction = keras.layers.Activation(activation='sigmoid')(digits)
-    model = keras.Model(inputs=input_data, outputs=prediction)
-    return model
-
-
 def generator_model(input_shape=(10, 1), conv_list=[16, 16, 1], dens_list=[128, 784]):
     input_data = keras.layers.Input(shape=input_shape)
     digits = input_data
@@ -55,6 +35,26 @@ def generator_model(input_shape=(10, 1), conv_list=[16, 16, 1], dens_list=[128, 
     for dim in conv_list:
         digits = keras.layers.Conv2D(
             dim, (5, 5), padding='same', kernel_initializer=ker_init, bias_initializer=bia_init)(digits)
+        digits = keras.layers.BatchNormalization()(digits)
+        digits = keras.layers.LeakyReLU()(digits)
+    prediction = keras.layers.Activation(activation='sigmoid')(digits)
+    model = keras.Model(inputs=input_data, outputs=prediction)
+    return model
+
+
+def discriminator_model(input_shape=(28, 28, 1), conv_list=[16, 16], dens_list=[128, 1]):
+    input_data = keras.layers.Input(shape=input_shape)
+    digits = input_data
+    for dim in conv_list:
+        digits = keras.layers.Conv2D(
+            dim, (5, 5), padding='same', kernel_initializer=ker_init, bias_initializer=bia_init)(digits)
+        digits = keras.layers.BatchNormalization()(digits)
+        digits = keras.layers.LeakyReLU()(digits)
+        digits = keras.layers.MaxPool2D()(digits)
+    digits = keras.layers.Flatten()(digits)
+    for dim in dens_list:
+        digits = keras.layers.Dense(
+            dim, kernel_initializer=ker_init, bias_initializer=bia_init)(digits)
         digits = keras.layers.BatchNormalization()(digits)
         digits = keras.layers.LeakyReLU()(digits)
     prediction = keras.layers.Activation(activation='sigmoid')(digits)
@@ -76,16 +76,12 @@ def train_step(real_images, batch_size, z_dim, generator, discriminator, generat
     noise = tf.random_normal([batch_size, z_dim])
     with tf.GradientTape() as g_tape, tf.GradientTape() as d_tape:
         fake_images = generator(noise, training=True)
-
         real_results = discriminator(real_images, training=True)
         fake_results = discriminator(fake_images, training=True)
-
         g_loss = generator_loss(fake_results)
         d_loss = discriminator_loss(real_results, fake_results)
-
     d_gradiens = g_tape.gradient(g_loss, generator.variables)
     g_gradiens = d_tape.gradient(d_loss, discriminator.variables)
-
     generator_opti.apply_gradients(zip(d_gradiens, generator.variables))
     discriminator_opti.apply_gradients(zip(g_gradiens, discriminator.variables))
 
