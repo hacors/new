@@ -15,8 +15,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 train_images_casted = tf.cast(train_images_orig[..., tf.newaxis]/255, tf.float32)
 datas_scale = int(train_images_casted.shape[0].value)
 random_datas_casted = tf.random_normal([datas_scale, 10], dtype=tf.float32)
-train_images_iter = tf.data.Dataset.from_tensor_slices(train_images_casted).shuffle(1000).batch(10).make_one_shot_iterator()
-random_datas_iter = tf.data.Dataset.from_tensor_slices(random_datas_casted).shuffle(1000).batch(10).make_one_shot_iterator()
+train_images_iter = tf.data.Dataset.from_tensor_slices(train_images_casted).shuffle(1000).repeat(20).batch(100).make_one_shot_iterator()
+random_datas_iter = tf.data.Dataset.from_tensor_slices(random_datas_casted).shuffle(1000).repeat(20).batch(100).make_one_shot_iterator()
 
 '''
 def discriminator():
@@ -131,13 +131,15 @@ try:
             real_results = discri(real_images, training=True)
             d_loss = tf.reduce_mean(tf.losses.log_loss(tf.ones_like(real_results), real_results)) + tf.reduce_mean(tf.losses.log_loss(tf.zeros_like(fake_results), fake_results))
             g_loss = tf.reduce_mean(tf.losses.log_loss(tf.ones_like(fake_results), fake_results))
+
             d_gradiens = d_tape.gradient(d_loss, discri.variables)
             g_gradiens = g_tape.gradient(g_loss, gener.variables)
 
             d_opti.apply_gradients(zip(d_gradiens, discri.variables))
             g_opti.apply_gradients(zip(g_gradiens, gener.variables))
-        if(step % 10 == 0):
+        if(step % 50 == 0):
             showimages(fake_images)
+            print('d_loss:', d_loss, 'g_loss:', g_loss)
 except tf.errors.OutOfRangeError:
     print('iters end')
 finally:
