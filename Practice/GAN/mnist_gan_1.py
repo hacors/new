@@ -15,8 +15,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 train_images_casted = tf.cast(train_images_orig[..., tf.newaxis]/255, tf.float32)
 datas_scale = int(train_images_casted.shape[0].value)
 random_datas_casted = tf.random_normal([datas_scale, 10], dtype=tf.float32)
-train_images_iter = tf.data.Dataset.from_tensor_slices(train_images_casted).shuffle(1000).repeat(20).batch(100).make_one_shot_iterator()
-random_datas_iter = tf.data.Dataset.from_tensor_slices(random_datas_casted).shuffle(1000).repeat(20).batch(100).make_one_shot_iterator()
+train_images_iter = tf.data.Dataset.from_tensor_slices(train_images_casted).shuffle(1000).repeat(20).batch(10).make_one_shot_iterator()
+random_datas_iter = tf.data.Dataset.from_tensor_slices(random_datas_casted).shuffle(1000).repeat(20).batch(10).make_one_shot_iterator()
 
 '''
 def discriminator():
@@ -117,8 +117,8 @@ discri = discriminator()
 gener = generator()
 real_images_iter = train_images_iter
 fake_vectors_iter = random_datas_iter
-d_opti = tf.train.AdamOptimizer(learning_rate=0.0003)
-g_opti = tf.train.AdamOptimizer(learning_rate=0.0003)
+d_opti = tf.train.AdamOptimizer(learning_rate=0.003)
+g_opti = tf.train.AdamOptimizer(learning_rate=0.003)
 step = 0
 try:
     while True:
@@ -137,7 +137,7 @@ try:
 
             d_opti.apply_gradients(zip(d_gradiens, discri.variables))
             g_opti.apply_gradients(zip(g_gradiens, gener.variables))
-        if(step % 50 == 0):
+        if(step % 10 == 0):
             showimages(fake_images)
             print('d_loss:', d_loss, 'g_loss:', g_loss)
 except tf.errors.OutOfRangeError:

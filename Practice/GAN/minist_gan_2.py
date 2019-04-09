@@ -72,10 +72,22 @@ def generator_loss(fake_results):
     return tf.losses.log_loss(tf.ones_like(fake_results), fake_results)
 
 
-def train_step(real_images, batch_size, z_dim, generator, discriminator, generator_optimizer, discriminator_optimizer):
-    noise=tf.random_normal([batch_size,z_dim])
-    with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-        fake_images=gen
+def train_step(real_images, batch_size, z_dim, generator, discriminator, generator_opti, discriminator_opti):
+    noise = tf.random_normal([batch_size, z_dim])
+    with tf.GradientTape() as g_tape, tf.GradientTape() as d_tape:
+        fake_images = generator(noise, training=True)
+
+        real_results = discriminator(real_images, training=True)
+        fake_results = discriminator(fake_images, training=True)
+
+        g_loss = generator_loss(fake_results)
+        d_loss = discriminator_loss(real_results, fake_results)
+
+    d_gradiens = g_tape.gradient(g_loss, generator.variables)
+    g_gradiens = d_tape.gradient(d_loss, discriminator.variables)
+
+    generator_opti.apply_gradients(zip(d_gradiens, generator.variables))
+    discriminator_opti.apply_gradients(zip(g_gradiens, discriminator.variables))
 
 
 def showimages(images):
