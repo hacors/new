@@ -18,25 +18,8 @@ random_datas_casted = tf.random_normal([datas_scale, 10], dtype=tf.float32)
 train_images_iter = tf.data.Dataset.from_tensor_slices(train_images_casted).shuffle(1000).repeat(20).batch(10).make_one_shot_iterator()
 random_datas_iter = tf.data.Dataset.from_tensor_slices(random_datas_casted).shuffle(1000).repeat(20).batch(10).make_one_shot_iterator()
 
-'''
-def discriminator():
-    model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same'))
-    model.add(tf.keras.layers.LeakyReLU())
-    model.add(tf.keras.layers.Dropout(0.3))
 
-    model.add(tf.keras.layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same'))
-    model.add(tf.keras.layers.LeakyReLU())
-    model.add(tf.keras.layers.Dropout(0.3))
-
-    model.add(tf.keras.layers.Flatten())
-    model.add(tf.keras.layers.Dense(1))
-
-    return model
-'''
-
-
-def discriminator(input_shape=(28, 28, 1), conv_list=[16, 16], dens_list=[128, 1]):
+def discriminator(input_shape=(28, 28, 1), conv_list=[], dens_list=[128, 1]):
     input_data = keras.layers.Input(shape=input_shape)
     digits = input_data
     for dim in conv_list:
@@ -56,35 +39,7 @@ def discriminator(input_shape=(28, 28, 1), conv_list=[16, 16], dens_list=[128, 1
     return(model)
 
 
-'''
-def generator(z_dim=10):
-    model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Dense(7 * 7 * 256, use_bias=False, input_shape=(z_dim,)))
-    model.add(tf.keras.layers.BatchNormalization())
-    model.add(tf.keras.layers.LeakyReLU())
-
-    model.add(tf.keras.layers.Reshape((7, 7, 256)))
-    assert model.output_shape == (None, 7, 7, 256)  # Note: None is the batch size
-
-    model.add(tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding='same', use_bias=False))
-    assert model.output_shape == (None, 7, 7, 128)
-    model.add(tf.keras.layers.BatchNormalization())
-    model.add(tf.keras.layers.LeakyReLU())
-
-    model.add(tf.keras.layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
-    assert model.output_shape == (None, 14, 14, 64)
-    model.add(tf.keras.layers.BatchNormalization())
-    model.add(tf.keras.layers.LeakyReLU())
-
-    model.add(
-        tf.keras.layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
-    assert model.output_shape == (None, 28, 28, 1)
-
-    return model
-'''
-
-
-def generator(input_shape=(10, 1), conv_list=[16, 16, 1], dens_list=[128, 784]):
+def generator(input_shape=(10, 1), conv_list=[], dens_list=[128, 784]):
     input_data = keras.layers.Input(shape=input_shape)
     digits = input_data
     digits = keras.layers.Flatten()(digits)

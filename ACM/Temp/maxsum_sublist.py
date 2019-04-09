@@ -21,7 +21,7 @@ for temp in range(2, len(mylist)):
 print(result_max*-1)
 '''
 import numpy as np
-datas = [-2, 2, -7, -6, 8, 10, 5, -1, 7, 5, -1, 10, -4, -5, 3, 5, 6, 3, -3, -1, 5, -2]
+datas = [2, -2, 7, 6, -8, -10, -5]
 k_num = 3
 
 datas.insert(0, 0)
