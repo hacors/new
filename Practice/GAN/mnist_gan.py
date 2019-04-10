@@ -6,10 +6,13 @@ from matplotlib import pyplot as plt
 from tensorflow import keras
 
 tf.enable_eager_execution()
+
 ker_init = tf.initializers.random_normal(mean=0.0, stddev=0.1)
 bia_init = tf.initializers.constant(value=0.1)
-batch_size = 10
-z_dim = 10
+
+BATCH_SIZE = 256
+NOISE_DIM = 100
+EPOCH = 50
 print('version: tensorflow %s,keras %s\n' % (tf.VERSION, tf.keras.__version__))
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 '''
