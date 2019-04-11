@@ -17,6 +17,7 @@ EPOCH = 60
 IMAGES_NUM = 16
 print('version: tensorflow %s,keras %s\n' % (tf.VERSION, tf.keras.__version__))
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 
 def get_datas():
