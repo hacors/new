@@ -1,4 +1,5 @@
 import os
+import time
 
 import numpy as np
 import tensorflow as tf
@@ -10,22 +11,24 @@ tf.enable_eager_execution()
 ker_init = tf.initializers.random_normal(mean=0.0, stddev=0.1)
 bia_init = tf.initializers.constant(value=0.1)
 
+SHUFFLE_SIZE = 1000
 BATCH_SIZE = 256
-NOISE_DIM = 100
-EPOCH = 50
+INPUT_DIM = 100
+EPOCH = 60
+IMAGES_NUM = 16
 print('version: tensorflow %s,keras %s\n' % (tf.VERSION, tf.keras.__version__))
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-'''
-(train_images_orig, train_labels_orig), (test_images_orig, test_labels_orig) = tf.keras.datasets.mnist.load_data()
-train_images_casted = tf.cast(train_images_orig[..., tf.newaxis]/255, tf.float32)
-datas_scale = int(train_images_casted.shape[0].value)
-random_datas_casted = tf.random_normal([datas_scale, 10], dtype=tf.float32)
-train_images_iter = tf.data.Dataset.from_tensor_slices(train_images_casted).shuffle(1000).batch(10).make_one_shot_iterator()
-random_datas_iter = tf.data.Dataset.from_tensor_slices(random_datas_casted).shuffle(1000).batch(10).make_one_shot_iterator()
-'''
 
 
-def generator_model(input_shape=(10, 1), conv_list=[16, 16, 1], dens_list=[128, 784]):
+def get_datas():
+    (train_images_orig, train_labels_orig), (test_images_orig, test_labels_orig) = tf.keras.datasets.mnist.load_data()
+    train_images_reshaped = train_images_orig[..., tf.newaxis]
+    train_images_casted = tf.cast((train_images_reshaped-127.5)/127.5, tf.float32)
+    train_images_batched = tf.data.Dataset.from_tensor_slices(train_images_casted).shuffle(SHUFFLE_SIZE).batch(BATCH_SIZE)
+    return train_images_batched
+
+
+def generator(input_shape=(INPUT_DIM, 1), conv_list=[16, 16, 1], dens_list=[128, 784]):
     input_data = keras.layers.Input(shape=input_shape)
     digits = input_data
     digits = keras.layers.Flatten()(digits)
@@ -45,7 +48,7 @@ def generator_model(input_shape=(10, 1), conv_list=[16, 16, 1], dens_list=[128, 
     return model
 
 
-def discriminator_model(input_shape=(28, 28, 1), conv_list=[16, 16], dens_list=[128, 1]):
+def discriminator(input_shape=(28, 28, 1), conv_list=[16, 16], dens_list=[128, 1]):
     input_data = keras.layers.Input(shape=input_shape)
     digits = input_data
     for dim in conv_list:
@@ -89,13 +92,34 @@ def train_step(real_images, batch_size, z_dim, generator, discriminator, generat
     discriminator_opti.apply_gradients(zip(g_gradiens, discriminator.variables))
 
 
-def showimages(images):
-    datas = images.numpy()*255
-    plt.ion()
-    data = datas[0]
-    data = data.reshape((28, 28)).astype(np.int)
-    plt.imshow(data, cmap='Greys')
-    plt.pause(0.1)
+def save_images(model, epoch, test_input):
+    predictions = model(test_input, training=False)
+    for i in range(predictions.shape[0]):
+        plt.subplot(4, 4, i+1)
+        plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
+        plt.axis('off')
+    plt.savefig('image_at_epoch_{}.png'.format(epoch))
+
+
+def train():
+    gener = generator()
+    discri = discriminator()
+    g_opti = tf.train.AdamOptimizer(learning_rate=1e-4)
+    d_opti = tf.train.AdamOptimizer(learning_rate=1e-4)
+
+    checkpoint_dir = 'Practice/GAN/checkpoint'
+    checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
+    checkpoint = tf.train.Checkpoint(generator_optimizer=g_opti, discriminator_optimizer=d_opti, generator=gener, zdiscriminator=discri)
+    vectors_show_images = tf.random_normal([IMAGES_NUM, INPUT_DIM])
+
+    datas = get_datas()
+    for epoch in range(EPOCH):
+        start = time.time()
+        for data in datas:
+            train_step(data, BATCH_SIZE, INPUT_DIM, gener, discri, g_opti, d_opti)
+        save_images(gener, epoch, vectors_show_images)
+        if epoch % 20 == 0:
+            checkpoint.save(file_prefix=checkpoint_prefix)
 
 
 '''
@@ -103,8 +127,7 @@ discri = discriminator()
 gener = generator()
 real_images_iter = train_images_iter
 fake_vectors_iter = random_datas_iter
-d_opti = tf.train.AdamOptimizer(learning_rate=0.0003)
-g_opti = tf.train.AdamOptimizer(learning_rate=0.0003)
+
 step = 0
 try:
     while True:
