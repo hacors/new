@@ -1,1 +1,3 @@
-print(1)
+a = open('Temp/txt')
+b = a.readline()
+print(b)
