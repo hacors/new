@@ -1,7 +1,6 @@
 import os
 import time
 
-import numpy as np
 import tensorflow as tf
 from matplotlib import pyplot as plt
 from tensorflow import keras
@@ -98,7 +97,7 @@ def save_images(model, epoch, test_input):
         plt.subplot(4, 4, i+1)
         plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
         plt.axis('off')
-    plt.savefig('image_at_epoch_{}.png'.format(epoch))
+    plt.savefig('Practice/GAN/graphs/image_at_epoch_{}.png'.format(epoch))
 
 
 def train():
@@ -118,44 +117,9 @@ def train():
         for data in datas:
             train_step(data, BATCH_SIZE, INPUT_DIM, gener, discri, g_opti, d_opti)
         save_images(gener, epoch, vectors_show_images)
+        print('Time taken for epoch {} is {} sec'.format(epoch, time.time()-start))
         if epoch % 20 == 0:
             checkpoint.save(file_prefix=checkpoint_prefix)
 
 
-'''
-discri = discriminator()
-gener = generator()
-real_images_iter = train_images_iter
-fake_vectors_iter = random_datas_iter
-
-step = 0
-try:
-    while True:
-        step += 1
-        vectors = fake_vectors_iter.get_next()
-        real_images = real_images_iter.get_next()
-        with tf.GradientTape() as d_tape:
-            d_fake_images = gener(vectors)
-            d_fake_results = discri(d_fake_images)
-            d_real_results = discri(real_images)
-            d_all_results = tf.concat([d_fake_results, d_real_results], axis=0)
-            d_all_labels = tf.concat([tf.zeros_like(d_fake_results), tf.ones_like(d_real_results)], axis=0)
-            d_loss = tf.reduce_mean(tf.losses.log_loss(d_all_labels, d_all_results))
-            print('d_loss:', d_loss.numpy(), end='  ')
-            d_grads = d_tape.gradient(d_loss, discri.variables)
-            d_opti.apply_gradients(zip(d_grads, discri.variables))
-        if(step % 10 == 0):
-            showimages(d_fake_images)
-
-        with tf.GradientTape() as g_tape:
-            g_fake_images = gener(vectors)
-            g_fake_results = discri(g_fake_images)
-            g_loss = tf.reduce_mean(tf.losses.log_loss(tf.ones_like(g_fake_results), g_fake_results))
-            print('g_loss:', g_loss.numpy())
-            g_grads = g_tape.gradient(g_loss, gener.variables)
-            g_opti.apply_gradients(zip(g_grads, gener.variables))
-except tf.errors.OutOfRangeError:
-    print('iters end')
-finally:
-    print('train stop')
-'''
+train()
