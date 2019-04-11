@@ -1,3 +1,3 @@
-a = open('Temp/txt')
+a = open('./Temp/txt')
 b = a.readline()
 print(b)
