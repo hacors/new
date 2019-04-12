@@ -10,7 +10,7 @@
 using namespace std;
 class Solution
 {
-  public:
+public:
 	int minRefuelStops(int target, int startFuel, vector<vector<int>> &stations)
 	{
 		stations.push_back({target, 0});
@@ -39,13 +39,26 @@ class Solution
 				count = count - 1;
 		}
 		return (count);
-		cout << count;
+	}
+	int maxProfit(vector<int> &prices)
+	{
+		int buy_1 = -__INT_MAX__ - 1, buy_2 = -__INT_MAX__ - 1;
+		int sell_1 = 0, sell_2 = 0;
+		for (int i = 0; i < prices.size(); i++)
+		{
+			buy_1 = max(buy_1, -prices[i]);
+			sell_1 = max(sell_1, prices[i] + buy_1);
+			buy_2 = max(buy_2, sell_1 - prices[i]);
+			sell_2 = max(sell_2, prices[i] + buy_2);
+		}
+		return sell_2;
 	}
 };
 int main()
 {
 	Solution mysolu;
-	vector<vector<int>> temp = {{10, 16}, {20, 30}, {30, 30}, {60, 40}};
-	mysolu.minRefuelStops(100, 10, temp);
+	vector<int> temp = {3, 3, 5, 0, 0, 3, 1, 4};
+	int result = mysolu.maxProfit(temp);
+	cout << result << 123;
 	return 0;
 }
