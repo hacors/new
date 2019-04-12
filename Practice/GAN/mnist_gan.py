@@ -13,7 +13,7 @@ bia_init = tf.initializers.constant(value=0.1)
 SHUFFLE_SIZE = 1000
 BATCH_SIZE = 256
 INPUT_DIM = 100
-EPOCH = 60
+EPOCH = 80
 IMAGES_NUM = 16
 print('version: tensorflow %s,keras %s\n' % (tf.VERSION, tf.keras.__version__))
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -28,6 +28,40 @@ def get_datas():
     return train_images_batched
 
 
+def discriminator():
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same'))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Dropout(0.3))
+    model.add(tf.keras.layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same'))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Dropout(0.3))
+    model.add(tf.keras.layers.Flatten())
+    model.add(tf.keras.layers.Dense(1))
+    return model
+
+
+def generator():
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Dense(7*7*256, use_bias=False, input_shape=(100,)))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Reshape((7, 7, 256)))
+    assert model.output_shape == (None, 7, 7, 256)  # Note: None is the batch size
+    model.add(tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding='same', use_bias=False))
+    assert model.output_shape == (None, 7, 7, 128)
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+    assert model.output_shape == (None, 14, 14, 64)
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
+    assert model.output_shape == (None, 28, 28, 1)
+    return model
+
+
+'''
 def generator(input_shape=(INPUT_DIM, 1), conv_list=[16, 16, 1], dens_list=[128, 784]):
     input_data = keras.layers.Input(shape=input_shape)
     digits = input_data
@@ -46,8 +80,6 @@ def generator(input_shape=(INPUT_DIM, 1), conv_list=[16, 16, 1], dens_list=[128,
     prediction = keras.layers.Activation(activation='sigmoid')(digits)
     model = keras.Model(inputs=input_data, outputs=prediction)
     return model
-
-
 def discriminator(input_shape=(28, 28, 1), conv_list=[16, 16], dens_list=[128, 1]):
     input_data = keras.layers.Input(shape=input_shape)
     digits = input_data
@@ -66,16 +98,17 @@ def discriminator(input_shape=(28, 28, 1), conv_list=[16, 16], dens_list=[128, 1
     prediction = keras.layers.Activation(activation='sigmoid')(digits)
     model = keras.Model(inputs=input_data, outputs=prediction)
     return model
+'''
 
 
 def discriminator_loss(real_results, fake_results):
-    real_loss = tf.losses.log_loss(tf.ones_like(real_results), real_results)
-    fake_loss = tf.losses.log_loss(tf.zeros_like(fake_results), fake_results)
+    real_loss = tf.losses.sigmoid_cross_entropy(tf.ones_like(real_results), real_results)
+    fake_loss = tf.losses.sigmoid_cross_entropy(tf.zeros_like(fake_results), fake_results)
     return real_loss+fake_loss
 
 
 def generator_loss(fake_results):
-    return tf.losses.log_loss(tf.ones_like(fake_results), fake_results)
+    return tf.losses.sigmoid_cross_entropy(tf.ones_like(fake_results), fake_results)
 
 
 def train_step(real_images, batch_size, z_dim, generator, discriminator, generator_opti, discriminator_opti):
@@ -99,13 +132,14 @@ def save_images(model, epoch, test_input):
         plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
         plt.axis('off')
     plt.savefig('Practice/GAN/graphs/image_at_epoch_{}.png'.format(epoch))
+    plt.close()
 
 
 def train():
     gener = generator()
     discri = discriminator()
-    g_opti = tf.train.AdamOptimizer(learning_rate=1e-4)
-    d_opti = tf.train.AdamOptimizer(learning_rate=1e-4)
+    g_opti = tf.train.AdamOptimizer(learning_rate=1e-3)
+    d_opti = tf.train.AdamOptimizer(learning_rate=1e-3)
 
     checkpoint_dir = 'Practice/GAN/checkpoint'
     checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
