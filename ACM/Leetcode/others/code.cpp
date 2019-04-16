@@ -53,6 +53,43 @@ public:
 		}
 		return sell_2;
 	}
+	vector<vector<int>> threeSum(vector<int> &nums)
+	{
+		vector<vector<int>> vs;
+		int target = 0;
+		sort(nums.begin(), nums.end());
+		for (int i = 0; i < nums.size(); ++i)
+		{
+			if (i > 0 && A[i - 1] == A[i])
+				continue; // skip duplication
+			for (int j = i + 1, k = A.size() - 1; j < k;)
+			{
+				if (j > i + 1 && A[j - 1] == A[j])
+				{
+					++j;
+					continue; // skip duplication
+				}
+				if (k < A.size() - 1 && A[k] == A[k + 1])
+				{
+					--k;
+					continue; // skip duplication
+				}
+				int sum = A[i] + A[j] + A[k];
+				if (sum > target)
+					--k;
+				else if (sum < target)
+					++j;
+				else
+				{ // find a triplet
+					vector v(3, A[i]);
+					v[1] = A[j++];
+					v[2] = A[k--];
+					vs.push_back(v);
+				}
+			}
+		}
+		return vs;
+	}
 };
 int main()
 {

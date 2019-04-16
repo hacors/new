@@ -3,7 +3,7 @@ import time
 
 import tensorflow as tf
 from matplotlib import pyplot as plt
-from tensorflow import keras
+# from tensorflow import keras
 
 tf.enable_eager_execution()
 
