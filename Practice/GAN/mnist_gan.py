@@ -125,7 +125,7 @@ def train_step(real_images, batch_size, z_dim, generator, discriminator, generat
     discriminator_opti.apply_gradients(zip(g_gradiens, discriminator.variables))
 
 
-def save_images(model, epoch, test_input):
+def save_tempdatas(model, epoch, test_input):
     predictions = model(test_input, training=False)
     for i in range(predictions.shape[0]):
         plt.subplot(4, 4, i+1)
@@ -151,9 +151,9 @@ def train():
         start = time.time()
         for data in datas:
             train_step(data, BATCH_SIZE, INPUT_DIM, gener, discri, g_opti, d_opti)
-        save_images(gener, epoch, vectors_show_images)
+        save_tempdatas(gener, epoch, vectors_show_images)
         print('Time taken for epoch {} is {} sec'.format(epoch, time.time()-start))
-        if epoch % 20 == 0:
+        if (epoch+1) % 50 == 0:
             checkpoint.save(file_prefix=checkpoint_prefix)
 
 
