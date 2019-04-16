@@ -1,2 +1,3 @@
-.vscode/ipch/
-Temp/
+.vscode/ipch/*
+Temp/*
+Books/*
