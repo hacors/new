@@ -3,7 +3,7 @@ import time
 
 import tensorflow as tf
 from matplotlib import pyplot as plt
-# from tensorflow import keras
+from tensorflow import keras
 
 tf.enable_eager_execution()
 
@@ -28,6 +28,7 @@ def get_datas():
     return train_images_batched
 
 
+'''
 def discriminator():
     model = tf.keras.Sequential()
     model.add(tf.keras.layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same'))
@@ -59,9 +60,9 @@ def generator():
     model.add(tf.keras.layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
     assert model.output_shape == (None, 28, 28, 1)
     return model
-
-
 '''
+
+
 def generator(input_shape=(INPUT_DIM, 1), conv_list=[16, 16, 1], dens_list=[128, 784]):
     input_data = keras.layers.Input(shape=input_shape)
     digits = input_data
@@ -80,6 +81,8 @@ def generator(input_shape=(INPUT_DIM, 1), conv_list=[16, 16, 1], dens_list=[128,
     prediction = keras.layers.Activation(activation='sigmoid')(digits)
     model = keras.Model(inputs=input_data, outputs=prediction)
     return model
+
+
 def discriminator(input_shape=(28, 28, 1), conv_list=[16, 16], dens_list=[128, 1]):
     input_data = keras.layers.Input(shape=input_shape)
     digits = input_data
@@ -98,7 +101,6 @@ def discriminator(input_shape=(28, 28, 1), conv_list=[16, 16], dens_list=[128, 1
     prediction = keras.layers.Activation(activation='sigmoid')(digits)
     model = keras.Model(inputs=input_data, outputs=prediction)
     return model
-'''
 
 
 def discriminator_loss(real_results, fake_results):
