@@ -131,7 +131,7 @@ def save_tempdatas(model, epoch, test_input):
         plt.subplot(4, 4, i+1)
         plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
         plt.axis('off')
-    plt.savefig('Practice/GAN/graphs/image_at_epoch_{}.png'.format(epoch))
+    plt.savefig('Temp/graphs/image_{}.png'.format(epoch))
     plt.close()
 
 
@@ -141,7 +141,7 @@ def train():
     g_opti = tf.train.AdamOptimizer(learning_rate=1e-3)
     d_opti = tf.train.AdamOptimizer(learning_rate=1e-3)
 
-    checkpoint_dir = 'Practice/GAN/checkpoint'
+    checkpoint_dir = 'Temp/checkpoint'
     checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
     checkpoint = tf.train.Checkpoint(generator_optimizer=g_opti, discriminator_optimizer=d_opti, generator=gener, zdiscriminator=discri)
     vectors_show_images = tf.random_normal([IMAGES_NUM, INPUT_DIM])

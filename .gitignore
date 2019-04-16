@@ -1,3 +1,4 @@
-.vscode/ipch
+__pycache__/
+.vscode/
 Books/
-Temp/refers
+Temp/
