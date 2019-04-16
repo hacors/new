@@ -1,4 +1,6 @@
 __pycache__/
-.vscode/
-Books/
-Temp/
+.vscode/ipch/
+Books/*
+Temp/graphs/*
+Temp/models/*
+Temp/packs/*
