@@ -141,7 +141,7 @@ def train():
     g_opti = tf.train.AdamOptimizer(learning_rate=1e-3)
     d_opti = tf.train.AdamOptimizer(learning_rate=1e-3)
 
-    checkpoint_dir = 'Temp/checkpoint'
+    checkpoint_dir = 'Temp/models'
     checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
     checkpoint = tf.train.Checkpoint(generator_optimizer=g_opti, discriminator_optimizer=d_opti, generator=gener, zdiscriminator=discri)
     vectors_show_images = tf.random_normal([IMAGES_NUM, INPUT_DIM])
