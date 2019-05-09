@@ -11,12 +11,11 @@ def gaussian_filter_density(gt):
     if gt_count == 0:
         return density
     pts = np.array(list(zip(np.nonzero(gt)[0].flatten(), np.nonzero(gt)[1].flatten())))
-    leafsize = 2048
-    tree = scipy.spatial.KDTree(pts.copy(), leafsize=leafsize)
+    tree = scipy.spatial.KDTree(pts.copy(), leafsize=2048)
     distances, locations = tree.query(pts, k=4)
     for i, pt in enumerate(pts):
         pt2d = np.zeros(gt.shape, dtype=np.float32)
-        pt2d[pt[1], pt[0]] = 1.
+        pt2d[pt[0], pt[1]] = 1.
         if gt_count > 1:
             sigma = (distances[i][1]+distances[i][2]+distances[i][3])*0.1
         else:
