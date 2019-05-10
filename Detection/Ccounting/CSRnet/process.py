@@ -1,11 +1,13 @@
 import glob
 import os
+import multiprocessing as multp
 
 import h5py
 import numpy as np
 import scipy
 import scipy.io as scio
 import scipy.ndimage as scnd
+from matplotlib import cm
 from matplotlib import pyplot as plt
 
 ROOT = 'Datasets'
@@ -43,6 +45,10 @@ def get_shtech_path(root=ROOT):
     all_image_path = []
     all_gt_path = []
     for path in path_sets:
+        try:
+            os.mkdir(os.path.join(path, 'ground'))
+        except Exception:
+            pass
         for ima_path in glob.glob(os.path.join(path, 'images', '*.jpg')):
             all_image_path.append(ima_path)
         for gt_path in glob.glob(os.path.join(path, 'ground_truth', '*.mat')):
@@ -56,15 +62,26 @@ def shtech_gaussian(all_image_path, all_gt_path):
         gt_list = mat['image_info'][0, 0][0, 0][0]  # 注意gt的坐标是笛卡尔坐标
         gt_list_int = gt_list.astype(np.int16)
         image = plt.imread(all_image_path[index])
-        temp_ground_truth = np.zeros(image.shape)
+        temp_ground_truth = np.zeros(image.shape[:2])
         for gt in gt_list_int:
             if gt[1] < image.shape[0] and gt[0] < image.shape[1]:
                 temp_ground_truth[gt[1], gt[0]] = 1
+
         temp_density = gaussian_filter_density(temp_ground_truth)
         file_path = all_image_path[index].replace('.jpg', '.h5').replace('images', 'ground')
         with h5py.File(file_path, 'w') as hf:
             hf['density'] = temp_density
 
 
+def show_h5_image(all_image_path):
+    for image_path in all_image_path:
+        file_path = image_path.replace('.jpg', '.h5').replace('images', 'ground')
+        gt_file = h5py.File(file_path, 'r')
+        groundtruth = np.asarray(gt_file['density'])
+        plt.imshow(groundtruth, cmap=cm.jet)
+        plt.show()
+
+
 all_image_path, all_gt_path = get_shtech_path()
+# show_h5_image(all_image_path[0:10])
 shtech_gaussian(all_image_path, all_gt_path)
