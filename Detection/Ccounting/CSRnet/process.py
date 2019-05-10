@@ -13,7 +13,7 @@ ROOT = 'Datasets'
 
 def gaussian_filter_density(ground_truth):
     density = np.zeros(ground_truth.shape, dtype=np.float32)
-    positions = np.array(list(zip(np.nonzero(ground_truth)[0].flatten(), np.nonzero(ground_truth)[1].flatten())))
+    positions = np.array(list(zip(np.nonzero(ground_truth)[0].ravel(), np.nonzero(ground_truth)[1].ravel())))
     tree = scipy.spatial.KDTree(positions.copy(), leafsize=2048)
     distances, locations = tree.query(positions, k=4)
     if len(positions) == 0:
@@ -53,13 +53,13 @@ def get_shtech_path(root=ROOT):
 def shtech_gaussian(all_image_path, all_gt_path):
     for index in range(len(all_image_path)):
         mat = scio.loadmat(all_gt_path[index])
-        gt_list = mat['image_info'][0, 0][0, 0][0]
+        gt_list = mat['image_info'][0, 0][0, 0][0]  # 注意gt的坐标是笛卡尔坐标
         gt_list_int = gt_list.astype(np.int16)
         image = plt.imread(all_image_path[index])
         temp_ground_truth = np.zeros(image.shape)
         for gt in gt_list_int:
-            if gt[0] < image.shape[0] and gt[1] < image.shape[1]:
-                temp_ground_truth[gt[0], gt[1]] = 1
+            if gt[1] < image.shape[0] and gt[0] < image.shape[1]:
+                temp_ground_truth[gt[1], gt[0]] = 1
         temp_density = gaussian_filter_density(temp_ground_truth)
         file_path = all_image_path[index].replace('.jpg', '.h5').replace('images', 'ground')
         with h5py.File(file_path, 'w') as hf:
