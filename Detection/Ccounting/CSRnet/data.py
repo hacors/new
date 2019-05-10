@@ -46,5 +46,3 @@ for img_path in img_paths:
             k[int(gt[i][1]), int(gt[i][0])] = 1
     k = gaussian_filter_density(k)
     file_path = img_path.replace('.jpg', '.h5').replace('images', 'ground')
-    with h5py.File(file_path, 'w') as hf:
-        hf['density'] = k
