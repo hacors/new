@@ -70,7 +70,7 @@ def show_image(p_imapath_list):
 
 if __name__ == "__main__":
     all_image_path, all_gt_path = get_shtech_path()
-    # show_image(all_image_path[5:7])
+    show_image(all_image_path[0:9])
     pool = multp.Pool(processes=12)
     for index in range(len(all_image_path)):
         mat = scio.loadmat(all_gt_path[index])
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         gt_matrix = np.zeros(image.shape[:2])
         for gt in gt_list_int:
             if gt[1] < image.shape[0] and gt[0] < image.shape[1]:
-                gt_matrix[gt[1], gt[0]] = 1
+                gt_matrix[gt[1], gt[0]] = 1.
         dens_path = all_image_path[index].replace('.jpg', '.h5').replace('images', 'ground')
         pool.apply_async(gaussian_filter_density, (gt_matrix, dens_path, index,))
     pool.close()
