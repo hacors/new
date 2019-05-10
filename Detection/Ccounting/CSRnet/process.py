@@ -2,6 +2,7 @@ import glob
 import multiprocessing as multp
 import os
 
+import h5py
 import numpy as np
 import PIL
 import scipy
@@ -13,32 +14,33 @@ from matplotlib import pyplot as plt
 ROOT = 'Datasets'
 
 
-def gaussian_filter_density(ground_truth, density_path, index):
-    density = np.zeros(ground_truth.shape, dtype=np.float32)
-    positions = np.array(list(zip(np.nonzero(ground_truth)[0].ravel(), np.nonzero(ground_truth)[1].ravel())))
-    tree = scipy.spatial.KDTree(positions.copy(), leafsize=2048)
-    distances, locations = tree.query(positions, k=4)
-    if len(positions) == 1:
-        temp_filter = np.zeros(ground_truth.shape, dtype=np.float32)
-        temp_filter[positions[0][0], positions[0][1]] = 1.
-        sigma = np.average(np.array(ground_truth.shape))/4.
-        density += scnd.filters.gaussian_filter(temp_filter, sigma, mode='constant')
+def gaussian_filter_density(p_gt_matrix, p_dens_path, p_index):
+    dens_image = np.zeros(p_gt_matrix.shape, dtype=np.float32)
+    pos_list = np.array(list(zip(np.nonzero(p_gt_matrix)[0].flatten(), np.nonzero(p_gt_matrix)[1].flatten())))
+    kd_tree = scipy.spatial.KDTree(pos_list.copy(), leafsize=2048)
+    kd_dis, kd_locat = kd_tree.query(pos_list, k=4)
+    if len(pos_list) == 1:
+        temp_filter = np.zeros(p_gt_matrix.shape, dtype=np.float32)
+        temp_filter[pos_list[0][0], pos_list[0][1]] = 1.
+        sigma = np.average(np.array(p_gt_matrix.shape))/4.
+        dens_image += scnd.filters.gaussian_filter(temp_filter, sigma, mode='constant')
     else:
-        for index, position in enumerate(positions):
-            temp_filter = np.zeros(ground_truth.shape, dtype=np.float32)
-            temp_filter[position[0], position[1]] = 1.
-            sigma = (distances[index][1]+distances[index][2]+distances[index][3])*0.1  # 这考虑了一种透视折衷
-            density += scnd.filters.gaussian_filter(temp_filter, sigma, mode='constant')
-    print('do', index)
-    np.savetxt(density_path, density)
+        for i, pos in enumerate(pos_list):
+            temp_filter = np.zeros(p_gt_matrix.shape, dtype=np.float32)
+            temp_filter[pos[0], pos[1]] = 1.
+            sigma = (kd_dis[i][1]+kd_dis[i][2]+kd_dis[i][3])*0.1  # 这考虑了一种透视折衷
+            dens_image += scnd.filters.gaussian_filter(temp_filter, sigma, mode='constant')
+    with h5py.File(p_dens_path, 'w') as hf:
+        hf['density'] = dens_image
+    print('finish:', p_index)
 
 
-def get_shtech_path(root=ROOT):
-    root = os.path.join(root, 'shtech')
-    part_A_train = os.path.join(root, 'part_A_final', 'train_data')
-    part_A_test = os.path.join(root, 'part_A_final', 'test_data')
-    part_B_train = os.path.join(root, 'part_B_final', 'train_data')
-    part_B_test = os.path.join(root, 'part_B_final', 'test_data')
+def get_shtech_path():
+    temp_root = os.path.join(ROOT, 'shtech')
+    part_A_train = os.path.join(temp_root, 'part_A_final', 'train_data')
+    part_A_test = os.path.join(temp_root, 'part_A_final', 'test_data')
+    part_B_train = os.path.join(temp_root, 'part_B_final', 'train_data')
+    part_B_test = os.path.join(temp_root, 'part_B_final', 'test_data')
     path_sets = [part_A_train, part_A_test, part_B_train, part_B_test]
     all_image_path = []
     all_gt_path = []
@@ -54,37 +56,32 @@ def get_shtech_path(root=ROOT):
     return all_image_path, all_gt_path
 
 
-def show_image(all_image_path):
-    for image_path in all_image_path:
-        true_image = PIL.Image.open(image_path)
-        plt.imshow(true_image)
+def show_image(p_imapath_list):
+    for image_path in p_imapath_list:
+        image = PIL.Image.open(image_path)
+        plt.imshow(image)
         plt.show()
-        density_path = image_path.replace('.jpg', '.txt').replace('images', 'ground')
-        ground_truth = np.loadtxt(density_path)
-        plt.imshow(ground_truth, cmap=cm.jet)
+        dens_path = image_path.replace('.jpg', '.h5').replace('images', 'ground')
+        dens_file = h5py.File((dens_path), 'r')
+        dens_image = np.asarray(dens_file['density'])
+        plt.imshow(dens_image, cmap=cm.jet)
         plt.show()
 
 
 if __name__ == "__main__":
     all_image_path, all_gt_path = get_shtech_path()
-    # show_image(all_image_path[:100])
-    all_ground_truth = list()
-    all_density_path = list()
-    nums = len(all_image_path)
-    for index in range(nums):
+    # show_image(all_image_path[5:7])
+    pool = multp.Pool(processes=12)
+    for index in range(len(all_image_path)):
         mat = scio.loadmat(all_gt_path[index])
         gt_list = mat['image_info'][0, 0][0, 0][0]  # 注意gt的坐标是笛卡尔坐标
-        gt_list_int = gt_list.astype(np.int16)
+        gt_list_int = gt_list.astype(np.int)
         image = plt.imread(all_image_path[index])
-        ground_truth = np.zeros(image.shape[:2])
+        gt_matrix = np.zeros(image.shape[:2])
         for gt in gt_list_int:
             if gt[1] < image.shape[0] and gt[0] < image.shape[1]:
-                ground_truth[gt[1], gt[0]] = 1
-        density_path = all_image_path[index].replace('.jpg', '.txt').replace('images', 'ground')
-        all_ground_truth.append(ground_truth)
-        all_density_path.append(density_path)
-    pool = multp.Pool(processes=12)
-    for index in range(nums):
-        pool.apply_async(gaussian_filter_density, (all_ground_truth[index], all_density_path[index], index,))
+                gt_matrix[gt[1], gt[0]] = 1
+        dens_path = all_image_path[index].replace('.jpg', '.h5').replace('images', 'ground')
+        pool.apply_async(gaussian_filter_density, (gt_matrix, dens_path, index,))
     pool.close()
     pool.join()
