@@ -70,7 +70,7 @@ def show_image(p_imapath_list):
 
 if __name__ == "__main__":
     all_image_path, all_gt_path = get_shtech_path()
-    show_image(all_image_path[0:9])
+    # show_image(all_image_path[0:3])
     pool = multp.Pool(processes=12)
     for index in range(len(all_image_path)):
         mat = scio.loadmat(all_gt_path[index])
