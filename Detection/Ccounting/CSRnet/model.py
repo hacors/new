@@ -67,4 +67,9 @@ if __name__ == "__main__":
     batched_dataset = processed_dataset.batch(9).repeat(10)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     for dataset in batched_dataset:
-        pass
+        train_tape = tf.GradientTape()
+        opti = tf.train.GradientDescentOptimizer()
+        predict = mynet(dataset[0])
+        loss = euclidean_distance_loss(dataset[1], predict)
+        gradiens = train_tape.gradient(loss, mynet.variables)
+        opti.apply_gradients(zip(gradiens, mynet.variables))
