@@ -1,13 +1,14 @@
 import glob
 import multiprocessing as multp
 import os
+import random
 
 import numpy as np
+import PIL
 import scipy
+import tensorflow as tf
 from scipy import io as scio
 from scipy import ndimage as scnd
-import tensorflow as tf
-import PIL
 
 ROOT = 'Datasets'
 
@@ -65,6 +66,19 @@ def int64_feature(value):
     return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
 
 
+def crop_function(img_array: np.array, dens_array: np.array, r_times):  # 将原图裁剪
+    shape = img_array.shape
+    height, width = int(shape[0]/2), int(shape[1]/2)
+    img_crops = [img_array[:height, :width], img_array[height:height*2, :width], img_array[:height, width:width*2], img_array[height:height*2, width:width*2]]
+    dens_crops = [dens_array[:height, :width], dens_array[height:height*2, :width], dens_array[:height, width:width*2], dens_array[height:height*2, width:width*2]]
+    for r_t in range(r_times):
+        d_hei = random.randint(0, height-1)
+        d_wid = random.randint(0, width-1)
+        img_crops.append(img_array[d_hei:d_hei+height, d_wid:d_wid+width])
+        dens_crops.append(dens_array[d_hei:d_hei+height, d_wid:d_wid+width])
+    return img_crops, dens_crops, height, width
+
+
 if __name__ == "__main__":
     # shtech
     shtech_image_path, shtech_set_path = get_shtech_path()
@@ -95,20 +109,23 @@ if __name__ == "__main__":
             writer = tf.python_io.TFRecordWriter(record_path)  # tfrecords的写法
             for img_p in image_paths:
                 dens_p = img_p.replace('images', 'densimg').replace('IMG', 'DENS')
-                img_file = PIL.Image.open(img_p)
-                img_array = np.array(img_file)
-                img_raw = img_array.tostring()
-                dens_file = PIL.Image.open(dens_p)
-                dens_array = np.array(dens_file)
-                dens_raw = dens_array.tostring()
-                shape = img_array.shape
-                feature = {
-                    'height': int64_feature(shape[0]),
-                    'width': int64_feature(shape[1]),
-                    'img': bytes_feature(img_raw),
-                    'dens': bytes_feature(dens_raw)
-                }
-                example = tf.train.Example(features=tf.train.Features(feature=feature))
-                writer.write(example.SerializeToString())
+                img_file, dens_file = PIL.Image.open(img_p), PIL.Image.open(dens_p)
+                img_file = img_file.convert('RGB')  # 要将黑白图片变成三通道
+                img_array, dens_array = np.array(img_file), np.array(dens_file)
+                rand_times = 5
+                img_croplist, dens_croplist, height, widht = crop_function(img_array, dens_array, rand_times)
+                for file_index in range(4+rand_times):
+                    img_array_temp = img_croplist[file_index]
+                    dens_array_temp = dens_croplist[file_index]
+                    img_raw_temp = img_array_temp.tostring()
+                    dens_raw_temp = dens_array_temp.tostring()
+                    feature = {
+                        'height': int64_feature(height),
+                        'width': int64_feature(widht),
+                        'img': bytes_feature(img_raw_temp),
+                        'dens': bytes_feature(dens_raw_temp)
+                    }
+                    example = tf.train.Example(features=tf.train.Features(feature=feature))
+                    writer.write(example.SerializeToString())
             writer.close()
             print(set_class)

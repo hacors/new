@@ -8,15 +8,16 @@ import process
 
 tf.enable_eager_execution()
 KL = keras.layers
+VGG19 = keras.applications.vgg19.VGG19
 feature = {
     'height': tf.FixedLenFeature([], tf.int64),
     'width': tf.FixedLenFeature([], tf.int64),
     'img': tf.FixedLenFeature([], tf.string),
-    'dens': tf.FixedLenFeature([], tf.string)
+    'dens': tf.FixedLenFeature([], tf.string),
 }
 
 
-def parse_image_function(example_proto):
+def parse_image_function(example_proto):  # 解码
     return tf.parse_single_example(example_proto, feature)
 
 
@@ -41,46 +42,20 @@ def euclidean_distance_loss(y_true, y_pred):
 
 
 def crowd_net():
-    init_func = keras.initializers.RandomNormal(stddev=0.01)
-    k_size = (3, 3)
-
-    model = keras.Sequential()
-    model.add(KL.Conv2D(64, kernel_size=k_size, input_shape=(None, None, 3), activation='relu', padding='same'))
-    model.add(KL.BatchNormalization())
-    model.add(KL.Conv2D(64, kernel_size=k_size, activation='relu', padding='same'))
-    model.add(KL.BatchNormalization())
-    model.add(KL.MaxPooling2D(strides=2))
-    model.add(KL.Conv2D(128, kernel_size=k_size, activation='relu', padding='same'))
-    model.add(KL.BatchNormalization())
-    model.add(KL.Conv2D(128, kernel_size=k_size, activation='relu', padding='same'))
-    model.add(KL.BatchNormalization())
-    model.add(KL.MaxPooling2D(strides=2))
-    model.add(KL.Conv2D(256, kernel_size=k_size, activation='relu', padding='same'))
-    model.add(KL.BatchNormalization())
-    model.add(KL.Conv2D(256, kernel_size=k_size, activation='relu', padding='same'))
-    model.add(KL.BatchNormalization())
-    model.add(KL.Conv2D(256, kernel_size=k_size, activation='relu', padding='same'))
-    model.add(KL.BatchNormalization())
-    model.add(KL.MaxPooling2D(strides=2))
-    model.add(KL.Conv2D(512, kernel_size=k_size, activation='relu', padding='same'))
-    model.add(KL.BatchNormalization())
-    model.add(KL.Conv2D(512, kernel_size=k_size, activation='relu', padding='same'))
-    model.add(KL.BatchNormalization())
-    model.add(KL.Conv2D(512, kernel_size=k_size, activation='relu', padding='same'))
-    model.add(KL.BatchNormalization())
-
-    model.add(KL.Conv2D(512, kernel_size=k_size, activation='relu', dilation_rate=2, kernel_initializer=init_func, padding='same'))
-    model.add(KL.Conv2D(512, kernel_size=k_size, activation='relu', dilation_rate=2, kernel_initializer=init_func, padding='same'))
-    model.add(KL.Conv2D(512, kernel_size=k_size, activation='relu', dilation_rate=2, kernel_initializer=init_func, padding='same'))
-    model.add(KL.Conv2D(256, kernel_size=k_size, activation='relu', dilation_rate=2, kernel_initializer=init_func, padding='same'))
-    model.add(KL.Conv2D(128, kernel_size=k_size, activation='relu', dilation_rate=2, kernel_initializer=init_func, padding='same'))
-    model.add(KL.Conv2D(64, kernel_size=k_size, activation='relu', dilation_rate=2, kernel_initializer=init_func, padding='same'))
-
-    model.add(KL.Conv2D(1, (1, 1), activation='relu', dilation_rate=1, kernel_initializer=init_func, padding='same'))
-
-    opti = keras.optimizers.SGD(lr=1e-7, decay=(5*1e-4), momentum=0.95)
-    loss
-    model.compile()
+    init = keras.initializers.RandomNormal(stddev=0.01)
+    vgg_tune = VGG19(weights='imagenet', include_top=False)
+    input_data = keras.Input(shape=(None, None, 3))
+    digits = vgg_tune(input_data)
+    digits = KL.Conv2D(512, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
+    digits = KL.Conv2D(512, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
+    digits = KL.Conv2D(512, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
+    digits = KL.Conv2D(256, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
+    digits = KL.Conv2D(128, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
+    digits = KL.Conv2D(64, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
+    digits = KL.Conv2D(1, (1, 1), activation='relu', dilation_rate=1, kernel_initializer=init, padding='same')(digits)
+    prediction = digits
+    crowd_net = keras.Model(inputs=input_data, outputs=prediction)
+    return crowd_net
 
 
 if __name__ == "__main__":
@@ -89,6 +64,7 @@ if __name__ == "__main__":
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.shuffle(1000).batch(10).repeat(10)
-    temp = batched_dataset.take(1)
-    pass
+    batched_dataset = processed_dataset.batch(9).repeat(10)  # 每个batch都是同一张图片切出来的
+    mynet = crowd_net()
+    for dataset in batched_dataset:
+        pass
