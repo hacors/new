@@ -73,6 +73,10 @@ if __name__ == "__main__":
     batched_dataset = processed_dataset.batch(9).repeat(10)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
 
-    sgd = keras.optimizers.SGD(lr=1e-7, decay=(5*1e-4), momentum=0.95)
-    mynet.compile(optimizer=sgd, loss=euclidean_distance_loss, metrics=['mse'])
-    mynet.fit_generator(batched_dataset, epochs=1, steps_per_epoch=700, verbose=2)  # 训练网络
+    for dataset in batched_dataset:
+        train_tape = tf.GradientTape()
+        opti = tf.train.GradientDescentOptimizer()
+        predict = mynet(dataset[0])
+        loss = euclidean_distance_loss(dataset[1], predict)
+        gradiens = train_tape.gradient(loss, mynet.variables)
+        opti.apply_gradients(zip(gradiens, mynet.variables))
