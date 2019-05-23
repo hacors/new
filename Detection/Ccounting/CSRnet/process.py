@@ -4,6 +4,7 @@ import os
 import random
 
 import numpy as np
+from matplotlib import pyplot as plt
 import PIL
 import scipy
 import tensorflow as tf
@@ -29,7 +30,7 @@ def gaussian_filter_density(p_gt_matrix, p_dens_path, p_index):  # 将人群点�
             temp_filter[pos[0], pos[1]] = 1.
             sigma = (kd_dis[i][1]+kd_dis[i][2]+kd_dis[i][3])*0.1  # 这考虑了一种透视折衷
             dens_array += scnd.filters.gaussian_filter(temp_filter, sigma, mode='constant')
-    scipy.misc.imsave(p_dens_path, dens_array)
+    np.save(p_dens_path, dens_array)
     print('finish:', p_index)
 
 
@@ -46,7 +47,7 @@ def get_shtech_path():  # 获取所有shtech数据集的图片路径
             os_path = os.path.join(temp_root, 'part_%s_final' % part_label, '%s_data' % data_class_label)
             all_set_path[p_index].append(os_path)
             try:
-                os.mkdir(os.path.join(os_path, 'densimg'))
+                os.mkdir(os.path.join(os_path, 'dens_np'))
             except Exception:
                 pass
             for ima_path in glob.glob(os.path.join(os_path, 'images', '*.jpg')):
@@ -88,14 +89,14 @@ if __name__ == "__main__":
             pool = multp.Pool(processes=12)
             for index, image_path in enumerate(image_class):
                 gt_path = image_path.replace('images', 'ground_truth').replace('IMG', 'GT_IMG').replace('jpg', 'mat')
-                dens_path = image_path.replace('images', 'densimg').replace('IMG', 'DENS')
+                dens_path = image_path.replace('images', 'dens_np').replace('IMG', 'numpy').replace('.jpg', '.npy')
                 mat = scio.loadmat(gt_path)
                 gt_list = mat['image_info'][0, 0][0, 0][0]  # 注意gt的坐标是笛卡尔坐标
                 gt_list_int = gt_list.astype(np.int)
                 image = PIL.Image.open(image_path)
-                gt_matrix = np.zeros(image.shape[:2])
+                gt_matrix = np.zeros([image.size[1], image.size[0]])
                 for gt in gt_list_int:
-                    if gt[1] < image.shape[0] and gt[0] < image.shape[1]:
+                    if gt[0] < image.size[0] and gt[1] < image.size[1]:
                         gt_matrix[gt[1], gt[0]] = 1.
                 # gaussian_filter_density(gt_matrix, dens_path, index)
                 pool.apply_async(gaussian_filter_density, (gt_matrix, dens_path, index,))
@@ -108,8 +109,9 @@ if __name__ == "__main__":
             image_paths = shtech_image_path[part_index][class_index]
             writer = tf.python_io.TFRecordWriter(record_path)  # tfrecords的写法
             for img_p in image_paths:
-                dens_p = img_p.replace('images', 'densimg').replace('IMG', 'DENS')
-                img_file, dens_file = PIL.Image.open(img_p), PIL.Image.open(dens_p)
+                dens_p = img_p.replace('images', 'dens_np').replace('IMG', 'numpy').replace('.jpg', '.npy')
+                img_file = PIL.Image.open(img_p)
+                dens_file = np.load(dens_p)
                 img_file = img_file.convert('RGB')  # 要将黑白图片变成三通道
                 img_array, dens_array = np.array(img_file), np.array(dens_file)
                 rand_times = 5

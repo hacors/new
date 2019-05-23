@@ -4,7 +4,6 @@ import time
 import tensorflow as tf
 from matplotlib import pyplot as plt
 from tensorflow import keras
-
 tf.enable_eager_execution()
 
 ker_init = tf.initializers.random_normal(mean=0.0, stddev=0.1)
