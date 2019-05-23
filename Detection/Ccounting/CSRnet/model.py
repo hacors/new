@@ -1,7 +1,5 @@
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-import PIL
 import os
 
 import process
@@ -42,8 +40,8 @@ def process_function(parsed_data):
 
 
 def euclidean_distance_loss(y_true, y_pred):
-    loss = keras.backend.sqrt(keras.backend.sum(keras.backend.square(y_pred - y_true), axis=-1))
-    return loss
+    loss_metrix = keras.backend.sqrt(keras.backend.sum(keras.backend.square(y_pred - y_true), axis=-1))
+    return loss_metrix
 
 
 def crowd_net():
@@ -75,7 +73,7 @@ if __name__ == "__main__":
 
     for dataset in batched_dataset:
         train_tape = tf.GradientTape()
-        opti = tf.train.GradientDescentOptimizer()
+        opti = tf.train.GradientDescentOptimizer(learning_rate=0.03)
         predict = mynet(dataset[0])
         loss = euclidean_distance_loss(dataset[1], predict)
         gradiens = train_tape.gradient(loss, mynet.variables)
