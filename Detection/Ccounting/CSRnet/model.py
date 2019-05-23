@@ -8,7 +8,7 @@ import process
 
 tf.enable_eager_execution()
 KL = keras.layers
-VGG19 = keras.applications.vgg19.VGG19
+VGG16 = keras.applications.vgg16.VGG16
 feature = {
     'height': tf.FixedLenFeature([], tf.int64),
     'width': tf.FixedLenFeature([], tf.int64),
@@ -31,21 +31,27 @@ def process_function(parsed_data):
     img_casted = tf.cast(img_true, tf.float32)
     dens_casted = tf.cast(dens_true, tf.float32)
     img_processed = tf.divide(img_casted, 255.0)
+    img_expand = tf.expand_dims(img_processed, -1)
+    img_part_0 = tf.divide(tf.subtract(img_expand[:, :, 0, :], 0.485), 0.229)
+    img_part_1 = tf.divide(tf.subtract(img_expand[:, :, 1, :], 0.456), 0.224)
+    img_part_2 = tf.divide(tf.subtract(img_expand[:, :, 2, :], 0.406), 0.225)
+    img_merged = tf.concat([img_part_0, img_part_1, img_part_2], 2)
     dens_processed = tf.image.resize_images(dens_casted, [height/8, width/8], method=2)
-    dens_processed = tf.divide(dens_processed, 255.0)
-    return img_processed, dens_processed
+    # dens_processed = tf.divide(dens_processed, 255.0)
+    return img_merged, dens_processed
 
 
 def euclidean_distance_loss(y_true, y_pred):
-    loss = keras.losses.mean_squared_error(y_true, y_pred)
+    loss = keras.backend.sqrt(keras.backend.sum(keras.backend.square(y_pred - y_true), axis=-1))
     return loss
 
 
 def crowd_net():
     init = keras.initializers.RandomNormal(stddev=0.01)
-    vgg_tune = VGG19(weights='imagenet', include_top=False)
+    vgg = VGG16(weights='imagenet', include_top=False)  # W
     input_data = keras.Input(shape=(None, None, 3))
-    digits = vgg_tune(input_data)
+    crop_vgg = keras.Model(inputs=vgg.input, outputs=vgg.get_layer('block4_conv3').output)  # 注意这是模型截取的写法
+    digits = crop_vgg(input_data)
     digits = KL.Conv2D(512, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
     digits = KL.Conv2D(512, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
     digits = KL.Conv2D(512, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
@@ -66,10 +72,7 @@ if __name__ == "__main__":
     processed_dataset = parsed_dataset.map(process_function)
     batched_dataset = processed_dataset.batch(9).repeat(10)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
-    for dataset in batched_dataset:
-        train_tape = tf.GradientTape()
-        opti = tf.train.GradientDescentOptimizer()
-        predict = mynet(dataset[0])
-        loss = euclidean_distance_loss(dataset[1], predict)
-        gradiens = train_tape.gradient(loss, mynet.variables)
-        opti.apply_gradients(zip(gradiens, mynet.variables))
+
+    sgd = keras.optimizers.SGD(lr=1e-7, decay=(5*1e-4), momentum=0.95)
+    mynet.compile(optimizer=sgd, loss=euclidean_distance_loss, metrics=['mse'])
+    mynet.fit_generator(batched_dataset, epochs=1, steps_per_epoch=700, verbose=2)  # 训练网络
