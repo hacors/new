@@ -4,7 +4,6 @@ import os
 import random
 
 import numpy as np
-from matplotlib import pyplot as plt
 import PIL
 import scipy
 import tensorflow as tf
@@ -83,7 +82,7 @@ def crop_function(img_array: np.array, dens_array: np.array, r_times):  # 将原
 if __name__ == "__main__":
     # shtech
     shtech_image_path, shtech_set_path = get_shtech_path()
-    '''
+
     for image_part in shtech_image_path:  # 获取所有的密度图
         for image_class in image_part:
             pool = multp.Pool(processes=12)
@@ -102,7 +101,7 @@ if __name__ == "__main__":
                 pool.apply_async(gaussian_filter_density, (gt_matrix, dens_path, index,))
             pool.close()
             pool.join()
-    '''
+
     for part_index, set_part in enumerate(shtech_set_path):  # 生成tfrecord文件
         for class_index, set_class in enumerate(set_part):
             record_path = os.path.join(set_class, 'all_data.tfrecords')

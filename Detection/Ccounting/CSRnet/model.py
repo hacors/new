@@ -1,7 +1,5 @@
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-import PIL
 import os
 
 import process
@@ -40,7 +38,7 @@ def process_function(parsed_data):
 
 def euclidean_distance_loss(y_true, y_pred):
     # loss = keras.backend.sqrt(keras.backend.sum(keras.backend.square(y_pred - y_true), axis=-1))
-    loss = keras.losses.mean_squared_error(y_true, y_pred) #注意loss
+    loss = keras.losses.mean_squared_error(y_true, y_pred)  # 注意loss
     return loss
 
 
@@ -76,6 +74,8 @@ if __name__ == "__main__":
             opti = tf.train.GradientDescentOptimizer(learning_rate=1e-7)
             predict = mynet(dataset[0])
             loss = euclidean_distance_loss(dataset[1], predict)
-            print(tf.reduce_sum(loss, [0, 1, 2]))
+            shape = loss.shape
+            sums = shape[0]*shape[1]*shape[2]
+            print(tf.reduce_sum(loss, [0, 1, 2]).numpy()/sums.value*1e7)
             gradiens = train_tape.gradient(loss, mynet.variables)
             opti.apply_gradients(zip(gradiens, mynet.variables))
