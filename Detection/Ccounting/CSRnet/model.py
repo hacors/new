@@ -68,10 +68,9 @@ if __name__ == "__main__":
     processed_dataset = parsed_dataset.map(process_function)
     batched_dataset = processed_dataset.batch(9)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
-
-    for dataset in batched_dataset:
-        for repeat in range(100):
-            all_sum = list()
+    for repeat in range(100):
+        all_sum = list()
+        for dataset in batched_dataset:
             with tf.GradientTape() as train_tape:
                 opti = tf.train.GradientDescentOptimizer(learning_rate=1e-7)
                 predict = mynet(dataset[0])
