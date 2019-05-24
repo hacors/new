@@ -60,6 +60,13 @@ def crowd_net():
     return crowd_net
 
 
+def save_model(model: keras.Model, w_h5_path, json_path):
+    model.save_weights(w_h5_path)
+    model_json_data = model.to_json()
+    with open(json_path, 'w') as json_file:
+        json_file.write(model_json_data)
+
+
 if __name__ == "__main__":
     shtech_image_path, shtech_set_path = process.get_shtech_path()
     tfrecord_path = os.path.join(shtech_set_path[0][1], 'all_data.tfrecords')
@@ -68,7 +75,7 @@ if __name__ == "__main__":
     processed_dataset = parsed_dataset.map(process_function)
     batched_dataset = processed_dataset.batch(9)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
-    for repeat in range(100):
+    for repeat in range(20):
         all_sum = list()
         for dataset in batched_dataset:
             with tf.GradientTape() as train_tape:
@@ -82,3 +89,4 @@ if __name__ == "__main__":
                 gradiens = train_tape.gradient(loss, mynet.variables)
                 opti.apply_gradients(zip(gradiens, mynet.variables))
         print(sum(all_sum))
+    save_model(mynet, 'Datasets/shtech/weight.h5', 'Datasets/shtech/model.json')
