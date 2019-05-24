@@ -14,3 +14,5 @@ def load_model():
 
 if __name__ == '__main__':
     mynet = load_model()
+    print(mynet.summary())
+    pass
