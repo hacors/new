@@ -70,12 +70,16 @@ if __name__ == "__main__":
     mynet = crowd_net()
 
     for dataset in batched_dataset:
-        with tf.GradientTape() as train_tape:
-            opti = tf.train.GradientDescentOptimizer(learning_rate=1e-7)
-            predict = mynet(dataset[0])
-            loss = euclidean_distance_loss(dataset[1], predict)
-            shape = loss.shape
-            sums = shape[0]*shape[1]*shape[2]
-            print(tf.reduce_sum(loss, [0, 1, 2]).numpy()/sums.value*1e7)
-            gradiens = train_tape.gradient(loss, mynet.variables)
-            opti.apply_gradients(zip(gradiens, mynet.variables))
+        for repeat in range(100):
+            all_sum = list()
+            with tf.GradientTape() as train_tape:
+                opti = tf.train.GradientDescentOptimizer(learning_rate=1e-7)
+                predict = mynet(dataset[0])
+                loss = euclidean_distance_loss(dataset[1], predict)
+                shape = loss.shape
+                sums = shape[0]*shape[1]*shape[2]
+                temp = tf.reduce_sum(loss, [0, 1, 2]).numpy()/sums.value
+                all_sum.append(temp)
+                gradiens = train_tape.gradient(loss, mynet.variables)
+                opti.apply_gradients(zip(gradiens, mynet.variables))
+            print(sum(all_sum))
