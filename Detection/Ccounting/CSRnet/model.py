@@ -82,4 +82,4 @@ if __name__ == "__main__":
                 all_sum.append(temp)
                 gradiens = train_tape.gradient(loss, mynet.variables)
                 opti.apply_gradients(zip(gradiens, mynet.variables))
-            print(sum(all_sum))
+        print(sum(all_sum))
