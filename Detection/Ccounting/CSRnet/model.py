@@ -29,18 +29,18 @@ def process_function(parsed_data):
     dens_true = tf.reshape(tf.decode_raw(dens_string, tf.float32), [height, width, 1])  # 注意图片必须是三维的
     img_processed = tf.divide(tf.cast(img_true, tf.float32), 255.0)
     img_expand = tf.expand_dims(img_processed, -1)
-    img_part_0 = tf.divide(tf.subtract(img_expand[:, :, 0, :], 0.485), 0.229)
+    img_part_0 = tf.divide(tf.subtract(img_expand[:, :, 0, :], 0.485), 229)
     img_part_1 = tf.divide(tf.subtract(img_expand[:, :, 1, :], 0.456), 0.224)
-    img_part_2 = tf.divide(tf.subtract(img_expand[:, :, 2, :], 0.406), 0.225)
+    img_part_2 = tf.divide(tf.subtract(img_expand[:, :, 2, :], 0.406), 0.00225)
     img_merged = tf.concat([img_part_0, img_part_1, img_part_2], 2)
-    dens_processed = tf.image.resize_images(dens_true, [height/8, width/8], method=2)  # 平衡数值大小，同时使得图像可以显示
+    dens_processed = tf.image.resize_images(dens_true, [height/8, width/8], method=1)  # 平衡数值大小，同时使得图像可以显示
     return img_merged, dens_processed
 
 
 def euclidean_distance_loss(y_true, y_pred):
     # loss = keras.backend.sqrt(keras.backend.sum(keras.backend.square(y_pred - y_true), axis=-1))
     loss = keras.losses.mean_squared_error(y_true, y_pred)  # 注意loss
-    return loss
+    return tf.sqrt(tf.reduce_mean(loss, axis=[0, 1, 2]))
 
 
 def crowd_net():
@@ -77,7 +77,8 @@ def summary_numpy(scatted_np: np.array):
 
 
 def show(img_array):
-    temp_array = img_array*255.0
+    img_array = img_array.squeeze()
+    temp_array = img_array*255.0*2
     temp_array = temp_array.astype(np.int8)
     plt.imshow(temp_array)
     plt.show()
@@ -88,33 +89,32 @@ if __name__ == "__main__":
     tfrecord_path = os.path.join(shtech_set_path[0][0], 'all_data.tfrecords')
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
+    # for temp in parsed_dataset:
+    #     process_function(temp)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.batch(9)  # 每个batch都是同一张图片切出来的
+    batched_dataset = processed_dataset.repeat(50).batch(9)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
-    for repeat in range(50):
-        all_sum = list()
-        for dataset in batched_dataset:
-            with tf.GradientTape() as train_tape:
-                opti = tf.train.GradientDescentOptimizer(learning_rate=1e-7)
-                predict = mynet(dataset[0])
-                true_dens_array = dataset[1].numpy()
-                pred_dens_array = predict.numpy()
-                loss = euclidean_distance_loss(dataset[1], predict)
-                shape = loss.shape
-                sums = shape[0]*shape[1]*shape[2]
-                temp = tf.reduce_sum(loss, [0, 1, 2]).numpy()/sums.value
-                all_sum.append(temp)
-                gradiens = train_tape.gradient(loss, mynet.variables)
-                opti.apply_gradients(zip(gradiens, mynet.variables))
-
-            imgs = dataset[0][:4]
+    temp_sum = list()
+    for index, dataset in enumerate(batched_dataset):
+        with tf.GradientTape() as train_tape:
+            opti = tf.train.GradientDescentOptimizer(learning_rate=1e-7)
+            predict = mynet(dataset[0])
+            true_dens_array = dataset[1].numpy()
+            pred_dens_array = predict.numpy()
+            loss = euclidean_distance_loss(dataset[1], predict)
+        temp_sum.append(loss.numpy())
+        gradiens = train_tape.gradient(loss, mynet.variables)
+        opti.apply_gradients(zip(gradiens, mynet.variables))
+        if index != 0 and index % 90 == 0:
+            imgs = dataset[0]
             predic = mynet(imgs).numpy()
-            truth = dataset[1][:4].numpy()
-            sum_predic = summary_numpy(predic)
-            sum_truth = summary_numpy(truth)
-            show(sum_predic)
-            show(sum_truth)
+            truth = dataset[1].numpy()
+            # predic = summary_numpy(predic)
+            # truth = summary_numpy(truth)
+            # show(predic)
+            # show(truth)
+            print(sum(temp_sum))
+            temp_sum.clear()
 
-        print(sum(all_sum))
     save_model(mynet, 'Datasets/shtech/weight.h5', 'Datasets/shtech/model.json')

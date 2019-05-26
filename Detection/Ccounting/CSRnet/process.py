@@ -9,7 +9,7 @@ import scipy
 import tensorflow as tf
 from scipy import io as scio
 from scipy import ndimage as scnd
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 
 ROOT = 'Datasets'
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     for image_part in shtech_image_path:  # 获取所有的密度图
         for image_class in image_part:
-            pool = multp.Pool(processes=12)
+            # pool = multp.Pool(processes=12)
             for index, image_path in enumerate(image_class):
                 gt_path = image_path.replace('images', 'ground_truth').replace('IMG', 'GT_IMG').replace('jpg', 'mat')
                 dens_path = image_path.replace('images', 'dens_np').replace('IMG', 'numpy').replace('.jpg', '.npy')
@@ -104,11 +104,12 @@ if __name__ == "__main__":
                 for gt in gt_list_int:
                     if gt[0] < image.size[0] and gt[1] < image.size[1]:
                         gt_matrix[gt[1], gt[0]] = 1.
-                # gaussian_filter_density(gt_matrix, dens_path, index)
+                gaussian_filter_density(gt_matrix, dens_path, index)
+            '''
                 pool.apply_async(gaussian_filter_density, (gt_matrix, dens_path, index,))
             pool.close()
             pool.join()
-
+            '''
     for part_index, set_part in enumerate(shtech_set_path):  # 生成tfrecord文件
         for class_index, set_class in enumerate(set_part):
             record_path = os.path.join(set_class, 'all_data.tfrecords')
