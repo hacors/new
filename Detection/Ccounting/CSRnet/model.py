@@ -75,12 +75,14 @@ if __name__ == "__main__":
     processed_dataset = parsed_dataset.map(process_function)
     batched_dataset = processed_dataset.batch(9)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
-    for repeat in range(20):
+    for repeat in range(50):
         all_sum = list()
         for dataset in batched_dataset:
             with tf.GradientTape() as train_tape:
                 opti = tf.train.GradientDescentOptimizer(learning_rate=1e-7)
                 predict = mynet(dataset[0])
+                true_dens_array = dataset[1].numpy()
+                pred_dens_array = predict.numpy()
                 loss = euclidean_distance_loss(dataset[1], predict)
                 shape = loss.shape
                 sums = shape[0]*shape[1]*shape[2]

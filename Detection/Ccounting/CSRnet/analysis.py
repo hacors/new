@@ -26,7 +26,7 @@ def summary_numpy(scatted_np: np.array):
 
 def show(img_array):
     temp_array = img_array*255.0
-    temp_array = img_array.astype(np.int8)
+    temp_array = temp_array.astype(np.int8)
     plt.imshow(temp_array)
     plt.show()
 
