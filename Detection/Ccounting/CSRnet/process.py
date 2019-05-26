@@ -9,7 +9,7 @@ import scipy
 import tensorflow as tf
 from scipy import io as scio
 from scipy import ndimage as scnd
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 ROOT = 'Datasets'
 
@@ -104,7 +104,7 @@ if __name__ == "__main__":
                 for gt in gt_list_int:
                     if gt[0] < image.size[0] and gt[1] < image.size[1]:
                         gt_matrix[gt[1], gt[0]] = 1.
-                gaussian_filter_density(gt_matrix, dens_path, index)
+                # gaussian_filter_density(gt_matrix, dens_path, index)
                 pool.apply_async(gaussian_filter_density, (gt_matrix, dens_path, index,))
             pool.close()
             pool.join()

@@ -1,7 +1,8 @@
 import tensorflow as tf
 from tensorflow import keras
 import os
-
+import numpy as np
+from matplotlib import pyplot as plt
 import process
 
 tf.enable_eager_execution()
@@ -32,7 +33,7 @@ def process_function(parsed_data):
     img_part_1 = tf.divide(tf.subtract(img_expand[:, :, 1, :], 0.456), 0.224)
     img_part_2 = tf.divide(tf.subtract(img_expand[:, :, 2, :], 0.406), 0.225)
     img_merged = tf.concat([img_part_0, img_part_1, img_part_2], 2)
-    dens_processed = tf.image.resize_images(dens_true, [height/8, width/8], method=2)
+    dens_processed = tf.image.resize_images(dens_true, [height/8, width/8], method=2)  # 平衡数值大小，同时使得图像可以显示
     return img_merged, dens_processed
 
 
@@ -67,14 +68,30 @@ def save_model(model: keras.Model, w_h5_path, json_path):
         json_file.write(model_json_data)
 
 
+def summary_numpy(scatted_np: np.array):
+    scatted_np = scatted_np.squeeze()
+    merge_left = np.concatenate((scatted_np[0], scatted_np[1]), axis=0)
+    merge_right = np.concatenate((scatted_np[2], scatted_np[3]), axis=0)
+    result = np.concatenate((merge_left, merge_right), axis=1)
+    return result
+
+
+def show(img_array):
+    temp_array = img_array*255.0
+    temp_array = temp_array.astype(np.int8)
+    plt.imshow(temp_array)
+    plt.show()
+
+
 if __name__ == "__main__":
     shtech_image_path, shtech_set_path = process.get_shtech_path()
-    tfrecord_path = os.path.join(shtech_set_path[0][1], 'all_data.tfrecords')
+    tfrecord_path = os.path.join(shtech_set_path[0][0], 'all_data.tfrecords')
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
     processed_dataset = parsed_dataset.map(process_function)
     batched_dataset = processed_dataset.batch(9)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
+    # print(mynet.summary())
     for repeat in range(50):
         all_sum = list()
         for dataset in batched_dataset:
@@ -90,5 +107,14 @@ if __name__ == "__main__":
                 all_sum.append(temp)
                 gradiens = train_tape.gradient(loss, mynet.variables)
                 opti.apply_gradients(zip(gradiens, mynet.variables))
+
+            imgs = dataset[0][:4]
+            predic = mynet(imgs).numpy()
+            truth = dataset[1][:4].numpy()
+            sum_predic = summary_numpy(predic)
+            sum_truth = summary_numpy(truth)
+            show(sum_predic)
+            show(sum_truth)
+
         print(sum(all_sum))
     save_model(mynet, 'Datasets/shtech/weight.h5', 'Datasets/shtech/model.json')
