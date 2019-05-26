@@ -92,7 +92,7 @@ if __name__ == "__main__":
     # for temp in parsed_dataset:
     #     process_function(temp)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.repeat(200).batch(1)  # 每个batch都是同一张图片切出来的
+    batched_dataset = processed_dataset.repeat(200).batch(9)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
     temp_sum = list()
