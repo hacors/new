@@ -106,7 +106,7 @@ if __name__ == "__main__":
         temp_sum.append(loss.numpy())
         gradiens = train_tape.gradient(loss, mynet.variables)
         opti.apply_gradients(zip(gradiens, mynet.variables))
-        if index != 0 and index % 3600 == 0:
+        if index != 0 and index % 900 == 0:
             imgs = dataset[0]
             predic = mynet(imgs).numpy()
             truth = dataset[1].numpy()
@@ -116,6 +116,6 @@ if __name__ == "__main__":
             # show(truth)
             print(sum(temp_sum))
             temp_sum.clear()
-            if index % 36000 == 0:
+            if index % 9000 == 0:
                 mynet.save_weights('Datasets/shtech/weight_%s.h5' % index)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
