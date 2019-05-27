@@ -28,13 +28,11 @@ def process_function(parsed_data):
     img_true = tf.reshape(tf.decode_raw(img_string, tf.uint8), [height, width, 3])
     dens_true = tf.reshape(tf.decode_raw(dens_string, tf.float32), [height, width, 1])  # 注意图片必须是三维的
     img_processed = tf.divide(tf.cast(img_true, tf.float32), 255.0)
-    '''
     img_expand = tf.expand_dims(img_processed, -1)
-    img_part_0 = tf.divide(tf.subtract(img_expand[:, :, 0, :], 0.485), 229)
+    img_part_0 = tf.divide(tf.subtract(img_expand[:, :, 0, :], 0.485), 0.229)
     img_part_1 = tf.divide(tf.subtract(img_expand[:, :, 1, :], 0.456), 0.224)
-    img_part_2 = tf.divide(tf.subtract(img_expand[:, :, 2, :], 0.406), 0.00225)
+    img_part_2 = tf.divide(tf.subtract(img_expand[:, :, 2, :], 0.406), 0.225)
     img_processed = tf.concat([img_part_0, img_part_1, img_part_2], 2)
-    '''
     dens_processed = tf.image.resize_images(dens_true, [height/8, width/8], method=1)  # 平衡数值大小，同时使得图像可以显示
     return img_processed, dens_processed
 
