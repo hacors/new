@@ -90,19 +90,19 @@ if __name__ == "__main__":
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.repeat(200).batch(9)  # 每个batch都是同一张图片切出来的
+    batched_dataset = processed_dataset.repeat(200).batch(1)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
     temp_sum = list()
     for index, dataset in enumerate(batched_dataset):
         with tf.GradientTape() as train_tape:
-            opti = tf.train.GradientDescentOptimizer(learning_rate=1e-6)
+            opti = tf.train.GradientDescentOptimizer(learning_rate=1e-7)
             predict = mynet(dataset[0])
             loss = euclidean_distance_loss(dataset[1], predict)
         temp_sum.append(loss.numpy())
         gradiens = train_tape.gradient(loss, mynet.variables)
         opti.apply_gradients(zip(gradiens, mynet.variables))
-        if index != 0 and index % 10 == 0:
+        if index != 0 and index % 100 == 0:
             print(sum(temp_sum))
             temp_sum.clear()
             if index % 1000 == 0:
