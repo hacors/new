@@ -100,9 +100,7 @@ if __name__ == "__main__":
         with tf.GradientTape() as train_tape:
             opti = tf.train.GradientDescentOptimizer(learning_rate=1e-6)
             predict = mynet(dataset[0])
-            true_dens_array = dataset[1].numpy()
-            pred_dens_array = predict.numpy()
-            loss = euclidean_distance_loss(dataset[9], predict)
+            loss = euclidean_distance_loss(dataset[1], predict)
         temp_sum.append(loss.numpy())
         gradiens = train_tape.gradient(loss, mynet.variables)
         opti.apply_gradients(zip(gradiens, mynet.variables))
