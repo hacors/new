@@ -81,7 +81,7 @@ def summary_numpy(scatted_np: np.array):
 def show(img_array):
     img_array = img_array.squeeze()
     temp_array = img_array*255.0
-    temp_array = temp_array.astype(np.int8)
+    temp_array = temp_array.astype(np.uint8)
     plt.imshow(temp_array)
     plt.show()
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.repeat(800).batch(1)  # 每个batch都是同一张图片切出来的
+    batched_dataset = processed_dataset.repeat(800).batch(9)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
     temp_sum = list()
@@ -102,16 +102,13 @@ if __name__ == "__main__":
             predict = mynet(dataset[0])
             true_dens_array = dataset[1].numpy()
             pred_dens_array = predict.numpy()
-            loss = euclidean_distance_loss(dataset[1], predict)
-            show(dataset[0].numpy())
-            show(true_dens_array)
-            show(pred_dens_array)
+            loss = euclidean_distance_loss(dataset[9], predict)
         temp_sum.append(loss.numpy())
         gradiens = train_tape.gradient(loss, mynet.variables)
         opti.apply_gradients(zip(gradiens, mynet.variables))
-        if index != 0 and index % 3600 == 0:
+        if index != 0 and index % 900 == 0:
             print(sum(temp_sum))
             temp_sum.clear()
-            if index % 36000 == 0:
+            if index % 9000 == 0:
                 mynet.save_weights('Datasets/shtech/weight_%s.h5' % index)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')

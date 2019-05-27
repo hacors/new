@@ -26,7 +26,7 @@ def summary_numpy(scatted_np: np.array):
 
 def show(img_array):
     temp_array = img_array*255.0
-    temp_array = temp_array.astype(np.int8)
+    temp_array = temp_array.astype(np.uint8)
     plt.imshow(temp_array)
     plt.show()
 
@@ -40,11 +40,14 @@ if __name__ == '__main__':
     processed_dataset = parsed_dataset.map(model.process_function)
     batched_dataset = processed_dataset.batch(9)
     for dataset in batched_dataset:
-        imgs = dataset[0][:4]
-        predic = mynet(imgs).numpy()
+        imgs_tensor = dataset[0][:4]
+        images = dataset[0][:4].numpy()
+        predic = mynet(imgs_tensor).numpy()
         truth = dataset[1][:4].numpy()
         sum_predic = summary_numpy(predic)
         sum_truth = summary_numpy(truth)
+        sum_images = summary_numpy(images)
+        show(sum_images)
         show(sum_predic)
         show(sum_truth)
     pass
