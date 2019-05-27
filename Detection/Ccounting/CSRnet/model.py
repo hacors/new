@@ -96,15 +96,15 @@ if __name__ == "__main__":
     temp_sum = list()
     for index, dataset in enumerate(batched_dataset):
         with tf.GradientTape() as train_tape:
-            opti = tf.train.GradientDescentOptimizer(learning_rate=1e-6)
+            opti = tf.train.GradientDescentOptimizer(learning_rate=1e-7)
             predict = mynet(dataset[0])
             loss = euclidean_distance_loss(dataset[1], predict)
         temp_sum.append(loss.numpy())
         gradiens = train_tape.gradient(loss, mynet.variables)
         opti.apply_gradients(zip(gradiens, mynet.variables))
-        if index != 0 and index % 900 == 0:
+        if index != 0 and index % 10 == 0:
             print(sum(temp_sum))
             temp_sum.clear()
-            if index % 9000 == 0:
+            if index % 100 == 0:
                 mynet.save_weights('Datasets/shtech/weight_%s.h5' % index)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
