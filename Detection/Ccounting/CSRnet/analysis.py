@@ -12,7 +12,7 @@ def load_model():
     medel_json_data = json_file.read()
     json_file.close()
     loaded_model = keras.models.model_from_json(medel_json_data)
-    loaded_model.load_weights('Datasets/shtech/weight.h5')
+    loaded_model.load_weights('Datasets/shtech/weight_last.h5')
     return loaded_model
 
 
@@ -34,7 +34,7 @@ def show(img_array):
 if __name__ == '__main__':
     mynet = load_model()
     shtech_image_path, shtech_set_path = process.get_shtech_path()
-    tfrecord_path = os.path.join(shtech_set_path[0][1], 'all_data.tfrecords')
+    tfrecord_path = os.path.join(shtech_set_path[0][0], 'all_data.tfrecords')
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(model.parse_image_function)
     processed_dataset = parsed_dataset.map(model.process_function)

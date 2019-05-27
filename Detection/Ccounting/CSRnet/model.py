@@ -89,33 +89,23 @@ if __name__ == "__main__":
     tfrecord_path = os.path.join(shtech_set_path[0][0], 'all_data.tfrecords')
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
-    # for temp in parsed_dataset:
-    #     process_function(temp)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.repeat(400).batch(9)  # 每个batch都是同一张图片切出来的
+    batched_dataset = processed_dataset.batch(9)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
-    temp_sum = list()
-    for index, dataset in enumerate(batched_dataset):
-        with tf.GradientTape() as train_tape:
-            opti = tf.train.GradientDescentOptimizer(learning_rate=1e-6)
-            predict = mynet(dataset[0])
-            true_dens_array = dataset[1].numpy()
-            pred_dens_array = predict.numpy()
-            loss = euclidean_distance_loss(dataset[1], predict)
-        temp_sum.append(loss.numpy())
-        gradiens = train_tape.gradient(loss, mynet.variables)
-        opti.apply_gradients(zip(gradiens, mynet.variables))
-        if index != 0 and index % 900 == 0:
-            imgs = dataset[0]
-            predic = mynet(imgs).numpy()
-            truth = dataset[1].numpy()
-            # predic = summary_numpy(predic)
-            # truth = summary_numpy(truth)
-            # show(predic)
-            # show(truth)
-            print(sum(temp_sum))
-            temp_sum.clear()
-            if index % 9000 == 0:
-                mynet.save_weights('Datasets/shtech/weight_%s.h5' % index)
+    for repeat in range(400):
+        temp_sum = list()
+        for index, dataset in enumerate(batched_dataset):
+            with tf.GradientTape() as train_tape:
+                opti = tf.train.AdamOptimizer(learning_rate=1e-6)
+                predict = mynet(dataset[0])
+                true_dens_array = dataset[1].numpy()
+                pred_dens_array = predict.numpy()
+                loss = euclidean_distance_loss(dataset[1], predict)
+            temp_sum.append(loss.numpy())
+            gradiens = train_tape.gradient(loss, mynet.variables)
+            opti.apply_gradients(zip(gradiens, mynet.variables))
+        print(sum(temp_sum))
+        if repeat % 40 == 0:
+            mynet.save_weights('Datasets/shtech/weight_%s.h5' % index)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
