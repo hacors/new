@@ -95,29 +95,53 @@ if __name__ == "__main__":
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.repeat(200).batch(9)  # 每个batch都是同一张图片切出来的
+    batched_dataset = processed_dataset.repeat(200).batch(1)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
+    all_loss = list()
     for index, dataset in enumerate(batched_dataset):
         with tf.GradientTape() as train_tape:
             opti = tf.train.GradientDescentOptimizer(learning_rate=1e-5)
             predict = mynet(dataset[0], training=True)  # 注意所有的keras模型必须添上一句话，training=True
             loss = euclidean_distance_loss(dataset[1], predict)
-
+            all_loss.append(loss.numpy())
+            '''
             temp_img = dataset[0].numpy()
-            temp_dens_true = dataset[1][4].numpy()
-            temp_dens_pred = predict[4].numpy()
-            show(temp_img[4])
+            temp_dens_true = dataset[1][0].numpy()
+            temp_dens_pred = predict[0].numpy()
+            show(temp_img[0])
             show(temp_dens_true)
             show(temp_dens_pred)
-            '''
             temp = tf.reduce_mean(tf.sqrt(tf.reduce_sum(loss, axis=[1, 2])), axis=0)
-            print('loss:', temp.numpy())
+            print('loss:', temp.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:', temp_dens_pred.max(), 'min:', temp_dens_pred.min())
             '''
-        gradiens = train_tape.gradient(loss, mynet.variables)
-        opti.apply_gradients(zip(gradiens, mynet.variables))
-        if index != 0 and index % 300 == 0:
-            print(loss.numpy())
-            if index % 3000 == 0:
+            gradiens = train_tape.gradient(loss, mynet.variables)
+            opti.apply_gradients(zip(gradiens, mynet.variables))
+            '''
+            predict = mynet(dataset[0], training=True)  # 注意所有的keras模型必须添上一句话，training=True
+            loss = euclidean_distance_loss(dataset[1], predict)
+            temp_img = dataset[0].numpy()
+            temp_dens_true = dataset[1][0].numpy()
+            temp_dens_pred = predict[0].numpy()
+            show(temp_img[0])
+            show(temp_dens_true)
+            show(temp_dens_pred)
+            temp = tf.reduce_mean(tf.sqrt(tf.reduce_sum(loss, axis=[1, 2])), axis=0)
+            print('loss:', temp.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:', temp_dens_pred.max(), 'min:', temp_dens_pred.min())
+            '''
+        if index != 0 and index % 100 == 0:
+            print(sum(all_loss))
+            all_loss.clear()
+            '''
+            temp_img = dataset[0].numpy()
+            temp_dens_true = dataset[1][0].numpy()
+            temp_dens_pred = predict[0].numpy()
+            show(temp_img[0])
+            show(temp_dens_true)
+            show(temp_dens_pred)
+            temp = tf.reduce_mean(tf.sqrt(tf.reduce_sum(loss, axis=[1, 2])), axis=0)
+            print('loss:', temp.numpy(), 'true_max:', temp_dens_true.max(), 'max:', temp_dens_pred.max(), 'min:', temp_dens_pred.min())
+            '''
+            if index % 1000 == 0:
                 mynet.save_weights('Datasets/shtech/weight_%s.h5' % index)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
