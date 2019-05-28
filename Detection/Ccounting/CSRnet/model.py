@@ -104,7 +104,8 @@ if __name__ == "__main__":
             opti = tf.train.GradientDescentOptimizer(learning_rate=1e-5)
             predict = mynet(dataset[0], training=True)  # 注意所有的keras模型必须添上一句话，training=True
             loss = euclidean_distance_loss(dataset[1], predict)
-            all_loss.append(loss.numpy())
+            sum_loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(loss, axis=[1, 2])), axis=0)
+            all_loss.append(sum_loss.numpy())
             '''
             temp_img = dataset[0].numpy()
             temp_dens_true = dataset[1][0].numpy()
