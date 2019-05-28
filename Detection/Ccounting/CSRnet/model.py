@@ -90,7 +90,7 @@ if __name__ == "__main__":
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.repeat(200).batch(1)  # 每个batch都是同一张图片切出来的
+    batched_dataset = processed_dataset.repeat(800).batch(9)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
     temp_sum = list()
@@ -102,9 +102,9 @@ if __name__ == "__main__":
         temp_sum.append(loss.numpy())
         gradiens = train_tape.gradient(loss, mynet.variables)
         opti.apply_gradients(zip(gradiens, mynet.variables))
-        if index != 0 and index % 100 == 0:
+        if index != 0 and index % 1000 == 0:
             print(sum(temp_sum))
             temp_sum.clear()
-            if index % 1000 == 0:
+            if index % 10000 == 0:
                 mynet.save_weights('Datasets/shtech/weight_%s.h5' % index)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
