@@ -4,7 +4,6 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 import process
-
 tf.enable_eager_execution()
 KL = keras.layers
 VGG16 = keras.applications.vgg16.VGG16
@@ -33,14 +32,20 @@ def process_function(parsed_data):
     img_part_1 = tf.divide(tf.subtract(img_expand[:, :, 1, :], 0.456), 0.224)
     img_part_2 = tf.divide(tf.subtract(img_expand[:, :, 2, :], 0.406), 0.225)
     img_processed = tf.concat([img_part_0, img_part_1, img_part_2], 2)
-    dens_processed = tf.image.resize_images(dens_true, [height/8, width/8], method=1)  # 平衡数值大小，同时使得图像可以显示
+    dens_processed = tf.image.resize_images(dens_true, [height/8, width/8], method=1)*64  # 平衡数值大小，同时使得图像可以显示
     return img_processed, dens_processed
 
 
 def euclidean_distance_loss(y_true, y_pred):
-    # loss = keras.backend.sqrt(keras.backend.sum(keras.backend.square(y_pred - y_true), axis=-1))
-    loss = keras.losses.mean_squared_error(y_true, y_pred)  # 注意loss
-    return tf.sqrt(tf.reduce_mean(loss, axis=[0, 1, 2]))
+    '''
+    temp_true = y_true.numpy()
+    temp_pred = y_pred.numpy()
+    print('true_max:%s,pred_max:%s' % (temp_true.max(), temp_pred.max()), end='   ')
+    differ_1 = keras.losses.mean_squared_error(y_true, y_pred)  # 注意loss
+    loss_1 = tf.reduce_mean(tf.sqrt(tf.reduce_sum(differ_1, axis=[1, 2])), axis=0)
+    loss_2 = tf.reduce_mean(tf.abs(tf.reduce_sum(y_true, axis=[1, 2])-tf.reduce_sum(y_pred, axis=[1, 2])), axis=0)
+    '''
+    return keras.losses.mean_squared_error(y_true, y_pred)  # 注意对图片来说，loss针对的是图中的每一个像素点
 
 
 def crowd_net():
@@ -95,13 +100,24 @@ if __name__ == "__main__":
     # print(mynet.summary())
     for index, dataset in enumerate(batched_dataset):
         with tf.GradientTape() as train_tape:
-            opti = tf.train.GradientDescentOptimizer(learning_rate=1e-7)
-            predict = mynet(dataset[0])
+            opti = tf.train.GradientDescentOptimizer(learning_rate=1e-5)
+            predict = mynet(dataset[0], training=True)  # 注意所有的keras模型必须添上一句话，training=True
             loss = euclidean_distance_loss(dataset[1], predict)
+
+            temp_img = dataset[0].numpy()
+            temp_dens_true = dataset[1][4].numpy()
+            temp_dens_pred = predict[4].numpy()
+            show(temp_img[4])
+            show(temp_dens_true)
+            show(temp_dens_pred)
+            '''
+            temp = tf.reduce_mean(tf.sqrt(tf.reduce_sum(loss, axis=[1, 2])), axis=0)
+            print('loss:', temp.numpy())
+            '''
         gradiens = train_tape.gradient(loss, mynet.variables)
         opti.apply_gradients(zip(gradiens, mynet.variables))
-        if index != 0 and index % 30 == 0:
+        if index != 0 and index % 300 == 0:
             print(loss.numpy())
-            if index % 300 == 0:
+            if index % 3000 == 0:
                 mynet.save_weights('Datasets/shtech/weight_%s.h5' % index)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
