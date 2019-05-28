@@ -95,7 +95,7 @@ if __name__ == "__main__":
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.repeat(200).batch(1)  # 每个batch都是同一张图片切出来的
+    batched_dataset = processed_dataset.repeat(400).batch(9)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
     all_loss = list()
@@ -130,7 +130,7 @@ if __name__ == "__main__":
             temp = tf.reduce_mean(tf.sqrt(tf.reduce_sum(loss, axis=[1, 2])), axis=0)
             print('loss:', temp.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:', temp_dens_pred.max(), 'min:', temp_dens_pred.min())
             '''
-        if index != 0 and index % 100 == 0:
+        if index != 0 and index % 1000 == 0:
             print(sum(all_loss))
             all_loss.clear()
             '''
@@ -143,6 +143,6 @@ if __name__ == "__main__":
             temp = tf.reduce_mean(tf.sqrt(tf.reduce_sum(loss, axis=[1, 2])), axis=0)
             print('loss:', temp.numpy(), 'true_max:', temp_dens_true.max(), 'max:', temp_dens_pred.max(), 'min:', temp_dens_pred.min())
             '''
-            if index % 1000 == 0:
+            if index % 10000 == 0:
                 mynet.save_weights('Datasets/shtech/weight_%s.h5' % index)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
