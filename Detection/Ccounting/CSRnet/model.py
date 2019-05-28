@@ -118,18 +118,18 @@ if __name__ == "__main__":
             '''
         gradiens = train_tape.gradient(loss, mynet.variables)
         opti.apply_gradients(zip(gradiens, mynet.variables))
-            '''
-            predict = mynet(dataset[0], training=True)  # 注意所有的keras模型必须添上一句话，training=True
-            loss = euclidean_distance_loss(dataset[1], predict)
-            temp_img = dataset[0].numpy()
-            temp_dens_true = dataset[1][0].numpy()
-            temp_dens_pred = predict[0].numpy()
-            show(temp_img[0])
-            show(temp_dens_true)
-            show(temp_dens_pred)
-            temp = tf.reduce_mean(tf.sqrt(tf.reduce_sum(loss, axis=[1, 2])), axis=0)
-            print('loss:', temp.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:', temp_dens_pred.max(), 'min:', temp_dens_pred.min())
-            '''
+        '''
+        predict = mynet(dataset[0], training=True)  # 注意所有的keras模型必须添上一句话，training=True
+        loss = euclidean_distance_loss(dataset[1], predict)
+        temp_img = dataset[0].numpy()
+        temp_dens_true = dataset[1][0].numpy()
+        temp_dens_pred = predict[0].numpy()
+        show(temp_img[0])
+        show(temp_dens_true)
+        show(temp_dens_pred)
+        temp = tf.reduce_mean(tf.sqrt(tf.reduce_sum(loss, axis=[1, 2])), axis=0)
+        print('loss:', temp.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:', temp_dens_pred.max(), 'min:', temp_dens_pred.min())
+        '''
         if index != 0 and index % 100 == 0:
             print(sum(all_loss))
             all_loss.clear()
