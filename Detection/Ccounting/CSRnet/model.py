@@ -106,17 +106,17 @@ if __name__ == "__main__":
                     loss = euclidean_distance_loss(dataset[1], predict)
                     gradiens = train_tape.gradient(loss, mynet.variables)
                     opti.apply_gradients(zip(gradiens, mynet.variables))
-                    if repeat % 5 == 0:
-                        temp_img = dataset[0][0].numpy()
-                        temp_dens_true = dataset[1][0].numpy()
-                        temp_dens_pred = predict[0].numpy()
-                        '''
-                        show(temp_img)
-                        show(temp_dens_pred)
-                        show(temp_dens_true)
-                        '''
-                        print('loss:', loss.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:',
-                              temp_dens_pred.max(), 'min:', temp_dens_pred.min(), 'diff:', temp_dens_pred.max()-temp_dens_pred.min())
+            
+            temp_img = dataset[0][0].numpy()
+            temp_dens_true = dataset[1][0].numpy()
+            temp_dens_pred = predict[0].numpy()
+            '''
+            show(temp_img)
+            show(temp_dens_pred)
+            show(temp_dens_true)
+            '''
+            print('loss:', loss.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:',
+                    temp_dens_pred.max(), 'min:', temp_dens_pred.min(), 'diff:', temp_dens_pred.max()-temp_dens_pred.min())
 
         if epoch % 5 == 0:
             mynet.save_weights('Datasets/shtech/weight_%s_new.h5' % epoch)
