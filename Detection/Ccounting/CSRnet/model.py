@@ -101,32 +101,26 @@ if __name__ == "__main__":
     batched_dataset = processed_dataset.repeat(400).batch(1)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
-    all_loss = list()
+    # all_loss = list()
     for index, dataset in enumerate(batched_dataset):
-        for repeat in range(20):
-            with tf.GradientTape() as train_tape:
-                opti = tf.train.GradientDescentOptimizer(learning_rate=1e-5)
-                predict = mynet(dataset[0], training=True)  # 注意所有的keras模型必须添上一句话，training=True
-                loss = euclidean_distance_loss(dataset[1], predict)
-                # loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(loss, axis=[1, 2])), axis=0)
-                all_loss.append(loss.numpy())
-
-                if repeat % 5 == 0:
-                    temp_img = dataset[0].numpy()
-                    temp_dens_true = dataset[1][0].numpy()
-                    temp_dens_pred = predict[0].numpy()
-                    # show(temp_img[0])
-                    # show(temp_dens_true)
-                    # show(temp_dens_pred)
-                    print('loss:', loss.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:',
-                          temp_dens_pred.max(), 'min:', temp_dens_pred.min(), 'diff:', temp_dens_pred.max()-temp_dens_pred.min())
-
-            gradiens = train_tape.gradient(loss, mynet.variables)
-            opti.apply_gradients(zip(gradiens, mynet.variables))
+        with tf.GradientTape() as train_tape:
+            opti = tf.train.GradientDescentOptimizer(learning_rate=1e-5)
+            predict = mynet(dataset[0], training=True)  # 注意所有的keras模型必须添上一句话，training=True
+            loss = euclidean_distance_loss(dataset[1], predict)
+            # loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(loss, axis=[1, 2])), axis=0)
+            # all_loss.append(loss.numpy())
+        gradiens = train_tape.gradient(loss, mynet.variables)
+        opti.apply_gradients(zip(gradiens, mynet.variables))
 
         if index != 0 and index % 100 == 0:
-            print(sum(all_loss))
-            all_loss.clear()
+            temp_img = dataset[0].numpy()
+            temp_dens_true = dataset[1][0].numpy()
+            temp_dens_pred = predict[0].numpy()
+            # show(temp_img[0])
+            # show(temp_dens_true)
+            # show(temp_dens_pred)
+            print('loss:', loss.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:',
+                  temp_dens_pred.max(), 'min:', temp_dens_pred.min(), 'diff:', temp_dens_pred.max()-temp_dens_pred.min())
             if index % 1000 == 0:
                 mynet.save_weights('Datasets/shtech/weight_%s.h5' % index)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
