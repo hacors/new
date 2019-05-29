@@ -39,14 +39,6 @@ def process_function(parsed_data):
 
 
 def euclidean_distance_loss(y_true, y_pred):
-    '''
-    temp_true = y_true.numpy()
-    temp_pred = y_pred.numpy()
-    print('true_max:%s,pred_max:%s' % (temp_true.max(), temp_pred.max()), end='   ')
-    differ_1 = keras.losses.mean_squared_error(y_true, y_pred)  # 注意loss
-    loss_1 = tf.reduce_mean(tf.sqrt(tf.reduce_sum(differ_1, axis=[1, 2])), axis=0)
-    loss_2 = tf.reduce_mean(tf.abs(tf.reduce_sum(y_true, axis=[1, 2])-tf.reduce_sum(y_pred, axis=[1, 2])), axis=0)
-    '''
     loss_1 = keras.losses.mean_squared_error(y_true, y_pred)  # 注意对图片来说，loss针对的是图中的每一个像素点
     loss_2 = tf.sqrt(tf.reduce_sum(loss_1, axis=[1, 2]))
     loss_3 = tf.reduce_mean(loss_2, axis=0)
@@ -115,8 +107,10 @@ if __name__ == "__main__":
             gradiens = train_tape.gradient(loss, mynet.variables)
             opti.apply_gradients(zip(gradiens, mynet.variables))
         epoch_sum_loss = sum(epoch_loss)
-        print(epoch_loss)
+        print(epoch_sum_loss)
         all_loss.append(epoch_sum_loss)
         if repeat % 40 == 0:
             mynet.save_weights('Datasets/shtech/weight_%s_new.h5' % index)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
+    all_loss = np.array(all_loss)
+    np.savetxt('Datasets/shtech/all_loss', all_loss)

@@ -7,12 +7,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def load_model():
-    json_file = open('Datasets/shtech/model.json', 'r')
+def load_model(model_p, weight_p):
+    json_file = open(model_p, 'r')
     medel_json_data = json_file.read()
     json_file.close()
     loaded_model = keras.models.model_from_json(medel_json_data)
-    loaded_model.load_weights('Datasets/shtech/weight_226000.h5')
+    loaded_model.load_weights(weight_p)
     return loaded_model
 
 
@@ -36,7 +36,9 @@ def show_errors():
 
 
 if __name__ == '__main__':
-    mynet = load_model()
+    model_path = 'Datasets/shtech/model.json'
+    weight_path = 'Datasets/shtech/weight_226000.h5'
+    mynet = load_model(model_path, weight_path)
     shtech_image_path, shtech_set_path = process.get_shtech_path()
     tfrecord_path = os.path.join(shtech_set_path[0][1], 'all_data.tfrecords')
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
