@@ -98,7 +98,7 @@ if __name__ == "__main__":
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.repeat(400).batch(1)  # 每个batch都是同一张图片切出来的
+    batched_dataset = processed_dataset.repeat(400).batch(9)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
     # all_loss = list()
@@ -112,7 +112,7 @@ if __name__ == "__main__":
         gradiens = train_tape.gradient(loss, mynet.variables)
         opti.apply_gradients(zip(gradiens, mynet.variables))
 
-        if index != 0 and index % 100 == 0:
+        if index != 0 and index % 1 == 0:
             temp_img = dataset[0].numpy()
             temp_dens_true = dataset[1][0].numpy()
             temp_dens_pred = predict[0].numpy()
@@ -121,6 +121,6 @@ if __name__ == "__main__":
             # show(temp_dens_pred)
             print('loss:', loss.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:',
                   temp_dens_pred.max(), 'min:', temp_dens_pred.min(), 'diff:', temp_dens_pred.max()-temp_dens_pred.min())
-            if index % 1000 == 0:
+            if index % 100 == 0:
                 mynet.save_weights('Datasets/shtech/weight_%s.h5' % index)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
