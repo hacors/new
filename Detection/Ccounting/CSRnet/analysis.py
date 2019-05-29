@@ -12,7 +12,7 @@ def load_model():
     medel_json_data = json_file.read()
     json_file.close()
     loaded_model = keras.models.model_from_json(medel_json_data)
-    loaded_model.load_weights('Datasets/shtech/weight_last.h5')
+    loaded_model.load_weights('Datasets/shtech/weight_8000.h5')
     return loaded_model
 
 

@@ -101,7 +101,7 @@ if __name__ == "__main__":
     all_loss = list()
     for index, dataset in enumerate(batched_dataset):
         with tf.GradientTape() as train_tape:
-            opti = tf.train.GradientDescentOptimizer(learning_rate=1e-5)
+            opti = tf.train.GradientDescentOptimizer(learning_rate=1e-6)
             predict = mynet(dataset[0], training=True)  # 注意所有的keras模型必须添上一句话，training=True
             loss = euclidean_distance_loss(dataset[1], predict)
             sum_loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(loss, axis=[1, 2])), axis=0)
