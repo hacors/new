@@ -31,6 +31,10 @@ def show(img_array):
     plt.show()
 
 
+def show_errors():
+    pass
+
+
 if __name__ == '__main__':
     mynet = load_model()
     shtech_image_path, shtech_set_path = process.get_shtech_path()

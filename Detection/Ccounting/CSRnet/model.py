@@ -4,6 +4,8 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 import process
+
+os.environ['CUDA_VISIBLE_DEVICES']='0'
 tf.enable_eager_execution()
 KL = keras.layers
 VGG16 = keras.applications.vgg16.VGG16
