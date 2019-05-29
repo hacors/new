@@ -45,7 +45,16 @@ if __name__ == '__main__':
     parsed_dataset = tfrecord_file.map(model.parse_image_function)
     processed_dataset = parsed_dataset.map(model.process_function)
     batched_dataset = processed_dataset.batch(9)
+    truth_list = list()
+    pred_list = list()
     for dataset in batched_dataset:
+        '''
+        pred_tensor = mynet(dataset[0][:4])
+        pred_num = tf.reduce_sum(pred_tensor, axis=[0, 1, 2])
+        truth_num = tf.reduce_sum(dataset[1][:4], axis=[0, 1, 2])
+        pred_list.append(pred_num.numpy())
+        truth_list.append(truth_num.numpy())
+        '''
         imgs_tensor = dataset[0][:4]
         images = dataset[0][:4].numpy()
         predic = mynet(imgs_tensor).numpy()
@@ -56,4 +65,5 @@ if __name__ == '__main__':
         show(sum_images)
         show(sum_predic)
         show(sum_truth)
+        
     pass

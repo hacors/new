@@ -109,7 +109,7 @@ if __name__ == "__main__":
         epoch_sum_loss = sum(epoch_loss)
         print(epoch_sum_loss)
         all_loss.append(epoch_sum_loss)
-        if repeat % 40 == 0:
+        if repeat % 5 == 0:
             mynet.save_weights('Datasets/shtech/weight_%s_new.h5' % index)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
     all_loss = np.array(all_loss)
