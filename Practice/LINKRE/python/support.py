@@ -5,6 +5,7 @@ rec_types = Enum('type', ('pa', 'apa', 'lp', 'sa', 'dw', 'contra', 'rpa', 'rapa'
 net_paras = {'balinks': 3}
 rec_paras = {'lpmax': 3, 'lpmult': 0.4, 'samax': 2}
 mov_paras = {'dilipara1': 1, 'dilipara2': 1}  # dilipara为结点最大出发量的系数
+ROOT = 'Practice/LINKRE/python'
 
 
 def log(func):

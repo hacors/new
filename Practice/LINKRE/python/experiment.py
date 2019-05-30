@@ -8,8 +8,8 @@ from matplotlib import pyplot as plt
 import movenet
 import support as sup
 
-data_director = 'LINKRE/python/temp/data'
-graph_director = 'LINKRE/python/temp/'
+data_director = sup.ROOT + '/temp/data'
+graph_director = sup.ROOT + '/temp/'
 
 '''
 gratp = 1
@@ -74,7 +74,7 @@ def simpledraw(thelist, name='default'):
 
 if __name__ == '__main__':
     all_result = list()
-    pool_process = multp.Pool(processes=10)
+    pool_process = multp.Pool(processes=8)
     for index in range(repeat):
         all_result.append(pool_process.apply_async(singleexp, (index,)))
     np.savetxt(data_director, all_result)

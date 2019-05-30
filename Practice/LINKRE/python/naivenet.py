@@ -8,8 +8,8 @@ from matplotlib import pyplot as plt
 
 import support as sup
 
-edge_director = 'LINKRE/python/temp/edges'
-vector_director = 'LINKRE/python/temp/vectors'
+edge_director = sup.ROOT + '/temp/edges'
+vector_director = sup.ROOT + '/temp/vectors'
 
 
 class mynetwork():  # 图类
@@ -31,7 +31,7 @@ class mynetwork():  # 图类
             linknum = sup.net_paras['balinks']
             return(self.get_ba(nodenum, linknum))
         else:
-            director = 'LINKRE/python/networks/%s' % nettypes.name
+            director = sup.ROOT + '/networks/%s' % nettypes.name
             return(self.get_fromfile(nodenum, director))
 
     def get_ba(self, nodenum, linknum):  # BA的实现，最小结点数为2
@@ -98,7 +98,7 @@ class mynetwork():  # 图类
         nx.draw_networkx_nodes(network, position, node_color='green', node_size=300)
         nx.draw_networkx_labels(network, position, font_size=8, font_color='white')
         nx.draw_networkx_edges(network, position, edgelist=edgelists, edge_color='black', width=1.0)
-        direct = 'LINKRE/python/graphs/'+name+'.png'
+        direct = sup.ROOT + '/graphs/'+name+'.png'
         plt.savefig(direct)
         plt.close()
 

@@ -4,7 +4,7 @@ import random as rd
 import networkx as nx
 import numpy as np
 from matplotlib import pyplot as plt
-
+import support as sup
 import naivenet
 
 # from multiprocessing import process
@@ -104,7 +104,7 @@ class movenet(naivenet.mynetwork):
         nx.draw_networkx_edges(network, pos, edgelist=edge_break, edge_color='red', width=1.0,  style='dashed')  # 画出损坏边
         nx.draw_networkx_nodes(network, pos, node_color='green', node_size=300)  # 画出结点
         nx.draw_networkx_labels(network, pos, font_size=8, font_color='white')
-        direct = 'LINKRE/python/graphs/'+name+'.png'  # 保存图片路径
+        direct = sup.ROOT + '/graphs/'+name+'.png'  # 保存图片路径
         plt.savefig(direct)
         plt.close()  # 关闭
 
