@@ -97,7 +97,7 @@ if __name__ == "__main__":
     batched_dataset = processed_dataset.batch(BATCHSIZE)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
-    for epoch in range(400):
+    for epoch in range(1000):
         epoch_loss = list()
         for index, dataset in enumerate(batched_dataset):
             # for repeat in range(20):
