@@ -101,7 +101,7 @@ if __name__ == "__main__":
                 pool.apply_async(gaussian_filter_density, (gt_matrix, dens_path, index,))
             pool.close()
             pool.join()
-            
+
     for part_index, set_part in enumerate(shtech_set_path):  # 生成tfrecord文件
         for class_index, set_class in enumerate(set_part):
             record_path = os.path.join(set_class, 'all_data.tfrecords')
