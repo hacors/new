@@ -92,10 +92,10 @@ if __name__ == "__main__":
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.batch(1)  # 每个batch都是同一张图片切出来的
+    batched_dataset = processed_dataset.batch(9)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
-    for epoch in range(400):
+    for epoch in range(1):
         epoch_loss = list()
         for index, dataset in enumerate(batched_dataset):
 
@@ -119,6 +119,6 @@ if __name__ == "__main__":
                 print('loss:', loss.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:',
                       temp_dens_pred.max(), 'min:', temp_dens_pred.min(), 'diff:', temp_dens_pred.max()-temp_dens_pred.min())
 
-        if epoch != 0 and epoch % 20 == 0:
+        if  epoch % 20 == 0:
             mynet.save_weights('Datasets/shtech/weight_%s_new.h5' % epoch)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
