@@ -92,7 +92,7 @@ if __name__ == "__main__":
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.batch(9)  # 每个batch都是同一张图片切出来的
+    batched_dataset = processed_dataset.batch(1)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
     for epoch in range(1):
