@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 import movenet
 import support as sup
 
-data_director = sup.ROOT + '/temp/data'
+data_director = sup.ROOT + '/temp/data.npy'
 graph_director = sup.ROOT + '/temp/'
 
 '''
@@ -25,10 +25,9 @@ nodenum = 15
 epoch = 30
 generate = 1.5
 repeat = 20
-
-net = movenet.movenet(gratp, breaknum, nodenum=nodenum)
 rec_num = len(sup.rec_types)
 gra_name = str(sup.net_types(gratp)).split('.')[-1]
+whole_net = movenet.movenet(gratp, breaknum, nodenum=nodenum)
 
 
 def singleexp(index):
@@ -37,7 +36,7 @@ def singleexp(index):
     alllist = list()
     for recindex in range(1, rec_num+1):
         recstr = str(sup.rec_types(recindex)).split('.')[-1]
-        templist = net.recovery(recstr, epoch, generate)
+        templist = whole_net.recovery(recstr, epoch, generate)
         alllist.append(templist)
     temp_array = np.array(alllist)
     rank_array = np.argsort(temp_array, axis=0)
@@ -49,7 +48,7 @@ def singleexp(index):
 
 def read_show(director, name):
     result = np.zeros((rec_num, breaknum+1))
-    datas = np.loadtxt(director)
+    datas = np.load(director)
     for data in datas:
         stru_data = data.reshape((rec_num, breaknum+1))
         result = result+stru_data
@@ -74,8 +73,13 @@ def simpledraw(thelist, name='default'):
 
 if __name__ == '__main__':
     all_result = list()
-    pool_process = multp.Pool(processes=8)
+    pool = multp.Pool(processes=5)
     for index in range(repeat):
-        all_result.append(pool_process.apply_async(singleexp, (index,)))
-    np.savetxt(data_director, all_result)
+        all_result.append(pool.apply_async(singleexp, (index, )))
+    pool.close()
+    pool.join()
+    true_result = list()
+    for temp in all_result:
+        true_result.append(temp.get())
+    np.save(data_director, np.array(true_result))
     read_show(data_director, 'merged_graph')
