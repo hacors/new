@@ -37,7 +37,7 @@ def show_errors():
 
 if __name__ == '__main__':
     model_path = 'Datasets/shtech/model.json'
-    weight_path = 'Datasets/shtech/weight_0_batch1.h5'
+    weight_path = 'Datasets/shtech/weight_100_batch9.h5'
     mynet = load_model(model_path, weight_path)
     shtech_image_path, shtech_set_path = process.get_shtech_path()
     tfrecord_path = os.path.join(shtech_set_path[0][1], 'all_data.tfrecords')

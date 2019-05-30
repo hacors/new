@@ -9,6 +9,8 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 tf.enable_eager_execution()
 KL = keras.layers
 VGG16 = keras.applications.vgg16.VGG16
+BATCHSIZE = 1
+SETCHOOSE = 0
 feature = {
     'height': tf.FixedLenFeature([], tf.int64),
     'width': tf.FixedLenFeature([], tf.int64),
@@ -88,17 +90,16 @@ def show(img_array):
 
 if __name__ == "__main__":
     shtech_image_path, shtech_set_path = process.get_shtech_path()
-    tfrecord_path = os.path.join(shtech_set_path[0][0], 'all_data.tfrecords')
+    tfrecord_path = os.path.join(shtech_set_path[SETCHOOSE][0], 'all_data.tfrecords')
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
     processed_dataset = parsed_dataset.map(process_function)
-    batched_dataset = processed_dataset.batch(9)  # 每个batch都是同一张图片切出来的
+    batched_dataset = processed_dataset.batch(BATCHSIZE)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     # print(mynet.summary())
     for epoch in range(400):
         epoch_loss = list()
         for index, dataset in enumerate(batched_dataset):
-
             # for repeat in range(20):
             with tf.GradientTape() as train_tape:
                 opti = tf.train.GradientDescentOptimizer(learning_rate=1e-5)
@@ -106,19 +107,15 @@ if __name__ == "__main__":
                 loss = euclidean_distance_loss(dataset[1], predict)
                 gradiens = train_tape.gradient(loss, mynet.variables)
                 opti.apply_gradients(zip(gradiens, mynet.variables))
-
+            epoch_loss.append(loss.numpy())
+        print(sum(epoch_loss))
+        '''
             temp_img = dataset[0][0].numpy()
             temp_dens_true = dataset[1][0].numpy()
             temp_dens_pred = predict[0].numpy()
-            '''
-            show(temp_img)
-            show(temp_dens_pred)
-            show(temp_dens_true)
-            '''
-            if index % 100 == 0:
-                print('loss:', loss.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:',
-                      temp_dens_pred.max(), 'min:', temp_dens_pred.min(), 'diff:', temp_dens_pred.max()-temp_dens_pred.min())
-
+            print('loss:', loss.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:',
+                temp_dens_pred.max(), 'min:', temp_dens_pred.min(), 'diff:', temp_dens_pred.max()-temp_dens_pred.min())
+        '''
         if epoch % 20 == 0:
-            mynet.save_weights('Datasets/shtech/weight_%s_new.h5' % epoch)
-    save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
+            mynet.save_weights('Datasets/shtech/set_%s_weight_%s_batch_%s.h5' % (SETCHOOSE, epoch, BATCHSIZE))
+    save_model(mynet, 'Datasets/shtech/set_%s_weight_last_batch_%s.h5' % (SETCHOOSE, BATCHSIZE), 'Datasets/shtech/model.json')
