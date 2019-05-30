@@ -99,13 +99,13 @@ if __name__ == "__main__":
         epoch_loss = list()
         for index, dataset in enumerate(batched_dataset):
 
-            for repeat in range(20):
-                with tf.GradientTape() as train_tape:
-                    opti = tf.train.GradientDescentOptimizer(learning_rate=1e-5)
-                    predict = mynet(dataset[0], training=True)  # 注意所有的keras模型必须添上一句话，training=True
-                    loss = euclidean_distance_loss(dataset[1], predict)
-                    gradiens = train_tape.gradient(loss, mynet.variables)
-                    opti.apply_gradients(zip(gradiens, mynet.variables))
+            # for repeat in range(20):
+            with tf.GradientTape() as train_tape:
+                opti = tf.train.GradientDescentOptimizer(learning_rate=1e-5)
+                predict = mynet(dataset[0], training=True)  # 注意所有的keras模型必须添上一句话，training=True
+                loss = euclidean_distance_loss(dataset[1], predict)
+                gradiens = train_tape.gradient(loss, mynet.variables)
+                opti.apply_gradients(zip(gradiens, mynet.variables))
 
             temp_img = dataset[0][0].numpy()
             temp_dens_true = dataset[1][0].numpy()
@@ -115,9 +115,10 @@ if __name__ == "__main__":
             show(temp_dens_pred)
             show(temp_dens_true)
             '''
-            print('loss:', loss.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:',
-                  temp_dens_pred.max(), 'min:', temp_dens_pred.min(), 'diff:', temp_dens_pred.max()-temp_dens_pred.min())
+            if index % 100 == 0:
+                print('loss:', loss.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:',
+                      temp_dens_pred.max(), 'min:', temp_dens_pred.min(), 'diff:', temp_dens_pred.max()-temp_dens_pred.min())
 
-        if epoch % 5 == 0:
+        if epoch != 0 and epoch % 20 == 0:
             mynet.save_weights('Datasets/shtech/weight_%s_new.h5' % epoch)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
