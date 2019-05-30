@@ -119,6 +119,6 @@ if __name__ == "__main__":
                 print('loss:', loss.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:',
                       temp_dens_pred.max(), 'min:', temp_dens_pred.min(), 'diff:', temp_dens_pred.max()-temp_dens_pred.min())
 
-        if  epoch % 20 == 0:
+        if epoch % 20 == 0:
             mynet.save_weights('Datasets/shtech/weight_%s_new.h5' % epoch)
     save_model(mynet, 'Datasets/shtech/weight_last.h5', 'Datasets/shtech/model.json')
