@@ -1,6 +1,6 @@
 import random as rd
 import time
-from multiprocessing import pool
+import multiprocessing as multp
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -20,11 +20,11 @@ generate = 1.2
 repeat = 100
 '''
 gratp = 1
-breaknum = 60
-nodenum = 30
-epoch = 80
+breaknum = 30
+nodenum = 15
+epoch = 30
 generate = 1.5
-repeat = 400
+repeat = 20
 
 net = movenet.movenet(gratp, breaknum, nodenum=nodenum)
 rec_num = len(sup.rec_types)
@@ -47,15 +47,9 @@ def singleexp(index):
     return rank_array
 
 
-def allexp():
-    pool_process = pool.Pool(processes=10)
-    result = pool_process.map(singleexp, range(repeat))
-    np.savetxt(data_director, result)
-
-
-def read_show(name):
+def read_show(director, name):
     result = np.zeros((rec_num, breaknum+1))
-    datas = np.loadtxt(data_director)
+    datas = np.loadtxt(director)
     for data in datas:
         stru_data = data.reshape((rec_num, breaknum+1))
         result = result+stru_data
@@ -79,5 +73,9 @@ def simpledraw(thelist, name='default'):
 
 
 if __name__ == '__main__':
-    allexp()
-    read_show('merged_graph')
+    all_result = list()
+    pool_process = multp.Pool(processes=10)
+    for index in range(repeat):
+        all_result.append(pool_process.apply_async(singleexp, (index,)))
+    np.savetxt(data_director, all_result)
+    read_show(data_director, 'merged_graph')
