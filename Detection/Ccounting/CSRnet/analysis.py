@@ -68,6 +68,6 @@ if __name__ == '__main__':
     ae = np.absolute(minus_np)
     se = np.square(minus_np)
     mean_ae = np.mean(ae)
-    mean_se = np.mean(se)
+    mean_se = np.sqrt(np.mean(se))
     print(mean_ae, mean_se)
     pass

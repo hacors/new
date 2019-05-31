@@ -108,7 +108,7 @@ if __name__ == "__main__":
                 gradiens = train_tape.gradient(loss, mynet.variables)
                 opti.apply_gradients(zip(gradiens, mynet.variables))
             epoch_loss.append(loss.numpy())
-        print('epoch:', epoch, 'loss:', sum(epoch_loss))
+        print('epoch:', epoch, 'loss:' ,sum(epoch_loss))
         '''
             temp_img = dataset[0][0].numpy()
             temp_dens_true = dataset[1][0].numpy()

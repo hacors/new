@@ -1,0 +1,1 @@
+set_0_weight_280_batch_1 mae=76.6838 mse=121.9959
