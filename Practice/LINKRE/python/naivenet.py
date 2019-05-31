@@ -5,7 +5,6 @@ import random as rd
 import networkx as nx
 import numpy as np
 from matplotlib import pyplot as plt
-
 import support as sup
 
 edge_director = sup.ROOT + '/temp/edges'
@@ -174,16 +173,17 @@ class mynetwork():  # 图类
         node_result = dict()
         for node_vec in struc_data:
             node_vec = node_vec.split(' ')
-            node, vec = int(node_vec[0]), list(map(float, node_vec[1:]))
+            node = int(node_vec[0])
+            vec = list(map(float, node_vec[1:]))
             node_result[node] = vec
         return(node_result)
 
     def get_cosin(self, lista, listb):
-        arraya = np.array(lista)
-        arrayb = np.array(listb)
-        suma = (arraya**2).sum()
-        sumb = (arrayb**2).sum()
-        sum_merge = (arraya*arrayb).sum()
+        arraya = np.array(lista).astype(np.float)
+        arrayb = np.array(listb).astype(np.float)
+        suma = np.sum(np.power(arraya, 2))
+        sumb = np.sum(np.power(arrayb, 2))
+        sum_merge = np.sum(arraya*arrayb)
         cosin = sum_merge/(math.sqrt(suma)*math.sqrt(sumb))
         return cosin
 
