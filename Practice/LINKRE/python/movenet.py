@@ -53,7 +53,7 @@ class movenet(naivenet.mynetwork):
         epoch:代数,
         generate:粒子生成比率,
         '''
-        sumlist = list()
+        epoch_list = list()
         sumofpa = 0
         allnodes = list(self.network.nodes)
         for thenode in self.network.nodes:
@@ -92,8 +92,8 @@ class movenet(naivenet.mynetwork):
                             self.network.node[thenode]['atwait'].append(destination)
                     else:  # 不可移动
                         self.network.node[thenode]['cantgo'].append(destination)
-            sumlist.append(sumofpa)
-        return(sumlist)
+            epoch_list.append(sumofpa)
+        return(epoch_list)
 
     def showbadnet(self, network, name='default'):
         plt.cla()  # 清除画布
@@ -125,8 +125,8 @@ class movenet(naivenet.mynetwork):
         self.getpath()
         partnumsum = self.takemove(epoch, generate)[-1]
         # print('finaly num=', partnumsum, '%s have rec %s' % (recstr, 0))
-        sumlist = list()
-        sumlist.append(partnumsum)
+        recover_list = list()
+        recover_list.append(partnumsum)
         while(templist):  # 每恢复一条计算一次
             recovering = templist[0]
             self.network[recovering[0]][recovering[1]]['work'] = True
@@ -136,11 +136,11 @@ class movenet(naivenet.mynetwork):
             self.getpath()
             partnumsum = self.takemove(epoch, generate)[-1]
             # print('finaly num=', partnumsum, '%s have rec %s' % (recstr, recovednum))
-            sumlist.append(partnumsum)
+            recover_list.append(partnumsum)
         # print('-------------finish-----------')
         for v0, v1 in self.breaklist:
             self.network[v0][v1]['work'] = False  # 恢复为开始的状态
-        return(sumlist)
+        return(recover_list)
 
 
 if __name__ == '__main__':

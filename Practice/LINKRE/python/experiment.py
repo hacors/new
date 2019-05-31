@@ -8,8 +8,8 @@ import movenet
 import support as sup
 
 gratp = 1  # 实验网络的类型
-breaknum = 60  # 破坏的边的数目
-nodenum = 60  # 结点数目
+breaknum = 30  # 破坏的边的数目
+nodenum = 15  # 结点数目
 epoch = 50  # 最终粒子计数时产生的代数
 repeat = 300  # 实验重复次数
 generate = 1.5  # 例子产生的效率
@@ -18,6 +18,7 @@ gra_name = str(sup.net_types(gratp)).split('.')[-1]
 INFO = 'type_%s bnum_%s nnum_%s epoch_%s repeat_%s' % (gra_name, breaknum, nodenum, epoch, repeat)
 data_director = sup.ROOT + '/temp/data %s.npy' % INFO
 merge_director = sup.ROOT + '/temp/merge %s.png' % INFO
+single_director = sup.ROOT + '/temp/single %s.png' % INFO
 whole_net = movenet.movenet(gratp, breaknum, nodenum=nodenum)
 
 
@@ -52,10 +53,10 @@ def read_show(director):
     for data in datas:
         stru_data = data.reshape((rec_num, breaknum+1))
         result = result+stru_data
-    simpledraw(result)
+    draw(result, merge_director)
 
 
-def simpledraw(thelist):
+def draw(the_list, graph_dir):
     plt.figure(figsize=(19, 12))
     plt.title(INFO)
     reclist = range(breaknum+1)  # 需要从0恢复完成所有list，所以+1
@@ -63,15 +64,20 @@ def simpledraw(thelist):
     for recindex in range(temp):
         temp_color = sup.colors[recindex]
         indexa, indexb = recindex, recindex+temp+1
-        plt.plot(reclist, thelist[indexa], color=temp_color, label=sup.rec_types(indexa+1), linestyle='-', marker='d')
-        plt.plot(reclist, thelist[indexb], color=temp_color, label=sup.rec_types(indexb+1), linestyle='--', marker='s')
-    plt.plot(reclist, thelist[temp], color=[0.0, 0.0, 0.0, 1.0], label=sup.rec_types(temp+1))
+        plt.plot(reclist, the_list[indexa], color=temp_color, label=sup.rec_types(indexa+1), linestyle='-', marker='d')
+        plt.plot(reclist, the_list[indexb], color=temp_color, label=sup.rec_types(indexb+1), linestyle='--', marker='s')
+    plt.plot(reclist, the_list[temp], color=[0.0, 0.0, 0.0, 1.0], label=sup.rec_types(temp+1))
     plt.legend()
-    plt.savefig(merge_director)
+    plt.savefig(graph_dir)
+
+
+def single_experiment():
+    temp_recover_list = get_process_data(0)
+    draw(temp_recover_list, single_director)
 
 
 if __name__ == '__main__':
-
+    '''
     all_result = list()
     pool = multp.Pool(processes=10)
     for index in range(repeat):
@@ -82,11 +88,5 @@ if __name__ == '__main__':
     for temp in all_result:
         true_result.append(temp.get())
     np.save(data_director, np.array(true_result))
-    '''
-    all_result = list()
-    for index in range(repeat):
-        all_result.append(get_rank(index))
-    true_result = all_result
-    np.save(data_director, np.array(true_result))
-    '''
     read_show(data_director)
+    '''
