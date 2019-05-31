@@ -88,6 +88,15 @@ def show(img_array):
     plt.show()
 
 
+def load_model(model_p, weight_p):
+    json_file = open(model_p, 'r')
+    medel_json_data = json_file.read()
+    json_file.close()
+    loaded_model = keras.models.model_from_json(medel_json_data)
+    loaded_model.load_weights(weight_p)
+    return loaded_model
+
+
 if __name__ == "__main__":
     shtech_image_path, shtech_set_path = process.get_shtech_path()
     tfrecord_path = os.path.join(shtech_set_path[SETCHOOSE][0], 'all_data.tfrecords')
@@ -96,8 +105,11 @@ if __name__ == "__main__":
     processed_dataset = parsed_dataset.map(process_function)
     batched_dataset = processed_dataset.batch(BATCHSIZE)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
+    model_path = 'Datasets/shtech/model.json'
+    weight_path = 'Datasets/shtech/set_0_weight_400_batch_1.h5'
+    mynet = load_model(model_path, weight_path)
     # print(mynet.summary())
-    for epoch in range(1000):
+    for epoch in range(401, 1000):
         epoch_loss = list()
         for index, dataset in enumerate(batched_dataset):
             # for repeat in range(20):

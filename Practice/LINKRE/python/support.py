@@ -6,6 +6,14 @@ net_paras = {'balinks': 3}
 rec_paras = {'lpmax': 3, 'lpmult': 0.4, 'samax': 2}
 mov_paras = {'dilipara1': 1, 'dilipara2': 1}  # dilipara为结点最大出发量的系数
 ROOT = 'Practice/LINKRE/python'
+colors = [
+    [0.1, 0.5, 0.7, 0.7],
+    [0.5, 0.7, 0.1, 0.7],
+    [0.7, 0.5, 0.1, 0.7],
+    [0.1, 0.7, 0.5, 0.7],
+    [0.5, 0.1, 0.7, 0.7],
+    [0.7, 0.1, 0.5, 0.7]
+]
 
 
 def log(func):
