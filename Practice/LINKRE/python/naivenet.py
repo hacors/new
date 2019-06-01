@@ -6,7 +6,8 @@ import networkx as nx
 import numpy as np
 from matplotlib import pyplot as plt
 import support as sup
-
+from deepwalk import walks
+from deepwalk import skipgram
 edge_director = sup.ROOT + '/temp/edges'
 vector_director = sup.ROOT + '/temp/vectors'
 
@@ -113,7 +114,7 @@ class mynetwork():  # 图类
         lpmult = sup.rec_paras['lpmult']
         dilipara1, dilipara2 = sup.mov_paras['dilipara1'], sup.mov_paras['dilipara2']  # 结点邻居度的和加载一起，但是度需要一定的修饰
         lparrays = self.getarrayspa(lpmax)
-        dpmodels = self.get_deepwalk()
+        dwmodels = self.get_deepwalk()
         for nodeindex in self.network.nodes:
             tempneis = self.network.neighbors(nodeindex)
             count = 0
@@ -129,7 +130,7 @@ class mynetwork():  # 图类
             self.network[v0][v1]['apa'] = self.network.degree(v0)+self.network.degree(v1)
             self.network[v0][v1]['lp'] = lparrays[1][v0index][v1index] + lparrays[2][v0index][v1index]*lpmult
             self.network[v0][v1]['sa'] = len(self.network.node[v0]['nneibs'] & self.network.node[v1]['nneibs'])
-            self.network[v0][v1]['dw'] = self.get_cosin(dpmodels.get(v0), dpmodels.get(v1))
+            self.network[v0][v1]['dw'] = dwmodels.similarity(str(v0), str(v1))  # self.get_cosin(dpmodels.get(v0), dpmodels.get(v1))
             self.network[v0][v1]['contra'] = rd.random()*self.network.number_of_nodes()
 
     def getneinum(self, node, deep):  # 得到某一个结点n度的邻居数
@@ -155,28 +156,29 @@ class mynetwork():  # 图类
         return(arrays)
 
     def get_deepwalk(self):
-        all_str = str()
-        for node in self.network.nodes:
-            neighbors = nx.neighbors(self.network, node)
-            nei_str = str(node)
+        graph_adjlist = self.get_adjlist(self.network)
+        dw_graph = walks.graph.from_adjlist(graph_adjlist)
+        walk_length = sup.net_paras['dw_lensize']*self.network.number_of_nodes()
+        walk_file = list()
+        for rep in range(sup.net_paras['dw_repeat']):
+            for node in self.network.nodes:
+                temp_file = dw_graph.random_walk(walk_length, alpha=0.5, start=str(node))
+                walk_file.append(temp_file)
+        model = skipgram.Word2Vec(min_count=10)
+        model.build_vocab(walk_file)
+        model.train(walk_file, total_examples=model.corpus_count, epochs=model.iter)
+        # print(model.similarity('0', '1'), model.similarity('0', '19'), model.similarity('18', '19'))
+        return model
+
+    def get_adjlist(self, net):
+        graph_adjlist = list()
+        for index, node in enumerate(net.nodes):
+            graph_adjlist.append(list())
+            neighbors = nx.neighbors(net, node)
+            graph_adjlist[index].append(str(node))
             for nei in neighbors:
-                nei_str += ' '+str(nei)
-            nei_str += '\n'
-            all_str += nei_str
-        fd_edge = open(edge_director, 'w')
-        fd_edge.write(all_str)
-        fd_edge.close()
-        os.system('deepwalk --input %s --output %s' % (edge_director, vector_director))
-        fd_vector = open(vector_director, 'r')
-        temp = str(fd_vector.read())
-        struc_data = temp.splitlines()[1:]
-        node_result = dict()
-        for node_vec in struc_data:
-            node_vec = node_vec.split(' ')
-            node = int(node_vec[0])
-            vec = list(map(float, node_vec[1:]))
-            node_result[node] = vec
-        return(node_result)
+                graph_adjlist[index].append(str(nei))
+        return graph_adjlist
 
     def get_cosin(self, lista, listb):
         arraya = np.array(lista).astype(np.float)
@@ -195,5 +197,5 @@ class mynetwork():  # 图类
 
 
 if __name__ == '__main__':
-    net = mynetwork(1, 20)
-    net.get_deepwalk()
+    # net = mynetwork(1, 20)
+    pass
