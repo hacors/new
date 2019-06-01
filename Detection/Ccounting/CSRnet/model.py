@@ -106,10 +106,10 @@ if __name__ == "__main__":
     batched_dataset = processed_dataset.batch(BATCHSIZE)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     model_path = 'Datasets/shtech/model.json'
-    weight_path = 'Datasets/shtech/set_0_weight_400_batch_1.h5'
+    weight_path = 'Datasets/shtech/set_0_weight_780_batch_1.h5'
     mynet = load_model(model_path, weight_path)
     # print(mynet.summary())
-    for epoch in range(401, 1000):
+    for epoch in range(781, 1000):
         epoch_loss = list()
         for index, dataset in enumerate(batched_dataset):
             # for repeat in range(20):
@@ -128,6 +128,6 @@ if __name__ == "__main__":
             print('loss:', loss.numpy(), 'true_max:', temp_dens_true.max(), 'true_mean', np.mean(temp_dens_true), 'max:',
                 temp_dens_pred.max(), 'min:', temp_dens_pred.min(), 'diff:', temp_dens_pred.max()-temp_dens_pred.min())
         '''
-        if epoch % 20 == 0:
+        if epoch % 100 == 0:
             mynet.save_weights('Datasets/shtech/set_%s_weight_%s_batch_%s.h5' % (SETCHOOSE, epoch, BATCHSIZE))
     save_model(mynet, 'Datasets/shtech/set_%s_weight_last_batch_%s.h5' % (SETCHOOSE, BATCHSIZE), 'Datasets/shtech/model.json')
