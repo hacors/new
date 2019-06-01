@@ -11,7 +11,7 @@ gratp = 1  # 实验网络的类型
 breaknum = 30  # 破坏的边的数目
 nodenum = 15  # 结点数目
 epoch = 50  # 最终粒子计数时产生的代数
-repeat = 300  # 实验重复次数
+repeat = 10  # 实验重复次数
 generate = 1.5  # 例子产生的效率
 rec_num = len(sup.rec_types)
 gra_name = str(sup.net_types(gratp)).split('.')[-1]
@@ -19,16 +19,15 @@ INFO = 'type_%s bnum_%s nnum_%s epoch_%s repeat_%s' % (gra_name, breaknum, noden
 data_director = sup.ROOT + '/temp/data %s.npy' % INFO
 merge_director = sup.ROOT + '/temp/merge %s.png' % INFO
 single_director = sup.ROOT + '/temp/single %s.png' % INFO
-whole_net = movenet.movenet(gratp, breaknum, nodenum=nodenum)
 
 
-def get_rank(index):  # 单次实验，通过比对所有的方法，在同一个网络的环境下恢复过程中的排序计分情况
+def get_rank(index, net):  # 单次实验，通过比对所有的方法，在同一个网络的环境下恢复过程中的排序计分情况
     strtime = time.strftime("%H:%M %m-%d", time.localtime())
     print('run %s at time(%s)' % (index, strtime))
     alllist = list()
     for recindex in range(1, rec_num+1):
         recstr = str(sup.rec_types(recindex)).split('.')[-1]
-        templist = whole_net.recovery(recstr, epoch, generate)
+        templist = net.recovery(recstr, epoch, generate)
         alllist.append(templist)
     temp_array = np.array(alllist)
     rank_array = np.argsort(temp_array, axis=0)
@@ -38,11 +37,11 @@ def get_rank(index):  # 单次实验，通过比对所有的方法，在同一�
     return rank_array
 
 
-def get_process_data(index):  # 获取单次实验的完整过程数据
+def get_process_data(index, net):  # 获取单次实验的完整过程数据
     alllist = list()
     for recindex in range(1, rec_num+1):
         recstr = str(sup.rec_types(recindex)).split('.')[-1]
-        templist = whole_net.recovery(recstr, epoch, generate)
+        templist = net.recovery(recstr, epoch, generate)
         alllist.append(templist)
     return alllist
 
@@ -77,16 +76,14 @@ def single_experiment():
 
 
 if __name__ == '__main__':
-    '''
-    all_result = list()
+    pool_result = list()
     pool = multp.Pool(processes=10)
     for index in range(repeat):
-        all_result.append(pool.apply_async(get_rank, (index, )))
+        pool_result.append(pool.apply_async(get_rank, (index, )))
     pool.close()
     pool.join()
     true_result = list()
-    for temp in all_result:
+    for temp in pool_result:
         true_result.append(temp.get())
     np.save(data_director, np.array(true_result))
     read_show(data_director)
-    '''
