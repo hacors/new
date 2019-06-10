@@ -51,5 +51,6 @@
         "utility": "cpp",
         "set": "cpp"
     },
-    "C_Cpp.errorSquiggles": "Disabled"
+    "C_Cpp.errorSquiggles": "Disabled",
+    "debug.enableAllHovers": true
 }
