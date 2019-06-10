@@ -3,10 +3,11 @@
 #include <set>
 #include <algorithm>
 #include <iostream>
+#include "__support.h"
 using namespace std;
 class Solution
 {
-  public:
+public:
     int removeDuplicates(vector<int> &nums)
     {
         if (nums.size() == 0)
@@ -234,8 +235,10 @@ int main()
 {
     Solution mysolution;
     vector<int> test1 = {1, 2, 3, 4, 5, 6, 7};
-    vector<int> test2 = {2, 3, 4, 6, 2, 1};
-    vector<vector<char>> temp = {{5, 3, 8}, {6, 9, 7}, {2, 0, 1}};
-    bool result = mysolution.isValidSudoku(temp);
+    //vector<int> test2 = {2, 3, 4, 6, 2, 1};
+    //vector<vector<char>> temp = {{5, 3, 8}, {6, 9, 7}, {2, 0, 1}};
+    //bool result = mysolution.isValidSudoku(temp);
+    vector<int> result = mysolution.twoSum(test1, 7);
+    _printvector(result);
     return 0;
 }

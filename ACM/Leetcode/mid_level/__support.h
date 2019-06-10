@@ -8,7 +8,7 @@ using namespace std;
 void _printvector(vector<int> &nums)
 {
     for (int i = 0; i < nums.size(); i++)
-        cout << "->" << nums[i];
+        cout << "  =>  " << nums[i];
     cout << endl;
 }
 void _printmap(map<char, int> &themap)

@@ -10,16 +10,18 @@
 using namespace std;
 class Solution
 {
-  public:
-    bool canJump(vector<int>& nums) {
-        
-    }
-    int coinChange(vector<int>& coins, int amount) {
-        
-    }
+public:
+  bool canJump(vector<int> &nums)
+  {
+    return true;
+  }
+  int coinChange(vector<int> &coins, int amount)
+  {
+    return 1;
+  }
 };
 int main()
 {
-    Solution mysolu;
-    return 0;
+  Solution mysolu;
+  return 0;
 }
