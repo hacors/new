@@ -12,7 +12,10 @@ from matplotlib import pyplot as plt
 def gaussian_process(p_gt_list: np.array, p_shape):  # 尝试使用发散卷积
     pos_list = p_gt_list.copy()
     corner_pos = np.array([[0, 0], [0, p_shape[1]], [p_shape[0], 0], p_shape])  # 需要扩展，防止人数过少
-    pos_extend = np.concatenate((pos_list, corner_pos), axis=0)
+    if len(pos_list):
+        pos_extend = np.concatenate((pos_list, corner_pos), axis=0)
+    else:
+        pos_list = corner_pos
     kd_tree = scipy.spatial.KDTree(pos_extend, leafsize=2048)
     kd_dis, kd_locat = kd_tree.query(pos_list, k=4)
     dens_array = np.zeros(p_shape)
