@@ -18,10 +18,11 @@ def gaussian_process(p_gt_list: np.array, p_shape):  # 尝试使用发散卷积
         kd_tree = scipy.spatial.KDTree(pos_extend, leafsize=2048)
         kd_dis, kd_locat = kd_tree.query(pos_list, k=4)
         for index, pos in enumerate(pos_list):
-            temp_filter = np.zeros(p_shape)
-            temp_filter[pos[0], pos[1]] = 1.0
-            sigma = (kd_dis[index][1]+kd_dis[index][2]+kd_dis[index][3])*0.1
-            dens_array += scnd.filters.gaussian_filter(temp_filter, sigma, mode='constant')
+            if pos[0] < p_shape[0] and pos[1] < p_shape[1]:  # 防止越界
+                temp_filter = np.zeros(p_shape)
+                temp_filter[pos[0], pos[1]] = 1.0
+                sigma = (kd_dis[index][1]+kd_dis[index][2]+kd_dis[index][3])*0.1
+                dens_array += scnd.filters.gaussian_filter(temp_filter, sigma, mode='constant')
     return dens_array
 
 
