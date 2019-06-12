@@ -12,18 +12,16 @@ from matplotlib import pyplot as plt
 def gaussian_process(p_gt_list: np.array, p_shape):  # 尝试使用发散卷积
     pos_list = p_gt_list.copy()
     corner_pos = np.array([[0, 0], [0, p_shape[1]], [p_shape[0], 0], p_shape])  # 需要扩展，防止人数过少
+    dens_array = np.zeros(p_shape)
     if len(pos_list):
         pos_extend = np.concatenate((pos_list, corner_pos), axis=0)
-    else:
-        pos_list = corner_pos
-    kd_tree = scipy.spatial.KDTree(pos_extend, leafsize=2048)
-    kd_dis, kd_locat = kd_tree.query(pos_list, k=4)
-    dens_array = np.zeros(p_shape)
-    for index, pos in enumerate(pos_list):
-        temp_filter = np.zeros(p_shape)
-        temp_filter[pos[0], pos[1]] = 1.0
-        sigma = (kd_dis[index][1]+kd_dis[index][2]+kd_dis[index][3])*0.1
-        dens_array += scnd.filters.gaussian_filter(temp_filter, sigma, mode='constant')
+        kd_tree = scipy.spatial.KDTree(pos_extend, leafsize=2048)
+        kd_dis, kd_locat = kd_tree.query(pos_list, k=4)
+        for index, pos in enumerate(pos_list):
+            temp_filter = np.zeros(p_shape)
+            temp_filter[pos[0], pos[1]] = 1.0
+            sigma = (kd_dis[index][1]+kd_dis[index][2]+kd_dis[index][3])*0.1
+            dens_array += scnd.filters.gaussian_filter(temp_filter, sigma, mode='constant')
     return dens_array
 
 
