@@ -34,7 +34,7 @@ def show(img_array):
 
 if __name__ == '__main__':
     model_path = 'Datasets/shtech/model.json'
-    weight_path = 'Datasets/shtech/set_0_weight_560_batch_1.h5'
+    weight_path = 'Datasets/shtech/set_0_weight_700_batch_1.h5'
     mynet = load_model(model_path, weight_path)
     shtech_image_path, shtech_set_path = process.get_shtech_path()
     tfrecord_path = os.path.join(shtech_set_path[SETCHOOSE][1], 'all_data.tfrecords')
