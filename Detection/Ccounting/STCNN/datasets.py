@@ -77,16 +77,24 @@ def get_dataset_expo2010(root_path):
         frame_path = os.path.join(root_path, '%s_frame' % set_type)
         label_path = os.path.join(root_path, '%s_label' % set_type)
         label_type = glob.glob(os.path.join(label_path, '*'))
-        for video_index, video_path in enumerate(label_type):
+        for video_index in range(78, len(label_type)):
+            video_path = label_type[video_index]
             mat_list = glob.glob(os.path.join(video_path, '*.mat'))
-            for mat_index, mat_path in enumerate(mat_list[:-1]):
+            for mat_index in range(len(mat_list)-1):
                 pic_index = mat_index
+                mat_path = mat_list[mat_index]
                 pic_name = mat_path.split('\\')[-1].replace('.mat', '.jpg')
                 pic_path = os.path.join(frame_path, pic_name)
                 single_pic = PIL.Image.open(pic_path)
                 single_pic = np.array(single_pic)
-                gt_file = scio.loadmat(mat_path)
-                single_gt = gt_file['point_position']
+                try:
+                    gt_file = scio.loadmat(mat_path)
+                    single_gt = gt_file['point_position']
+                except Exception:
+                    featrue = h5py.File(mat_path, 'r')
+                    gt_file = featrue['point_position']
+                    flatten_gt = np.ravel(gt_file.value, order='F')
+                    single_gt = np.reshape(flatten_gt, (gt_file.shape[::-1]))
                 single_gt = swap_axis(single_gt)
                 single_dens = gaussian_process(single_gt, single_pic.shape[:2])
                 h5_path = os.path.join(processed_path, 'video%s_pic%s.h5' % (video_index, pic_index))
@@ -107,14 +115,5 @@ def check_file(file_path):
 
 
 if __name__ == '__main__':
-    '''
-    mall_path = os.path.join('Datasets', 'mall')
-    get_dataset_mall(mall_path)
-    '''
-    '''
-    for pic in range(20):
-        path = 'Datasets\\expo2010\\train_processed\\video0_pic%s.h5' % pic
-        check_file(path)
-    '''
-    expo2010_path = os.path.join('Datasets', 'expo2010')
-    get_dataset_expo2010(expo2010_path)
+    # get_dataset_mall(os.path.join('Datasets', 'mall'))
+    get_dataset_expo2010(os.path.join('Datasets', 'expo2010'))
