@@ -99,7 +99,7 @@ def get_dataset_expo2010(root_path):
                     else:
                         flatten_gt = np.ravel(gt_file.value, order='F')
                         single_gt = np.reshape(flatten_gt, (gt_file.shape[::-1]))
-                single_gt = swap_axis(single_gt)
+                single_gt = swap_axis(single_gt) 
                 single_dens = gaussian_process(single_gt, single_pic.shape[:2])
                 file_name = 'video_%s_pic_%s_.h5' % (str(video_index).zfill(5), str(pic_index).zfill(5))
                 h5_path = os.path.join(processed_path, file_name)
@@ -119,6 +119,16 @@ def check_file(file_path):
     plt.show()
 
 
+def tfcord_mall(processed_path):
+    file_list = glob.glob(os.path.join(processed_path, '*.h5'))
+    data_info = list()
+    for file_path in file_list:
+        video_index = file_path.split('_')[-4]
+        pic_index = file_path.split('_')[-2]
+    return file_list
+
+
 if __name__ == '__main__':
-    get_dataset_mall(os.path.join('Datasets', 'mall'))
-    get_dataset_expo2010(os.path.join('Datasets', 'expo2010'))
+    # get_dataset_mall(os.path.join('Datasets', 'mall'))
+    # get_dataset_expo2010(os.path.join('Datasets', 'expo2010'))
+    tfcord_mall(os.path.join('Datasets', 'mall', 'train_processed'))
