@@ -73,12 +73,12 @@ def get_dataset_expo2010(root_path):
     例如video0_pic0.h5
     文件中保存原图片，gt列表，密度图
     '''
-    for set_type in ['train', 'test']:
+    for set_type in ['test', 'train']:
         processed_path = os.path.join(root_path, '%s_processed' % set_type)
         frame_path = os.path.join(root_path, '%s_frame' % set_type)
         label_path = os.path.join(root_path, '%s_label' % set_type)
         label_type = glob.glob(os.path.join(label_path, '*'))
-        for video_index in range(88, len(label_type)):
+        for video_index in range(0, len(label_type)):
             video_path = label_type[video_index]
             mat_list = glob.glob(os.path.join(video_path, '*.mat'))
             for mat_index in range(0, len(mat_list)-1):
@@ -99,7 +99,7 @@ def get_dataset_expo2010(root_path):
                     else:
                         flatten_gt = np.ravel(gt_file.value, order='F')
                         single_gt = np.reshape(flatten_gt, (gt_file.shape[::-1]))
-                single_gt = swap_axis(single_gt) 
+                single_gt = swap_axis(single_gt)
                 single_dens = gaussian_process(single_gt, single_pic.shape[:2])
                 file_name = 'video_%s_pic_%s_.h5' % (str(video_index).zfill(5), str(pic_index).zfill(5))
                 h5_path = os.path.join(processed_path, file_name)

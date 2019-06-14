@@ -1,5 +1,4 @@
 import math
-import os
 import random as rd
 
 import networkx as nx
@@ -18,7 +17,7 @@ class mynetwork():  # 图类
     nodenum:结点数量
     '''
 
-    def __init__(self, gratps, nodenum):  # 初始化
+    def __init__(self, gratps, nodenum=-1):  # 初始化，-1表示默认提取所有点
         self.types = sup.net_types(gratps)
         self.network = self.get_networkx(self.types, nodenum)
         self.setallparas()
@@ -164,7 +163,7 @@ class mynetwork():  # 图类
             for node in self.network.nodes:
                 temp_file = dw_graph.random_walk(walk_length, alpha=0.5, start=str(node))
                 walk_file.append(temp_file)
-        model = skipgram.Word2Vec(min_count=10)
+        model = skipgram.Word2Vec()
         model.build_vocab(walk_file)
         model.train(walk_file, total_examples=model.corpus_count, epochs=model.iter)
         # print(model.similarity('0', '1'), model.similarity('0', '19'), model.similarity('18', '19'))
@@ -197,5 +196,6 @@ class mynetwork():  # 图类
 
 
 if __name__ == '__main__':
-    # net = mynetwork(1, 20)
+    net = mynetwork(1, 20)
+    net.shownet(net.network)
     pass
