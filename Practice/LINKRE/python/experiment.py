@@ -8,8 +8,8 @@ import movenet
 import support as sup
 
 gratp = 1  # 实验网络的类型
-breakrate = 0.4  # 破坏的边的数目
-nodenum = 30  # 结点数目
+breakrate = 0.5  # 破坏的边的数目
+nodenum = 100  # 结点数目
 epoch = 40  # 最终粒子计数时产生的代数
 repeat = 100  # 实验重复次数
 generate = 1.5  # 例子产生的效率
@@ -31,7 +31,7 @@ def get_rank(index):  # 单次实验，通过比对所有的方法，在同一�
         templist = net.recovery(recstr, epoch, generate)
         alllist.append(templist)
     temp_array = np.array(alllist)
-    sum_array = np.sum(temp_array, axis=0)
+    sum_array = np.mean(temp_array, axis=0)
     rank_array = temp_array/sum_array
     '''
     rank_array = np.argsort(temp_array, axis=0)
@@ -70,6 +70,7 @@ def draw(the_list, graph_dir):
 def single_experiment():
     temp_recover_list = get_process_data(0)
     draw(temp_recover_list, single_director)
+    
 
 
 if __name__ == '__main__':

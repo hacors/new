@@ -119,16 +119,32 @@ def check_file(file_path):
     plt.show()
 
 
-def tfcord_mall(processed_path):
+def organize_path(processed_path):  # 将所有的图片组织起来
     file_list = glob.glob(os.path.join(processed_path, '*.h5'))
-    data_info = list()
-    for file_path in file_list:
-        video_index = file_path.split('_')[-4]
-        pic_index = file_path.split('_')[-2]
-    return file_list
+    data_info = dict()
+    for file_path in file_list:  # 按视频分组
+        video_index = int(file_path.split('_')[-4])
+        if data_info.get(video_index):
+            data_info[video_index].append(file_path)
+        else:
+            data_info[video_index] = [file_path]
+    data_set = list()
+    for video in data_info:
+        pic_list = data_info.get(video)
+        for index in range(len(pic_list)):
+            if index+5 <= len(pic_list):
+                group_pic = pic_list[index:index+5]
+                data_set.append(group_pic)
+    return data_set
+
+
+def get_tfcort(struct_path):#将所有的连续帧变成tfcord文件
+    for paths in struct_path:
+        pass
 
 
 if __name__ == '__main__':
     # get_dataset_mall(os.path.join('Datasets', 'mall'))
     # get_dataset_expo2010(os.path.join('Datasets', 'expo2010'))
-    tfcord_mall(os.path.join('Datasets', 'mall', 'train_processed'))
+    struct_path = organize_path(os.path.join('Datasets', 'mall', 'train_processed'))
+    get_tfcort(struct_path)
