@@ -70,7 +70,6 @@ def draw(the_list, graph_dir):
 def single_experiment():
     temp_recover_list = get_process_data(0)
     draw(temp_recover_list, single_director)
-    
 
 
 if __name__ == '__main__':
