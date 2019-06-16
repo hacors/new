@@ -6,10 +6,15 @@
                 "${workspaceFolder}",
                 "D:/software/MinGW/include/*",
                 "D:/software/MinGW/lib/gcc/mingw32/8.2.0/include/*",
-                "D:/software/MinGW/lib/gcc/mingw32/8.2.0/include/c++",
-                "D:/software/MinGW/lib/gcc/mingw32/8.2.0/include/c++/tr1",
-                "D:/software/MinGW/lib/gcc/mingw32/8.2.0/include/c++/backward"
+                "D:/software/MinGW/lib/gcc/mingw32/8.2.0/include/c++/*",
+                "D:/software/MinGW/lib/gcc/mingw32/8.2.0/include/c++/tr1/*",
+                "D:/software/MinGW/lib/gcc/mingw32/8.2.0/include/c++/backward/*",
+                "D:/software/MinGW/lib/gcc/mingw32/8.2.0/include/c++/mingw32/*"
             ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
             "defines": [
                 "_DEBUG",
                 "UNICODE",
