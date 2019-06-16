@@ -37,14 +37,14 @@ int main(int argc, char** argv)
     ret=bind(serverFd,(struct sockaddr *)&serveraddr,sizeof(serveraddr));//绑定IP和端口
     if(ret!=0)
     {
-        close(serverFd);
+        fclose(serverFd);
         printf("bind error:%s\n",strerror(errno));
         exit(-1);
     }
     ret=listen(serverFd,5);//监听
     if(ret!=0)
     {
-       close(serverFd);
+       fclose(serverFd);
        printf("listen error:%s\n",strerror(errno));
        exit(-1);
     }
@@ -59,9 +59,9 @@ int main(int argc, char** argv)
             printf("accept error : %s\n", strerror(errno));
             continue;
         }
-        while((ret=read(connfd,readBuf,MAXBUFFER)))//读客户端发送的数据
+        while((ret=fread(connfd,readBuf,MAXBUFFER)))//读客户端发送的数据
         {
-            write(connfd,readBuf,MAXBUFFER);//写回客户端
+            fwrite(connfd,readBuf,MAXBUFFER);//写回客户端
             bzero(readBuf,MAXBUFFER);
         }
         if(ret==0)
@@ -71,8 +71,8 @@ int main(int argc, char** argv)
         {
             printf("read error:%s\n",strerror(errno));
         }
-        close(connfd);
+        fclose(connfd);
     }
-    close(serverFd);
+    fclose(serverFd);
     return 0;
 }
