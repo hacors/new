@@ -13,21 +13,20 @@ import naivenet
 class movenet(naivenet.mynetwork):
     '''
     gratps:图的类型,
-    breakrate:破坏边的比例,
+    breaknum:破坏边的数目,
     nodenum:结点数目,
     '''
 
-    def __init__(self, gratps, breakrate, nodenum=None):
+    def __init__(self, gratps, breaknum, nodenum=None):
         super().__init__(gratps, nodenum)
-        self.breaklist = self.takebreak(breakrate)
+        self.breaklist = self.takebreak(breaknum)
 
-    def takebreak(self, breakrate):
+    def takebreak(self, breaknum):
         breaklist = list()
         alllinks = list(self.network.edges)
         linknum = len(alllinks)
-        breaknum = int(breakrate*len(alllinks))
         if(breaknum > linknum):
-            breakrate = linknum
+            breaknum = linknum
         breakindex = np.random.choice(linknum, breaknum, replace=False)
         for trave in breakindex:
             bedge = alllinks[trave]

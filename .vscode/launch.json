@@ -17,6 +17,7 @@
             "preLaunchTask": "g++",
             "MIMode": "gdb",
             "miDebuggerPath": "D:/software/MinGW/bin/gdb.exe",
+            "showDisplayString":true,
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",

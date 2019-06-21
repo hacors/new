@@ -8,14 +8,14 @@ import movenet
 import support as sup
 
 gratp = 1  # 实验网络的类型
-breakrate = 0.5  # 破坏的边的数目
-nodenum = 100  # 结点数目
-epoch = 40  # 最终粒子计数时产生的代数
-repeat = 100  # 实验重复次数
+breaknum = 20  # 破坏的边的数目
+nodenum = 20  # 结点数目
+epoch = 20  # 最终粒子计数时产生的代数
+repeat = 30  # 实验重复次数
 generate = 1.5  # 例子产生的效率
 rec_num = len(sup.rec_types)
 gra_name = str(sup.net_types(gratp)).split('.')[-1]
-INFO = 'type_%s brate_%s nnum_%s epoch_%s repeat_%s' % (gra_name, breakrate, nodenum, epoch, repeat)
+INFO = 'type_%s brate_%s nnum_%s epoch_%s repeat_%s' % (gra_name, breaknum, nodenum, epoch, repeat)
 data_director = sup.ROOT + '/temp/data %s.npy' % INFO
 merge_director = sup.ROOT + '/temp/merge %s.png' % INFO
 single_director = sup.ROOT + '/temp/single %s.png' % INFO
@@ -24,7 +24,7 @@ single_director = sup.ROOT + '/temp/single %s.png' % INFO
 def get_rank(index):  # 单次实验，通过比对所有的方法，在同一个网络的环境下恢复过程中的排序计分情况
     strtime = time.strftime("%H:%M %m-%d", time.localtime())
     print('run %s at time(%s)' % (index, strtime))
-    net = movenet.movenet(gratp, breakrate, nodenum)
+    net = movenet.movenet(gratp, breaknum, nodenum)
     alllist = list()
     for recindex in range(1, rec_num+1):
         recstr = str(sup.rec_types(recindex)).split('.')[-1]
@@ -42,7 +42,7 @@ def get_rank(index):  # 单次实验，通过比对所有的方法，在同一�
 
 
 def get_process_data(index):  # 获取单次实验的完整过程数据
-    net = movenet.movenet(gratp, breakrate, nodenum)
+    net = movenet.movenet(gratp, breaknum, nodenum)
     alllist = list()
     for recindex in range(1, rec_num+1):
         recstr = str(sup.rec_types(recindex)).split('.')[-1]
@@ -51,19 +51,29 @@ def get_process_data(index):  # 获取单次实验的完整过程数据
     return alllist
 
 
+def get_label(index):
+    temp_label = sup.rec_types(index)
+    return temp_label.name
+
+
 def draw(the_list, graph_dir):
     plt.figure(figsize=(19, 12))
-    plt.title(INFO)
+    # plt.title(INFO) 不需要标题
     mean_result = np.mean(the_list, axis=0)
     reclist = range(mean_result.shape[-1])
     temp = int(rec_num/2)
     for recindex in range(temp):
         temp_color = sup.colors[recindex]
         indexa, indexb = recindex, recindex+temp+1
-        plt.plot(reclist, mean_result[indexa], color=temp_color, label=sup.rec_types(indexa+1), linestyle='-', marker='d')
-        plt.plot(reclist, mean_result[indexb], color=temp_color, label=sup.rec_types(indexb+1), linestyle='--', marker='s')
-    plt.plot(reclist, mean_result[temp], color=[0.0, 0.0, 0.0, 1.0], label=sup.rec_types(temp+1))
-    plt.legend()
+        plt.plot(reclist, mean_result[indexa], color=temp_color, label=get_label(indexa+1), linestyle='-', marker='d')
+        plt.plot(reclist, mean_result[indexb], color=temp_color, label=get_label(indexb+1), linestyle='--', marker='s')
+    plt.plot(reclist, mean_result[temp], color=[0.0, 0.0, 0.0, 1.0], label=get_label(temp+1))
+    font1 = {'family': 'SimHei', 'weight': 'normal', 'size': 20}
+    plt.legend(prop=font1)
+    plt.xlabel('number of recovered links', font1)
+    plt.ylabel('block degree', font1)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
     plt.savefig(graph_dir)
 
 
@@ -74,15 +84,11 @@ def single_experiment():
 
 if __name__ == '__main__':
     pool_result = list()
-
-    # get_rank(0)
-
     pool = multp.Pool(processes=10)
     for index in range(repeat):
         pool_result.append(pool.apply_async(get_rank, (index, )))
     pool.close()
     pool.join()
-
     true_result = list()
     for temp in pool_result:
         true_result.append(temp.get())
