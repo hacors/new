@@ -1,14 +1,18 @@
-import tensorflow as tf
-import dataset
 import os
-from matplotlib import pyplot as plt
+
 import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+from matplotlib import pyplot as plt
+
+import dataset
 tf.enable_eager_execution()
+BATCHSIZE = 1
+KL = keras.layers
 feature = {
     'pic': tf.FixedLenFeature([], tf.string),
     'dens': tf.FixedLenFeature([], tf.string),
 }
-BATCHSIZE = 1
 
 
 def parse_image_function(example_proto):  # 解码
@@ -30,6 +34,21 @@ def process_function(parsed_data):
         plt.show()
     '''
     return pic_true, dens_true
+
+
+def spatial_string():
+    input_data = keras.Input(shape=(160, 160, 3))
+    digits = input_data 
+    digits = KL.Conv2D(20, (5, 5), activation='relu', kernel_initializer=init, padding='same')(digits)
+    digits = KL.Conv2D(512, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
+    digits = KL.Conv2D(512, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
+    digits = KL.Conv2D(256, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
+    digits = KL.Conv2D(128, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
+    digits = KL.Conv2D(64, (3, 3), activation='relu', dilation_rate=2, kernel_initializer=init, padding='same')(digits)
+    digits = KL.Conv2D(1, (1, 1), activation='relu', dilation_rate=1, kernel_initializer=init, padding='same')(digits)
+    prediction = digits
+    crowd_net = keras.Model(inputs=input_data, outputs=prediction)
+    return crowd_net
 
 
 if __name__ == "__main__":
