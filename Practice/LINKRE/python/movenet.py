@@ -123,6 +123,11 @@ class movenet(naivenet.mynetwork):
             templist = templist[::-1]
         # self.showbadnet(self.network, recstr+'0')
         self.getpath()
+        '''
+        epoch_list = self.takemove(epoch, generate)
+        partnumsum = float(epoch_list[-1]-epoch_list[-2])/(self.network.number_of_nodes()*generate)
+        # 改成了序参量
+        '''
         partnumsum = self.takemove(epoch, generate)[-1]
         # print('finaly num=', partnumsum, '%s have rec %s' % (recstr, 0))
         recover_list = list()
@@ -134,6 +139,10 @@ class movenet(naivenet.mynetwork):
             # recovednum = len(self.breaklist)-len(templist)
             # self.showbadnet(self.network, recstr+str(recovednum))
             self.getpath()
+            '''
+            epoch_list = self.takemove(epoch, generate)
+            partnumsum = float(epoch_list[-1]-epoch_list[-2])/(self.network.number_of_nodes()*generate)
+            '''
             partnumsum = self.takemove(epoch, generate)[-1]
             # print('finaly num=', partnumsum, '%s have rec %s' % (recstr, recovednum))
             recover_list.append(partnumsum)

@@ -7,21 +7,8 @@ from matplotlib import pyplot as plt
 import movenet
 import support as sup
 
-gratp = 1  # 实验网络的类型
-breaknum = 20  # 破坏的边的数目
-nodenum = 20  # 结点数目
-epoch = 20  # 最终粒子计数时产生的代数
-repeat = 30  # 实验重复次数
-generate = 1.5  # 例子产生的效率
-rec_num = len(sup.rec_types)
-gra_name = str(sup.net_types(gratp)).split('.')[-1]
-INFO = 'type_%s brate_%s nnum_%s epoch_%s repeat_%s' % (gra_name, breaknum, nodenum, epoch, repeat)
-data_director = sup.ROOT + '/temp/data %s.npy' % INFO
-merge_director = sup.ROOT + '/temp/merge %s.png' % INFO
-single_director = sup.ROOT + '/temp/single %s.png' % INFO
 
-
-def get_rank(index):  # 单次实验，通过比对所有的方法，在同一个网络的环境下恢复过程中的排序计分情况
+def get_rank(index, gratp, breaknum, nodenum, epoch, generate, rec_num):  # 单次实验，通过比对所有的方法，在同一个网络的环境下恢复过程中的排序计分情况
     strtime = time.strftime("%H:%M %m-%d", time.localtime())
     print('run %s at time(%s)' % (index, strtime))
     net = movenet.movenet(gratp, breaknum, nodenum)
@@ -41,7 +28,7 @@ def get_rank(index):  # 单次实验，通过比对所有的方法，在同一�
     return rank_array
 
 
-def get_process_data(index):  # 获取单次实验的完整过程数据
+def get_process_data(index, gratp, breaknum, nodenum, epoch, generate, rec_num):  # 获取单次实验的完整过程数据
     net = movenet.movenet(gratp, breaknum, nodenum)
     alllist = list()
     for recindex in range(1, rec_num+1):
@@ -56,7 +43,7 @@ def get_label(index):
     return temp_label.name
 
 
-def draw(the_list, graph_dir):
+def draw(the_list, rec_num, graph_dir):
     plt.figure(figsize=(19, 12))
     # plt.title(INFO) 不需要标题
     mean_result = np.mean(the_list, axis=0)
@@ -77,16 +64,30 @@ def draw(the_list, graph_dir):
     plt.savefig(graph_dir)
 
 
-def single_experiment():
+def single_experiment(single_director):
     temp_recover_list = get_process_data(0)
     draw(temp_recover_list, single_director)
 
 
 if __name__ == '__main__':
+    gratp = 1  # 实验网络的类型
+    breaknum = 100  # 破坏的边的数目
+    nodenum = 100  # 结点数目
+    epoch = 50  # 最终粒子计数时产生的代数
+    generate = 1.5  # 例子产生的效率
+    repeat = 300  # 实验重复次数
+    rec_num = len(sup.rec_types)
+    gra_name = str(sup.net_types(gratp)).split('.')[-1]
+    INFO = 'type_%s bnum_%s nnum_%s epoch_%s gene_%s repeat_%s' % (gra_name, breaknum, nodenum, epoch, generate, repeat)
+    data_director = sup.ROOT + '/temp/data %s.npy' % INFO
+    merge_director = sup.ROOT + '/temp/merge %s.png' % INFO
+    single_director = sup.ROOT + '/temp/single %s.png' % INFO
+
+    get_rank(0, gratp, breaknum, nodenum, epoch, generate, rec_num)
     pool_result = list()
     pool = multp.Pool(processes=10)
     for index in range(repeat):
-        pool_result.append(pool.apply_async(get_rank, (index, )))
+        pool_result.append(pool.apply_async(get_rank, (index, gratp, breaknum, nodenum, epoch, generate, rec_num, )))
     pool.close()
     pool.join()
     true_result = list()
@@ -94,4 +95,4 @@ if __name__ == '__main__':
         true_result.append(temp.get())
     np.save(data_director, np.array(true_result))
     merged_result = np.load(data_director)
-    draw(merged_result, merge_director)
+    draw(merged_result, rec_num, merge_director)
