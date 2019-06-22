@@ -71,8 +71,8 @@ def single_experiment(single_director):
 
 if __name__ == '__main__':
     gratp = 1  # 实验网络的类型
-    breaknum = 100  # 破坏的边的数目
-    nodenum = 100  # 结点数目
+    breaknum = 200  # 破坏的边的数目
+    nodenum = 200  # 结点数目
     epoch = 200  # 最终粒子计数时产生的代数
     generate = 1.5  # 例子产生的效率
     repeat = 300  # 实验重复次数
