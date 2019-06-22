@@ -83,7 +83,7 @@ if __name__ == '__main__':
     merge_director = sup.ROOT + '/temp/merge %s.png' % INFO
     single_director = sup.ROOT + '/temp/single %s.png' % INFO
 
-    get_rank(0, gratp, breaknum, nodenum, epoch, generate, rec_num)
+    # get_rank(0, gratp, breaknum, nodenum, epoch, generate, rec_num)
     pool_result = list()
     pool = multp.Pool(processes=10)
     for index in range(repeat):
