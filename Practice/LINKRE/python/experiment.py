@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
     # get_rank(0, gratp, breaknum, nodenum, epoch, generate, rec_num)
     pool_result = list()
-    pool = multp.Pool(processes=10)
+    pool = multp.Pool(processes=20)
     for index in range(repeat):
         pool_result.append(pool.apply_async(get_rank, (index, gratp, breaknum, nodenum, epoch, generate, rec_num, )))
     pool.close()
