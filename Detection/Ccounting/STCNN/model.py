@@ -57,9 +57,10 @@ def spatial_net():
 
     digits = KL.Conv2D(1, (1, 1), activation='relu',  padding='same')(digits)
 
+    digits = KL.UpSampling2D(size=(4, 4))(digits)
     prediction = digits
-    spatial_net = keras.Model(inputs=input_data, outputs=prediction)
-    return spatial_net
+    s_net = keras.Model(inputs=input_data, outputs=prediction)
+    return s_net
 
 
 def temporal_net():
@@ -70,11 +71,49 @@ def temporal_net():
     digits = KL.Conv3D(20, (3, 3, 3), activation='relu',  padding='same')(digits)
     digits = KL.Conv3D(1, (1, 1, 1), activation='relu',  padding='same')(digits)
     prediction = digits
-    temporal_net = keras.Model(inputs=input_data, outputs=prediction)
-    return temporal_net
+    t_net = keras.Model(inputs=input_data, outputs=prediction)
+    return t_net
+
+
 def fusion_net():
-    input_data=
+    s_input_data = keras.Input(shape=(160, 160, 1))
+    t_input_data = keras.Input(shape=(160, 160, 1))
+    digits = KL.Concatenate(axis=-1)([s_input_data, t_input_data])
+    digits = KL.Conv2D(10, (5, 5), padding='same')(digits)
+    digits = KL.Conv2D(20, (3, 3), padding='same')(digits)
+    digits = KL.Conv2D(10, (3, 3), padding='same')(digits)
+    digits = KL.Conv2D(1, (1, 1), padding='same')(digits)
+
+    s_attention = KL.Activation(activation='sigmoid')(digits)
+    # t_attention = KL.Subtract()([1.0, s_attention])
+    # t_attention = KL.subtract((constant_data, s_attention))
+    s_prediction = KL.Multiply()([s_input_data, s_attention])
+    t_prediction = KL.Multiply()([t_input_data, s_attention])
+    prediction = KL.Add()([s_prediction, t_prediction])
+    fus_net = keras.Model(inputs=[s_input_data, t_input_data], outputs=prediction)
+    return fus_net
+
+
+def final_model():
+    input_data = keras.Input(shape=(5, 160, 160, 3))
+    KL.
+    s_input_data = tf.slice(input_data, (0, 2, 0, 0, 0), (-1, 1, -1, -1, -1))
+    s_input_data = tf.squeeze(s_input_data, axis=1)
+    t_input_data = input_data
+    s_net = spatial_net()
     t_net = temporal_net()
+    fus_net = fusion_net()
+
+    s_output = s_net(s_input_data)
+    t_output = t_net(t_input_data)
+    t_output = tf.slice(t_output, (0, 2, 0, 0, 0), (-1, 1, -1, -1, -1))
+    t_output = tf.squeeze(t_output, axis=1)
+
+    fus_output = fus_net([s_output, t_output])
+    prediction = fus_output
+    f_model = keras.Model(inputs=input_data, outputs=prediction)
+    return f_model
+
 
 if __name__ == "__main__":
     tfrecord_path = os.path.join(dataset.set_root, dataset.set_name, 'train.tfrecords')
@@ -82,7 +121,7 @@ if __name__ == "__main__":
     parsed_dataset = tfrecord_file.map(parse_image_function)
     processed_dataset = parsed_dataset.map(process_function)
     batched_dataset = processed_dataset.batch(BATCHSIZE)
-    temp_net = temporal_net()
+    temp_net = final_model()
     for epoch in range(10):
         for index, data in enumerate(batched_dataset):
             # for repeat in range(20):

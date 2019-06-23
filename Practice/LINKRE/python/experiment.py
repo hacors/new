@@ -70,29 +70,30 @@ def single_experiment(single_director):
 
 
 if __name__ == '__main__':
-    gratp = 1  # 实验网络的类型
-    breaknum = 200  # 破坏的边的数目
-    nodenum = 200  # 结点数目
-    epoch = 200  # 最终粒子计数时产生的代数
-    generate = 1.5  # 例子产生的效率
-    repeat = 300  # 实验重复次数
-    rec_num = len(sup.rec_types)
-    gra_name = str(sup.net_types(gratp)).split('.')[-1]
-    INFO = 'type_%s bnum_%s nnum_%s epoch_%s gene_%s repeat_%s' % (gra_name, breaknum, nodenum, epoch, generate, repeat)
-    data_director = sup.ROOT + '/temp/data %s.npy' % INFO
-    merge_director = sup.ROOT + '/temp/merge %s.png' % INFO
-    single_director = sup.ROOT + '/temp/single %s.png' % INFO
+    for gratp in [2, 3, 4, 5, 6]:
+        # gratp = 2  # 实验网络的类型
+        breaknum = 100  # 破坏的边的数目
+        nodenum = 100  # 结点数目
+        epoch = 100  # 最终粒子计数时产生的代数
+        generate = 1.5  # 例子产生的效率
+        repeat = 300  # 实验重复次数
+        rec_num = len(sup.rec_types)
+        gra_name = str(sup.net_types(gratp)).split('.')[-1]
+        INFO = 'type_%s bnum_%s nnum_%s epoch_%s gene_%s repeat_%s' % (gra_name, breaknum, nodenum, epoch, generate, repeat)
+        data_director = sup.ROOT + '/temp/data %s.npy' % INFO
+        merge_director = sup.ROOT + '/temp/merge %s.png' % INFO
+        single_director = sup.ROOT + '/temp/single %s.png' % INFO
 
-    # get_rank(0, gratp, breaknum, nodenum, epoch, generate, rec_num)
-    pool_result = list()
-    pool = multp.Pool(processes=20)
-    for index in range(repeat):
-        pool_result.append(pool.apply_async(get_rank, (index, gratp, breaknum, nodenum, epoch, generate, rec_num, )))
-    pool.close()
-    pool.join()
-    true_result = list()
-    for temp in pool_result:
-        true_result.append(temp.get())
-    np.save(data_director, np.array(true_result))
-    merged_result = np.load(data_director)
-    draw(merged_result, rec_num, merge_director)
+        # get_rank(0, gratp, breaknum, nodenum, epoch, generate, rec_num)
+        pool_result = list()
+        pool = multp.Pool(processes=20)
+        for index in range(repeat):
+            pool_result.append(pool.apply_async(get_rank, (index, gratp, breaknum, nodenum, epoch, generate, rec_num, )))
+        pool.close()
+        pool.join()
+        true_result = list()
+        for temp in pool_result:
+            true_result.append(temp.get())
+        np.save(data_director, np.array(true_result))
+        merged_result = np.load(data_director)
+        draw(merged_result, rec_num, merge_director)
