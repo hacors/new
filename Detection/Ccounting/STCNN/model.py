@@ -92,10 +92,11 @@ def fusion_net():
     prediction = KL.Add()([s_prediction, t_prediction])
     fus_net = keras.Model(inputs=[s_input_data, t_input_data], outputs=prediction)
     return fus_net
-
+KL
 
 def final_model():
     input_data = keras.Input(shape=(5, 160, 160, 3))
+    KL. cv  
     s_input_data = tf.slice(input_data, (0, 2, 0, 0, 0), (-1, 1, -1, -1, -1))
     s_input_data = tf.squeeze(s_input_data, axis=1)
     t_input_data = input_data
