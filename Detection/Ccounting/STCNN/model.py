@@ -96,7 +96,6 @@ def fusion_net():
 
 def final_model():
     input_data = keras.Input(shape=(5, 160, 160, 3))
-    KL.
     s_input_data = tf.slice(input_data, (0, 2, 0, 0, 0), (-1, 1, -1, -1, -1))
     s_input_data = tf.squeeze(s_input_data, axis=1)
     t_input_data = input_data
