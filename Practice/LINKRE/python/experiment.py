@@ -69,11 +69,18 @@ def single_experiment(single_director):
     draw(temp_recover_list, single_director)
 
 
+def save_net(gratp, breaknum, nodenum):
+    gra_name = str(sup.net_types(gratp)).split('.')[-1]
+    name = 'type_%s bnum_%s nnum_%s' % (gra_name, breaknum, nodenum)
+    net = movenet.movenet(gratp, breaknum, nodenum)
+    net.showbadnet(net.network, name)
+
+
 if __name__ == '__main__':
     for gratp in [1, 2, 3, 4, 5, 6]:
         # gratp = 2  # 实验网络的类型
-        breaknum = 50  # 破坏的边的数目
-        nodenum = 50  # 结点数目
+        breaknum = 25  # 破坏的边的数目
+        nodenum = 25  # 结点数目
         epoch = 100  # 最终粒子计数时产生的代数
         generate = 1.5  # 例子产生的效率
         repeat = 300  # 实验重复次数
@@ -83,7 +90,7 @@ if __name__ == '__main__':
         data_director = sup.ROOT + '/temp/data %s.npy' % INFO
         merge_director = sup.ROOT + '/temp/merge %s.png' % INFO
         single_director = sup.ROOT + '/temp/single %s.png' % INFO
-
+        # save_net(gratp, breaknum, nodenum)
         # get_rank(0, gratp, breaknum, nodenum, epoch, generate, rec_num)
         pool_result = list()
         pool = multp.Pool(processes=20)
