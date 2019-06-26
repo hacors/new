@@ -173,7 +173,7 @@ if __name__ == "__main__":
                 loss = euclidean_distance_loss(data[1], predict)
                 gradiens = train_tape.gradient(loss, temp_net.variables)
                 opti.apply_gradients(zip(gradiens, temp_net.variables))
-                if index % 100 == 0:
+                if index % 1000 == 0:
                     predict_np = predict.numpy()
                     true_np = data[1].numpy()
                     print('loss:', epoch, index, np.sum(loss.numpy()))
