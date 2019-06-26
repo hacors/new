@@ -10,7 +10,7 @@ tf.enable_eager_execution()
 BATCHSIZE = 10
 KL = keras.layers
 init = keras.initializers.RandomNormal(stddev=0.01)
-model_path = 'Detection/Ccounting/STCNN/model/'
+model_path = 'Datasets/mall/model/'
 feature = {
     'pic': tf.FixedLenFeature([], tf.string),
     'dens': tf.FixedLenFeature([], tf.string),
