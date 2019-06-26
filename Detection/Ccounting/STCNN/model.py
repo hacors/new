@@ -162,8 +162,12 @@ if __name__ == "__main__":
                 loss = euclidean_distance_loss(data[1], predict)
                 gradiens = train_tape.gradient(loss, temp_net.variables)
                 opti.apply_gradients(zip(gradiens, temp_net.variables))
-                print(epoch, index, np.sum(loss.numpy()))
+                # print(epoch, index, np.sum(loss.numpy()))
                 if index % 100 == 0:
+                    predict_np = predict.numpy()
+                    true_np = data[1].numpy()
+                    print('predict:', np.max(predict_np), ' ', np.min(predict_np))
+                    print('true:', np.max(true_np), ' ', np.min(true_np))
                     plt.imshow(np.squeeze(data[1][0]))
                     plt.savefig(model_path+'temp_fig/epoch_%s_index_%s_dens_true.jpg' % (epoch, index))
                     plt.imshow(np.squeeze(predict[0]))
