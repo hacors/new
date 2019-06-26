@@ -163,4 +163,11 @@ if __name__ == "__main__":
                 gradiens = train_tape.gradient(loss, temp_net.variables)
                 opti.apply_gradients(zip(gradiens, temp_net.variables))
                 print(epoch, index, np.sum(loss.numpy()))
+                if index % 100 == 0:
+                    plt.imshow(np.squeeze(data[1][0]))
+                    plt.savefig(model_path+'temp_fig/epoch_%s_index_%s_dens_true.jpg' % (epoch, index))
+                    plt.imshow(np.squeeze(predict[0]))
+                    plt.savefig(model_path+'temp_fig/epoch_%s_index_%s_dens_pre.jpg' % (epoch, index))
+                    plt.imshow(np.squeeze(data[0][0][2]).astype(np.int))
+                    plt.savefig(model_path+'temp_fig/epoch_%s_index_%s_true.jpg' % (epoch, index))
         temp_net.save_weights(model_path+'weight_epoch_%s.h5' % epoch)
