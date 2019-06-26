@@ -9,7 +9,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 tf.enable_eager_execution()
 KL = keras.layers
 VGG16 = keras.applications.vgg16.VGG16
-BATCHSIZE = 1
+BATCHSIZE = 2
 SETCHOOSE = 0
 feature = {
     'height': tf.FixedLenFeature([], tf.int64),
@@ -40,7 +40,7 @@ def process_function(parsed_data):
     return img_processed, dens_processed
 
 
-def euclidean_distance_loss(y_true, y_pred):
+def euclidean_distance_loss(y_true, y_pred):  # 格式为[batch_size,axis_0,axis_1,1]
     loss_1 = keras.losses.mean_squared_error(y_true, y_pred)  # 注意对图片来说，loss针对的是图中的每一个像素点
     loss_2 = tf.sqrt(tf.reduce_sum(loss_1, axis=[1, 2]))
     loss_3 = tf.reduce_mean(loss_2, axis=0)
@@ -106,10 +106,10 @@ if __name__ == "__main__":
     batched_dataset = processed_dataset.batch(BATCHSIZE)  # 每个batch都是同一张图片切出来的
     mynet = crowd_net()
     model_path = 'Datasets/shtech/model.json'
-    weight_path = 'Datasets/shtech/set_0_weight_780_batch_1.h5'
+    weight_path = 'Datasets/shtech/set_0_weight_0_batch_1.h5'
     mynet = load_model(model_path, weight_path)
     # print(mynet.summary())
-    for epoch in range(781, 1000):
+    for epoch in range(0, 1000):
         epoch_loss = list()
         for index, dataset in enumerate(batched_dataset):
             # for repeat in range(20):

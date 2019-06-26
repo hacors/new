@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 
 import dataset
 tf.enable_eager_execution()
-BATCHSIZE = 1
+BATCHSIZE = 10
 KL = keras.layers
 init = keras.initializers.RandomNormal(stddev=0.01)
 model_path = 'Datasets/mall/model/'
@@ -29,6 +29,13 @@ def process_function(parsed_data):
     dens_true = tf.reshape(tf.decode_raw(dens_string, tf.float32), [dataset.video_length, dataset.crop_size, dataset.crop_size, 1])  # 注意图片必须是三维的
     dens_true = tf.squeeze(tf.slice(dens_true, (2, 0, 0, 0), (1, -1, -1, -1)), axis=0)
     const_tensor = tf.ones((dataset.crop_size, dataset.crop_size, 1))
+
+    img_processed = tf.divide(pic_true, 255.0)
+    img_processed = tf.expand_dims(img_processed, axis=-1)
+    img_part_0 = tf.divide(tf.subtract(img_processed[:, :, :, 0, :], 0.485), 0.229)
+    img_part_1 = tf.divide(tf.subtract(img_processed[:, :, :, 1, :], 0.456), 0.224)
+    img_part_2 = tf.divide(tf.subtract(img_processed[:, :, :, 2, :], 0.406), 0.225)
+    pic_final = tf.concat([img_part_0, img_part_1, img_part_2], 3)
     '''
     for index in range(5):
         temp_pic = pic_true.numpy()
@@ -38,7 +45,7 @@ def process_function(parsed_data):
         plt.imshow(temp_dens[index])
         plt.show()
     '''
-    return pic_true, dens_true, const_tensor
+    return pic_final, dens_true, const_tensor, pic_true
 
 
 def spatial_net():
@@ -149,6 +156,10 @@ if __name__ == "__main__":
     tfrecord_path = os.path.join(dataset.set_root, dataset.set_name, 'train.tfrecords')
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
     parsed_dataset = tfrecord_file.map(parse_image_function)
+    '''
+    for data in parsed_dataset:
+        process_function(data)
+    '''
     processed_dataset = parsed_dataset.map(process_function)
     batched_dataset = processed_dataset.batch(BATCHSIZE)
     temp_net = final_model()
@@ -162,16 +173,16 @@ if __name__ == "__main__":
                 loss = euclidean_distance_loss(data[1], predict)
                 gradiens = train_tape.gradient(loss, temp_net.variables)
                 opti.apply_gradients(zip(gradiens, temp_net.variables))
-                # print(epoch, index, np.sum(loss.numpy()))
                 if index % 100 == 0:
                     predict_np = predict.numpy()
                     true_np = data[1].numpy()
+                    print('loss:', epoch, index, np.sum(loss.numpy()))
                     print('predict:', np.max(predict_np), ' ', np.min(predict_np))
                     print('true:', np.max(true_np), ' ', np.min(true_np))
                     plt.imshow(np.squeeze(data[1][0]))
                     plt.savefig(model_path+'temp_fig/epoch_%s_index_%s_dens_true.jpg' % (epoch, index))
                     plt.imshow(np.squeeze(predict[0]))
                     plt.savefig(model_path+'temp_fig/epoch_%s_index_%s_dens_pre.jpg' % (epoch, index))
-                    plt.imshow(np.squeeze(data[0][0][2]).astype(np.int))
+                    plt.imshow(np.squeeze(data[3][0][2]).astype(np.int))
                     plt.savefig(model_path+'temp_fig/epoch_%s_index_%s_true.jpg' % (epoch, index))
         temp_net.save_weights(model_path+'weight_epoch_%s.h5' % epoch)
