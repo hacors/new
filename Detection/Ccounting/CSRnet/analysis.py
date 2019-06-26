@@ -50,7 +50,6 @@ if __name__ == '__main__':
         truth_num = tf.reduce_sum(dataset[1][:4], axis=[0, 1, 2, 3])
         pred_list.append(pred_num.numpy())
         truth_list.append(truth_num.numpy())
-        
         imgs_tensor = dataset[0][:4]
         images = dataset[0][:4].numpy()
         predic = mynet(imgs_tensor).numpy()
@@ -61,7 +60,7 @@ if __name__ == '__main__':
         show(sum_images)
         show(sum_predic)
         show(sum_truth)
-        
+
     truth_np = np.array(truth_list)
     pred_np = np.array(pred_list)
     minus_np = truth_np-pred_np

@@ -162,5 +162,5 @@ if __name__ == "__main__":
                 loss = euclidean_distance_loss(data[1], predict)
                 gradiens = train_tape.gradient(loss, temp_net.variables)
                 opti.apply_gradients(zip(gradiens, temp_net.variables))
-                # print(np.sum(loss.numpy()))
-        temp_net.save_weights(model_path+'weight_epoch_%s' % epoch)
+                print(epoch, index, np.sum(loss.numpy()))
+        temp_net.save_weights(model_path+'weight_epoch_%s.h5' % epoch)
