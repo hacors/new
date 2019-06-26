@@ -10,6 +10,7 @@ tf.enable_eager_execution()
 BATCHSIZE = 10
 KL = keras.layers
 init = keras.initializers.RandomNormal(stddev=0.01)
+model_path = 'Detection/Ccounting/STCNN/model/'
 feature = {
     'pic': tf.FixedLenFeature([], tf.string),
     'dens': tf.FixedLenFeature([], tf.string),
@@ -129,6 +130,21 @@ def euclidean_distance_loss(y_true, y_pred):
     return loss_3
 
 
+def save_model(model: keras.Model, json_path):
+    model_json_data = model.to_json()
+    with open(json_path, 'w') as json_file:
+        json_file.write(model_json_data)
+
+
+def load_model(model_p, weight_p):
+    json_file = open(model_p, 'r')
+    medel_json_data = json_file.read()
+    json_file.close()
+    loaded_model = keras.models.model_from_json(medel_json_data)
+    loaded_model.load_weights(weight_p)
+    return loaded_model
+
+
 if __name__ == "__main__":
     tfrecord_path = os.path.join(dataset.set_root, dataset.set_name, 'train.tfrecords')
     tfrecord_file = tf.data.TFRecordDataset(tfrecord_path)
@@ -136,6 +152,7 @@ if __name__ == "__main__":
     processed_dataset = parsed_dataset.map(process_function)
     batched_dataset = processed_dataset.batch(BATCHSIZE)
     temp_net = final_model()
+    save_model(temp_net, model_path+'model.json')
     for epoch in range(1000):
         for index, data in enumerate(batched_dataset):
             # for repeat in range(20):
@@ -146,9 +163,4 @@ if __name__ == "__main__":
                 gradiens = train_tape.gradient(loss, temp_net.variables)
                 opti.apply_gradients(zip(gradiens, temp_net.variables))
                 # print(np.sum(loss.numpy()))
-                temp_true = np.squeeze(data[1][0][2].numpy())
-                temp_predict = np.squeeze(predict[0].numpy())
-        plt.imshow(temp_true)
-        plt.savefig('Detection/Ccounting/STCNN/temp/epoch_%s true.jpg' % epoch)
-        plt.imshow(temp_predict)
-        plt.savefig('Detection/Ccounting/STCNN/temp/epoch_%s predict.jpg' % epoch)
+        temp_net.save_weights(model_path+'weight_epoch_%s' % epoch)
