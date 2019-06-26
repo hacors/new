@@ -157,7 +157,7 @@ if __name__ == "__main__":
         for index, data in enumerate(batched_dataset):
             # for repeat in range(20):
             with tf.GradientTape() as train_tape:
-                opti = tf.train.AdamOptimizer(learning_rate=1e-5)
+                opti = tf.train.AdamOptimizer(learning_rate=1e-6)
                 predict = temp_net([data[0], data[2]], training=True)  # 注意所有的keras模型必须添上一句话，training=True
                 loss = euclidean_distance_loss(data[1], predict)
                 gradiens = train_tape.gradient(loss, temp_net.variables)
