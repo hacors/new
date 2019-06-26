@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 
 import dataset
 tf.enable_eager_execution()
-BATCHSIZE = 10
+BATCHSIZE = 1
 KL = keras.layers
 init = keras.initializers.RandomNormal(stddev=0.01)
 model_path = 'Datasets/mall/model/'
