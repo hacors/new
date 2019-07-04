@@ -51,6 +51,21 @@ class Solution:
         return result_odd.next
 
     def getIntersectionNode(self, headA, headB):
+        if not (headA and headB):
+            return None
+        pA = headA
+        pB = headB
+        while pA != pB:  # 跳两次
+            if pA is None:
+                pA = headB
+            else:
+                pA = pA.next
+            if pB is None:
+                pB = headA
+            else:
+                pB = pB.next
+        return pA
+        '''
         cur_a = headA
         cur_b = headB
         while cur_a and cur_b:
@@ -62,12 +77,14 @@ class Solution:
                 temp_a = temp_a.next
                 cur_a = cur_a.next
             cur_a = temp_a
+            cur_b = headB
         else:
             temp_b = headB
             while cur_b:
                 temp_b = temp_b.next
                 cur_b = cur_b.next
             cur_b = temp_b
+            cur_a = headA
         while cur_a and cur_b:
             if cur_a == cur_b:
                 return cur_a
@@ -75,6 +92,7 @@ class Solution:
                 cur_a = cur_a.next
                 cur_b = cur_b.next
         return None
+        '''
 
 
 if __name__ == '__main__':
