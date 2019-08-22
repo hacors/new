@@ -5,4 +5,5 @@ test_path = DATAROOT+'ECommAI_ubp_round%s_test' % ROUND
 item_feature_path = DATAROOT+'ECommAI_ubp_round%s_item_feature' % ROUND
 user_feature_path = DATAROOT+'ECommAI_ubp_round%s_user_feature' % ROUND
 
-
+temp = open(train_path)
+pass
