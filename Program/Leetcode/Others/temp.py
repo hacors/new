@@ -1,7 +1,3 @@
-from collections import deque
-import time
-
-
 class Solution():
     def minDistance(self, word1, word2):
         '''
@@ -38,7 +34,11 @@ class Solution():
         return left
 
     def findMedianSortedArrays(self, nums1: list, nums2: list):
-        pass
+        '''
+        解法一：关键在于找到两个列表的各自切分点，这个切分点满足中位数，而这个切分点的寻找过程需要使用到二分法
+        解法二：需要找到第k个元素，可以利用数据的有序性不断削减问题规模
+        解法三：各自找中位数，去除不符合的部分，依次迭代(这个只适用于两个等长序列)
+        '''
 
 
 '''
@@ -52,4 +52,5 @@ def fun():
 
 if __name__ == '__main__':
     solu = Solution()
-    solu.minDistance('abcde', 'bcda')
+    # solu.minDistance('abcde', 'bcda')
+    result = solu.findMedianSortedArrays([1, 2, 3, 4, 5, 6], [2, 8, 9, 10, 11, 12])
