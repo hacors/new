@@ -1,3 +1,6 @@
+from queue import PriorityQueue
+
+
 class ListNode:
     def __init__(self, x):
         self.val = x
@@ -16,7 +19,9 @@ def get_list(list_num):
 
 class Solution:
     def mergeKLists(self, lists):
-        
+        the_queue = PriorityQueue()
+        for temp_list in lists:
+            the_queue.put((temp_list.val, temp_list.next))
         pass
 
 
