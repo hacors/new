@@ -64,6 +64,39 @@ class Solution():
             result = max(result, left_temp, right_temp)
         return result
 
+    def totalHammingDistance(self, nums):
+        result = 0
+        for i in range(len(nums)):
+            for j in range(i, len(nums)):
+                if i != j:
+                    temp_num = nums[i] ^ nums[j]
+                    temp_str = bin(temp_num).replace('0b', '')
+                    result += temp_str.count('1')
+        return result
+
+    def isInterleave(self, s1, s2, s3):
+        '''        
+        if (len(s1)+len(s2)) != len(s3):
+            return False
+
+        def check(s1_temp, s2_temp, s3_temp):
+            if len(s3_temp) == 0:
+                return True
+            else:
+                temp_result = False
+                if len(s1_temp) > 0 and s1_temp[0] == s3_temp[0]:
+                    temp_result = check(s1_temp[1:], s2_temp, s3_temp[1:]) or temp_result
+                if len(s2_temp) > 0 and s2_temp[0] == s3_temp[0]:
+                    temp_result = check(s1_temp, s2_temp[1:], s3_temp[1:]) or temp_result
+                return temp_result
+        return check(s1, s2, s3)
+        '''
+        def check(s1_temp, s2_temp, s3_temp):
+            cut_3=len(s3_temp)//2
+            for 
+        dp_s1 = 0
+        pass
+
 
 '''
 def fun():
@@ -78,4 +111,6 @@ if __name__ == '__main__':
     solu = Solution()
     # solu.minDistance('abcde', 'bcda')
     # result = solu.findMedianSortedArrays([1, 2, 3, 4, 5, 6], [2, 8, 9, 10, 11, 12])
-    result = solu.maxProduct([-2, 0, -1, 3, -2])
+    # result = solu.maxProduct([2, 0, 1, 3, -2])
+    # result = solu.totalHammingDistance([4, 14, 2])
+    result = solu.isInterleave('a', 'b', 'a')
