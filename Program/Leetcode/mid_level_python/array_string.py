@@ -73,6 +73,8 @@ class Solution:
         return res
 
     def longestPalindrome(self, s):
+        # 马拉车算法
+        '''
         expand_s = '$#' + '#'.join(list(s))+'#%'
         len_s = [0]*len(expand_s)
         max_right, max_middle = 0, 0
@@ -93,6 +95,7 @@ class Solution:
         temp_res = expand_s[result_mid-result_len+1: result_mid+result_len]
         final_res = temp_res.replace('#', '')
         return final_res
+        '''
 
     def increasingTriplet(self, nums):
         small_1, small_2 = sys.maxsize, sys.maxsize
