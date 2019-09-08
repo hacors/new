@@ -173,6 +173,11 @@ class Solution():
                     result = max(result, dp_matrix[i][j])
         return result
 
+    def findTargetSumWays(self, nums, S):
+        pass
+    def red_bule(self,n,m):
+        dp_matrix=[[0 for j in range(m+1)]for i in range(n+1)]
+
 
 if __name__ == '__main__':
     solu = Solution()
@@ -183,5 +188,5 @@ if __name__ == '__main__':
     # result = solu.isInterleave('a', 'b', 'a')
     # result = solu.diffWaysToCompute('3+44*5-6+1')
     # result = solu.superEggDrop(3, 100)
-    result = solu.findLength([1, 2, 3, 4], [3, 4, 1])
+    # result = solu.findLength([1, 2, 3, 4], [3, 4, 1])
     pass
