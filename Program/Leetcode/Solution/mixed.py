@@ -175,8 +175,9 @@ class Solution():
 
     def findTargetSumWays(self, nums, S):
         pass
-    def red_bule(self,n,m):
-        dp_matrix=[[0 for j in range(m+1)]for i in range(n+1)]
+
+    def red_bule(self, n, m):
+        dp_matrix = [[0 for j in range(m+1)]for i in range(n+1)]
 
 
 if __name__ == '__main__':
