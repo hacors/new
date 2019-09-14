@@ -11,7 +11,7 @@ from networkx.readwrite import json_graph
 version_info = list(map(int, nx.__version__.split('.')))
 major = version_info[0]
 minor = version_info[1]
-assert (major <= 1) and (minor <= 11), "networkx major version > 1.11"
+# assert (major <= 1) and (minor <= 11), "networkx major version > 1.11"
 
 WALK_LEN=5
 N_WALKS=50
@@ -61,7 +61,7 @@ def load_data(prefix, normalize=True, load_walks=False):
 
     if normalize and not feats is None:
         from sklearn.preprocessing import StandardScaler
-        train_ids = np.array([id_map[n] for n in G.nodes() if not G.node[n]['val'] and not G.node[n]['test']])
+        train_ids = np.array(G.nodes())
         train_feats = feats[train_ids]
         scaler = StandardScaler()
         scaler.fit(train_feats)
@@ -93,6 +93,8 @@ def run_random_walks(G, nodes, num_walks=N_WALKS):
 
 if __name__ == "__main__":
     """ Run random walks """
+    graph_file = r'Datasets\Temp\Graphsage_data\toy-ppi'
+    G_data = load_data(graph_file)
     graph_file = sys.argv[1]
     out_file = sys.argv[2]
     G_data = json.load(open(graph_file))

@@ -46,6 +46,7 @@ class Solution():
 
     def isInterleave(self, s1, s2, s3):
         '''
+        # 两个string保持原顺序是否能形成另外一个
         # 深度优先搜索，朴素的思想
         if (len(s1)+len(s2)) != len(s3):
             return False
@@ -81,6 +82,7 @@ class Solution():
 
     def findLength(self, A, B):  # 最长公共子数组
         # 使用二维dp算法，每个位置放置一个数，代表这个对应位置为结束两个数组的最长公共子数组
+        # 只有在前面是公共子数组并且接下来两个相同才能加一
         A_bound = ['#']+A
         B_bound = ['#']+B
         dp_matrix = [[0 for j in range(len(B_bound))]for i in range(len(A_bound))]
@@ -138,8 +140,22 @@ class Solution():
         return dp[-1]
         '''
 
+    def longestPalindrome(self, s):
+        # 最长回文子串，使用动态规划的方法，如果一个串是回文串，那么这个穿一定是在回文串的基础上两端添加了相同的符号
+        dp_matrix = [[True for j in range(len(s))]for i in range(len(s))]
+        result_left, result_right = 0, 0
+        for i in range(len(s)-2, -1, -1):
+            for j in range(i+1, len(s)):
+                if s[i] == s[j] and dp_matrix[i+1][j-1]:
+                    if j-i > result_right-result_left:
+                        result_left, result_right = i, j
+                else:
+                    dp_matrix[i][j] = False
+        return s[result_left:result_right+1]
+
 
 if __name__ == '__main__':
     solu = Solution()
-    result = solu.findTargetSumWays([1, 1, 10, 10, 1], 3)
+    # result = solu.findTargetSumWays([1, 1, 10, 10, 1], 3)
+    result = solu.longestPalindrome('12343557')
     pass
