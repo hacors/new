@@ -45,8 +45,56 @@ class Solution():
 
         pass
 
+    def solveSudoku(self, board):
+        # 数独游戏
+        '''
+        pos_list = []
+        for i in range(9):
+            for j in range(9):
+                if board[i][j] == ".":
+                    pos_list.append([i, j])
+
+        def check(temp_board, pos):
+            num = temp_board[pos[0]][pos[1]]
+            for index in range(9):
+                if (index != pos[1] and temp_board[pos[0]][index] == num) or\
+                        (index != pos[0] and temp_board[index][pos[1]] == num):
+                    return False
+            big_i, big_j = pos[0]//3, pos[1]//3
+            for index_i in range(3):
+                for index_j in range(3):
+                    if (index_i != pos[0] % 3 and index_j != pos[1] % 3) and temp_board[big_i*3 + index_i][big_j*3+index_j] == num:
+                        return False
+            return True
+
+        def fill(temp_board, pos_list):
+            if len(pos_list) == 0:
+                return True
+            for candidate in range(1, 10):
+                temp_pos = pos_list.pop()
+                temp_board[temp_pos[0]][temp_pos[1]] = str(candidate)
+                if check(temp_board, temp_pos) and fill(temp_board, pos_list):
+                    return True
+                pos_list.append(temp_pos)
+                temp_board[temp_pos[0]][temp_pos[1]] = '.'  # 这是一个关键点，回溯法需要保持状态的恢复，这个恢复需要涉及到所有的参数的恢复
+            return False
+        fill(board, pos_list)
+        '''
+        pass
+
 
 if __name__ == '__main__':
     solu = Solution()
-    result = solu.findMedianSortedArrays([10000], [10001])
+    arr = list([
+        ["5", "3", ".", ".", "7", ".", ".", ".", "."],
+        ["6", ".", ".", "1", "9", "5", ".", ".", "."],
+        [".", "9", "8", ".", ".", ".", ".", "6", "."],
+        ["8", ".", ".", ".", "6", ".", ".", ".", "3"],
+        ["4", ".", ".", "8", ".", "3", ".", ".", "1"],
+        ["7", ".", ".", ".", "2", ".", ".", ".", "6"],
+        [".", "6", ".", ".", ".", ".", "2", "8", "."],
+        [".", ".", ".", "4", "1", "9", ".", ".", "5"],
+        [".", ".", ".", ".", "8", ".", ".", "7", "9"]
+    ])
+    result = solu.solveSudoku(arr)
     pass

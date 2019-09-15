@@ -49,8 +49,26 @@ class Solution():
         return sortarray
         '''
         # 快排实现一：从两端往中间分割的方法
-        def temp_sort(left, right):
-            pass
+        # 既然需要两端交替，那么可以安排每一轮两端都看一下，使用while循环嵌套while循环
+        def temp_sort(left, right):  # 一定要清楚left和right代表的意义
+            if left == right:
+                return
+            refer = nums[left]
+            left_pos, right_pos = left, right-1
+            while left_pos < right_pos:  # 使用三个循环实现左右左右左右的依次操作
+                while left_pos < right_pos and nums[right_pos] >= refer:
+                    right_pos -= 1
+                nums[left_pos] = nums[right_pos]
+                while left_pos < right_pos and nums[left_pos] < refer:
+                    left_pos += 1
+                nums[right_pos] = nums[left_pos]
+            midindex = left_pos
+            nums[midindex] = refer  # 最后需要放回取出的refer元素
+            temp_sort(left, midindex)
+            temp_sort(midindex+1, right)  # 注意refer在的位置是已经确定的
+        temp_sort(0, len(nums))
+        return(nums)
+
         '''
         # 快排实现二：关键是将数组分成三段，其中[left+1,mid)是小于部分，[mid,k)是大于部分，而[k,right)是未遍历部分
         def temp_sort(left, right):
@@ -94,5 +112,5 @@ class Solution():
 
 if __name__ == '__main__':
     solu = Solution()
-    result = solu.sortArray([5, 2, 3, 1, 7, 8, 10, 4])
+    result = solu.sortArray([5, 2, 3, 1])
     pass
