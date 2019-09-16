@@ -1,81 +1,14 @@
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
-
-np.random.seed(123)
+np.random.seed(666)
 
 
 class EdgeMinibatchIterator(object):
-
-    """ This minibatch iterator iterates over batches of sampled edges or
-    random pairs of co-occuring edges.
-
-    G -- networkx graph
-    id2idx -- dict mapping node ids to index in feature tensor
-    placeholders -- tensorflow placeholders object
-    context_pairs -- if not none, then a list of co-occuring node pairs (from random walks)
-    batch_size -- size of the minibatches
-    max_degree -- maximum size of the downsampled adjacency lists
-    n2v_retrain -- signals that the iterator is being used to add new embeddings to a n2v model
-    fixed_n2v -- signals that the iterator is being used to retrain n2v with only existing nodes as context
-    """
-
-    def __init__(self, G, id2idx,
-                 placeholders, context_pairs=None, batch_size=100, max_degree=25,
-                 n2v_retrain=False, fixed_n2v=False,
-                 **kwargs):
-
-        self.G = G
-        self.nodes = G.nodes()
-        self.id2idx = id2idx
-        self.placeholders = placeholders
+    def __init__(self, graph,  batch_size=100, neight_num=25):
+        self.graph = graph
         self.batch_size = batch_size
-        self.max_degree = max_degree
-        self.batch_num = 0
+        self.neight_num = neight_num
 
-        self.nodes = np.random.permutation(G.nodes())
-        self.adj, self.deg = self.construct_adj()
-        self.test_adj = self.construct_test_adj()
-        if context_pairs is None:
-            edges = G.edges()
-        else:
-            edges = context_pairs
-        self.train_edges = self.edges = np.random.permutation(edges)
-        if not n2v_retrain:
-            self.train_edges = self._remove_isolated(self.train_edges)
-            self.val_edges = [e for e in G.edges() if G[e[0]][e[1]]['train_removed']]
-        else:
-            if fixed_n2v:
-                self.train_edges = self.val_edges = self._n2v_prune(self.edges)
-            else:
-                self.train_edges = self.val_edges = self.edges
-
-        print(len([n for n in G.nodes() if not G.node[n]['test'] and not G.node[n]['val']]), 'train nodes')
-        print(len([n for n in G.nodes() if G.node[n]['test'] or G.node[n]['val']]), 'test nodes')
-        self.val_set_size = len(self.val_edges)
-
-    def _n2v_prune(self, edges):
-        def is_val(n): return self.G.node[n]["val"] or self.G.node[n]["test"]
-        return [e for e in edges if not is_val(e[1])]
-
-    def _remove_isolated(self, edge_list):
-        new_edge_list = []
-        missing = 0
-        for n1, n2 in edge_list:
-            if not n1 in self.G.node or not n2 in self.G.node:
-                missing += 1
-                continue
-            if (self.deg[self.id2idx[n1]] == 0 or self.deg[self.id2idx[n2]] == 0) \
-                    and (not self.G.node[n1]['test'] or self.G.node[n1]['val']) \
-                    and (not self.G.node[n2]['test'] or self.G.node[n2]['val']):
-                continue
-            else:
-                new_edge_list.append((n1, n2))
-        print("Unexpected missing:", missing)
-        return new_edge_list
-
-    def construct_adj(self):
+    def construct_adj(self):  # 为每一个结点选取固定数目的邻居，并且同时返回这个结点的真实邻居数
         adj = len(self.id2idx)*np.ones((len(self.id2idx)+1, self.max_degree))
         deg = np.zeros((len(self.id2idx),))
 

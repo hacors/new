@@ -80,7 +80,42 @@ class Solution():
             return False
         fill(board, pos_list)
         '''
-        pass
+        row, col, box = [], [], []
+        need_fill = []
+        for temp in range(9):
+            row.append(set(range(1, 10)))
+            col.append(set(range(1, 10)))
+            box.append(set(range(1, 10)))
+        for i in range(9):
+            for j in range(9):
+                if board[i][j] != '.':
+                    num = int(board[i][j])
+                    row[i].remove(num)
+                    col[j].remove(num)
+                    box[i//3*3+j//3].remove(num)
+                else:
+                    need_fill.append([i, j])
+
+        def fill(temp_need_fill, temp_row, temp_col, temp_box):
+            if len(temp_need_fill) == 0:
+                return True
+            else:
+                temp_i, temp_j = temp_need_fill[-1]
+                for temp_choose in temp_row[temp_i] & temp_col[temp_j] & temp_box[temp_i//3*3+temp_j//3]:
+                    temp_need_fill.pop()  # 关键要在循环里面实现状态的更新和恢复
+                    board[temp_i][temp_j] = str(temp_choose)
+                    temp_row[temp_i].remove(temp_choose)
+                    temp_col[temp_j].remove(temp_choose)
+                    temp_box[temp_i//3*3+temp_j//3].remove(temp_choose)
+                    if fill(temp_need_fill, temp_row, temp_col, temp_box):
+                        return True
+                    # temp_board[temp_i][temp_j] = '.'
+                    temp_row[temp_i].add(temp_choose)
+                    temp_col[temp_j].add(temp_choose)
+                    temp_box[temp_i//3*3+temp_j//3].add(temp_choose)
+                    temp_need_fill.append([temp_i, temp_j])  # 关键
+                return False
+        fill(need_fill, row, col, box)
 
 
 if __name__ == '__main__':

@@ -153,9 +153,40 @@ class Solution():
                     dp_matrix[i][j] = False
         return s[result_left:result_right+1]
 
+    def maximalSquare(self, matrix):
+        # 寻找最大正方形
+        if not(len(matrix)):
+            return 0
+        matrix = [list(map(int, row)) for row in matrix]
+
+        def has_one(temp_matrix):
+            for row in temp_matrix:
+                for num in row:
+                    if num:
+                        return True
+            return False
+
+        def check(temp_matrix, depth):
+            row_size = len(temp_matrix)-1
+            col_size = len(temp_matrix[0])-1
+            for i in range(0, row_size):
+                for j in range(0, col_size):
+                    if temp_matrix[i][j] and temp_matrix[i+1][j] and temp_matrix[i][j+1]and temp_matrix[i+1][j+1]:
+                        temp_matrix[i][j] = 1
+                    else:
+                        temp_matrix[i][j] = 0
+            left_matrix = [[matrix[i][j] for j in range(col_size)] for i in range(row_size)]  # 注意list不能直接切片
+            return left_matrix, depth+1
+        depth = 0
+        while has_one(matrix):
+            matrix, depth = check(matrix, depth)
+        return depth*depth
+
 
 if __name__ == '__main__':
     solu = Solution()
     # result = solu.findTargetSumWays([1, 1, 10, 10, 1], 3)
-    result = solu.longestPalindrome('12343557')
+    # result = solu.longestPalindrome('12343557')
+    matrix = [["1", "0", "1", "0", "0"], ["1", "0", "1", "1", "1"], ["1", "1", "1", "1", "1"], ["1", "0", "0", "1", "0"]]
+    result = solu.maximalSquare(matrix)
     pass
