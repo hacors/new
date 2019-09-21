@@ -9,7 +9,7 @@ from tensorflow.saved_model import tag_constants
 
 import process_data
 
-BATCH_SIZE = 5
+BATCH_SIZE = 32
 # input_dim = 17
 pb_file_path = r'D:\code\Competition\Mathe_competition\Signal\model'
 dataset_path = r'D:\code\Datasets\huawei_signal\train_processed_set\train.csv'
@@ -43,7 +43,7 @@ def full_connected(input_data, input_dim, output_dim, name):
 
 
 def rmse(predicts, labels):
-    return tf.losses.mean_squared_error(predicts, labels)
+    return  tf.sqrt(tf.losses.mean_squared_error(predicts, labels))
 
 
 def data_iterators(true_data):
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
         sess.run([init])
-        for i in range(10):
+        for i in range(100):
             next_batch_datas, next_batch_labels = data_itor.get_next()
             real_batch_datas, real_batch_labels = sess.run([next_batch_datas, next_batch_labels])
             feed_dict = {datas: real_batch_datas, labels: real_batch_labels}
