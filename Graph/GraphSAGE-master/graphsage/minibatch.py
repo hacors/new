@@ -179,8 +179,7 @@ class EdgeMinibatchIterator(object):
 
 
 class NodeMinibatchIterator(object):
-
-    """ 
+    """
     This minibatch iterator iterates over nodes for supervised learning.
 
     G -- networkx graph
