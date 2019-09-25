@@ -47,5 +47,5 @@ def run_random_walks(walks_dir, graph):
 
 if __name__ == "__main__":
     director = r'Datasets\Temp\Graphsage_data'
-    graph, features, labels = load_data(director+r'\toy-ppi-G.json', director+r'\toy-ppi-id_map.json')
+    graph, features, labels = load_data(director+r'\toy-ppi-G.json')
     # run_random_walks(director+r'\toy-ppi-walks.json', graph)

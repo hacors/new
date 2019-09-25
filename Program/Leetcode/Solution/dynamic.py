@@ -207,14 +207,23 @@ class Solution():
         dp_matrix = [[[0, 0] for j in range(dp_shape[1])] for i in range(dp_shape[0])]
         for i in range(1, dp_shape[0]):
             for j in range(1, dp_shape[1]):
-                pass
+                if matrix[i-1][j-1] == '1':
+                    left_size_x, left_size_y = dp_matrix[i][j-1]
+                    upper_size_x, upper_size_y = dp_matrix[i-1][j]
+                    if 
+                    test_pos_x, test_pos_y = i-upper_size_x, j-left_size_y
+                    test_size_x, test_size_y = dp_matrix[test_pos_x][test_pos_y]
+                    result_x, result_y = test_size_x+upper_size_x, test_size_y+left_size_y
+                    dp_matrix[i][j] = [result_x, result_y]
+                    result = max(result, result_x*result_y)
+        return result
 
 
 if __name__ == '__main__':
     solu = Solution()
     # result = solu.findTargetSumWays([1, 1, 10, 10, 1], 3)
     # result = solu.longestPalindrome('12343557')
-    matrix = [["0", "0", "0", "1"], ["1", "1", "0", "1"], ["1", "1", "1", "1"], ["0", "1", "1", "1"], ["0", "1", "1", "1"]]
+    matrix = [["1", "0", "0", "1"], ["1", "1", "0", "1"], ["1", "1", "1", "1"], ["0", "1", "1", "1"], ["0", "1", "1", "1"]]
     # result = solu.maximalSquare(matrix)
     result = solu.maximalRectangle(matrix)
     pass

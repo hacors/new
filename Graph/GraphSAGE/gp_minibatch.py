@@ -1,6 +1,7 @@
 # 输入图结构数据，返回产生器用于获取部分图数据
 import numpy as np
 import networkx as nx
+import gp_loaddata
 np.random.seed(666)
 
 
@@ -78,13 +79,21 @@ class NodeMinibatchIterator(MinibatchIterator):
 
     def next_minibatch_feed_dict(self):  # 每次调用获取一定量的数据，但是总的调用次数是确定的
         # 需要返回一个node的序列，以及node对应label（以编码形式存在）的序列
-        start_idx = self.batch_num * self.batch_size
-        self.batch_num += 1
-        end_idx = min(start_idx + self.batch_size, len(self.train_nodes))
-        batch_nodes = self.train_nodes[start_idx: end_idx]
-        batch_labels = np.vstack([self.get_label_vec(node) for node in batch_nodes], axis=1)
+        start_idx = self.batch_index * self.batch_size
+        self.batch_index += 1
+        end_idx = min(start_idx + self.batch_size, self.node_num)
+        batch_nodes = self.rd_nodelist[start_idx: end_idx]
+        batch_labels = np.vstack([self.get_label_vec(node) for node in batch_nodes])
         feed_dict = {}
         feed_dict['batch_size'] = len(batch_nodes)
         feed_dict['batch_nodes'] = batch_nodes
         feed_dict['batch_labels'] = batch_labels
         return feed_dict
+
+
+if __name__ == '__main__':
+    director = r'Datasets\Temp\Graphsage_data'
+    graph, features, labels = gp_loaddata.load_data(director+r'\toy-ppi-G.json')
+    edge_itor = EdgeMinibatchIterator(graph)
+    for i in range(edge_itor.batch_num):
+        temp_data = edge_itor.next_minibatch_feed_dict()
