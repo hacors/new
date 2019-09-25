@@ -1,3 +1,4 @@
+# 输入图结构数据，返回产生器用于获取部分图数据
 import numpy as np
 import networkx as nx
 np.random.seed(666)

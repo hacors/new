@@ -109,8 +109,34 @@ class Solution():
         return(nums)
         '''
 
+    def trap(self, height):
+        #接雨水，关键是将雨水分成两种考虑，一种是靠着右边墙面的，一种是靠着左边墙面的
+        if len(height) == 0:
+            return 0
+        result = 0
+        refer_left = height[0]
+        temp_result = 0
+        for index in range(1, len(height)):
+            if height[index] <= refer_left:
+                temp_result += (refer_left-height[index])
+            else:
+                refer_left = height[index]
+                result += temp_result
+                temp_result = 0
+        temp_result = 0
+        refer_right = height[len(height)-1]
+        for index in range(len(height)-2, -1, -1):
+            if height[index] < refer_right:
+                temp_result += (refer_right-height[index])
+            else:
+                refer_right = height[index]
+                result += temp_result
+                temp_result = 0
+        return result
+
 
 if __name__ == '__main__':
     solu = Solution()
-    result = solu.sortArray([5, 2, 3, 1])
+    # result = solu.sortArray([5, 2, 3, 1])
+    result = solu.trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])
     pass

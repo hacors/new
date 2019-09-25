@@ -1,3 +1,4 @@
+# 加载并返回图数据
 import json
 import random
 

@@ -154,6 +154,7 @@ class Solution():
         return s[result_left:result_right+1]
 
     def maximalSquare(self, matrix):
+        '''
         # 寻找最大正方形
         if not(len(matrix)):
             return 0
@@ -181,12 +182,39 @@ class Solution():
         while has_one(matrix):
             matrix, depth = check(matrix, depth)
         return depth*depth
+        '''
+        # 使用动态规划的方法
+        result = 0
+        if len(matrix) == 0:
+            return result
+        dp_shape = [len(matrix)+1, len(matrix[0])+1]
+        dp_matrix = [[0 for j in range(dp_shape[1])] for i in range(dp_shape[0])]
+        for i in range(1, dp_shape[0]):
+            for j in range(1, dp_shape[1]):
+                refer_size = min(dp_matrix[i-1][j], dp_matrix[i][j-1])
+                if matrix[i-refer_size-1][j-refer_size-1] == '1' and matrix[i-1][j-1] == '1':
+                    dp_matrix[i][j] = refer_size+1
+                    result = max(result, dp_matrix[i][j])
+                elif matrix[i-1][j-1] == '1':
+                    dp_matrix[i][j] = refer_size
+        return result*result
+
+    def maximalRectangle(self, matrix):
+        result = 0
+        if len(matrix) == 0:
+            return result
+        dp_shape = [len(matrix)+1, len(matrix[0])+1]
+        dp_matrix = [[[0, 0] for j in range(dp_shape[1])] for i in range(dp_shape[0])]
+        for i in range(1, dp_shape[0]):
+            for j in range(1, dp_shape[1]):
+                pass
 
 
 if __name__ == '__main__':
     solu = Solution()
     # result = solu.findTargetSumWays([1, 1, 10, 10, 1], 3)
     # result = solu.longestPalindrome('12343557')
-    matrix = [["1", "0", "1", "0", "0"], ["1", "0", "1", "1", "1"], ["1", "1", "1", "1", "1"], ["1", "0", "0", "1", "0"]]
-    result = solu.maximalSquare(matrix)
+    matrix = [["0", "0", "0", "1"], ["1", "1", "0", "1"], ["1", "1", "1", "1"], ["0", "1", "1", "1"], ["0", "1", "1", "1"]]
+    # result = solu.maximalSquare(matrix)
+    result = solu.maximalRectangle(matrix)
     pass
