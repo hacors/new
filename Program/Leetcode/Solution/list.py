@@ -37,7 +37,6 @@ class Solution:
             cursor = cursor.next
         return head.next
 
-
 if __name__ == '__main__':
     solu = Solution()
     list_a = get_list([8, 2, 3])

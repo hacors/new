@@ -1,3 +1,6 @@
+import random
+
+
 class Solution():
     def findMedianSortedArrays(self, nums1: list, nums2: list):
         '''
@@ -110,7 +113,7 @@ class Solution():
         '''
 
     def trap(self, height):
-        #接雨水，关键是将雨水分成两种考虑，一种是靠着右边墙面的，一种是靠着左边墙面的
+        # 接雨水，关键是将雨水分成两种考虑，一种是靠着右边墙面的，一种是靠着左边墙面的
         if len(height) == 0:
             return 0
         result = 0
@@ -137,6 +140,6 @@ class Solution():
 
 if __name__ == '__main__':
     solu = Solution()
-    # result = solu.sortArray([5, 2, 3, 1])
-    result = solu.trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])
+    result = solu.sortArray([5, 2, 3, 1])
+    # result = solu.trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])
     pass

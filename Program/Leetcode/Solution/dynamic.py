@@ -210,13 +210,27 @@ class Solution():
                 if matrix[i-1][j-1] == '1':
                     left_size_x, left_size_y = dp_matrix[i][j-1]
                     upper_size_x, upper_size_y = dp_matrix[i-1][j]
-                    if 
-                    test_pos_x, test_pos_y = i-upper_size_x, j-left_size_y
-                    test_size_x, test_size_y = dp_matrix[test_pos_x][test_pos_y]
-                    result_x, result_y = test_size_x+upper_size_x, test_size_y+left_size_y
-                    dp_matrix[i][j] = [result_x, result_y]
-                    result = max(result, result_x*result_y)
+                    if True:
+                        test_pos_x, test_pos_y = i-upper_size_x, j-left_size_y
+                        test_size_x, test_size_y = dp_matrix[test_pos_x][test_pos_y]
+                        result_x, result_y = test_size_x+upper_size_x, test_size_y+left_size_y
+                        dp_matrix[i][j] = [result_x, result_y]
+                        result = max(result, result_x*result_y)
         return result
+
+    def longestCommonSubsequence(self, text1, text2):
+        dp_matrix = [[0 for j in range(len(text2)+1)]for i in range(len(text1)+1)]
+        for i in range()
+        '''
+        dp_list = [0 for _ in range(len(text2)+1)]
+        for i in range(len(text1)):
+            for j in range(len(text2)):
+                if text1[i] == text2[j]:
+                    dp_list[j+1] = dp_list[j]+1
+                else:
+                    dp_list[j+1] = max(dp_list[j], dp_list[j+1])
+        return dp_list[-1]
+        '''
 
 
 if __name__ == '__main__':
@@ -225,5 +239,6 @@ if __name__ == '__main__':
     # result = solu.longestPalindrome('12343557')
     matrix = [["1", "0", "0", "1"], ["1", "1", "0", "1"], ["1", "1", "1", "1"], ["0", "1", "1", "1"], ["0", "1", "1", "1"]]
     # result = solu.maximalSquare(matrix)
-    result = solu.maximalRectangle(matrix)
+    # result = solu.maximalRectangle(matrix)
+    result = solu.longestCommonSubsequence("pmjghexybyrgzczy", "hafcdqbgncrcbihkd")
     pass
