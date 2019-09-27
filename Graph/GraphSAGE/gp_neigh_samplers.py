@@ -21,22 +21,6 @@ class UniformNeighborSampler(KERAS.layers.Layer):
         adj_list = tf.slice(adj_list, [0, 0], [-1, self.num_choosed])
         return adj_list
 
-    def compute_output_shape(self, inputs):
-        id_list = inputs
-        shape = tf.TensorShape([None, len(id_list), self.num_choosed])
-        return shape
-
-
-'''
-    def get_config(self):
-        base_config = super(MyLayer, self).get_config()
-        base_config['output_dim'] = self.output_dim
-        return base_config
-
-    @classmethod
-    def from_config(cls, config):
-        return cls(**config)
-'''
 
 if __name__ == '__main__':
     director = r'Datasets\Temp\Graphsage_data'
@@ -46,7 +30,6 @@ if __name__ == '__main__':
     predict = UniformNeighborSampler(node_itor.node_adjlist, 10)(model_inputs_nodes)
     model = KERAS.models.Model(inputs=model_inputs_nodes, outputs=predict)
     temp = node_itor.next_minibatch_feed_dict()['batch_nodes']
-    newtemp = temp[:, np.newaxis]
     temp_input = KERAS.initializers.constant(temp, dtype=tf.int32)
     temp_result = model(newtemp)
     pass

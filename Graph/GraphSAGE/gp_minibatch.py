@@ -62,20 +62,9 @@ class EdgeMinibatchIterator(MinibatchIterator):
 
 
 class NodeMinibatchIterator(MinibatchIterator):
-    def __init__(self, graph: nx.Graph, label_map, label_class, batch_size=100, max_degree=25):
+    def __init__(self, graph: nx.Graph, label_map, batch_size=100, max_degree=25):
         super().__init__(graph, batch_size, max_degree)
         self.label_map = label_map
-        self.label_class = label_class
-
-    def get_label_vec(self, node):  # 获取一个结点的label（必须为一个向量）
-        label = self.label_map[node]
-        if isinstance(label, list):
-            label_vec = np.array(label)
-        else:
-            label_vec = np.zeros((self.label_class))
-            class_ind = self.label_map[node]
-            label_vec[class_ind] = 1
-        return label_vec
 
     def next_minibatch_feed_dict(self):  # 每次调用获取一定量的数据，但是总的调用次数是确定的
         # 需要返回一个node的序列，以及node对应label（以编码形式存在）的序列
@@ -83,7 +72,8 @@ class NodeMinibatchIterator(MinibatchIterator):
         self.batch_index += 1
         end_idx = min(start_idx + self.batch_size, self.node_num)
         batch_nodes = self.rd_nodelist[start_idx: end_idx]
-        batch_labels = np.vstack([self.get_label_vec(node) for node in batch_nodes])
+        batch_nodes = batch_nodes[:, np.newaxis]  # 为了匹配维度，batch_nodes必须增加一维
+        batch_labels = np.vstack([self.label_map[node] for node in batch_nodes])  # 注意label必须为向量
         feed_dict = {}
         feed_dict['batch_size'] = len(batch_nodes)
         feed_dict['batch_nodes'] = batch_nodes
