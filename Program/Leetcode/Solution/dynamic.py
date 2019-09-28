@@ -219,18 +219,26 @@ class Solution():
         return result
 
     def longestCommonSubsequence(self, text1, text2):
-        dp_matrix = [[0 for j in range(len(text2)+1)]for i in range(len(text1)+1)]
-        for i in range()
         '''
-        dp_list = [0 for _ in range(len(text2)+1)]
+        dp_matrix = [[0 for j in range(len(text2)+1)]for i in range(len(text1)+1)]
         for i in range(len(text1)):
             for j in range(len(text2)):
                 if text1[i] == text2[j]:
-                    dp_list[j+1] = dp_list[j]+1
+                    dp_matrix[i+1][j+1] = dp_matrix[i][j]+1
                 else:
-                    dp_list[j+1] = max(dp_list[j], dp_list[j+1])
-        return dp_list[-1]
+                    dp_matrix[i+1][j+1] = max(dp_matrix[i][j+1], dp_matrix[i+1][j])
+        return dp_matrix[-1][-1]
         '''
+        dp_list = [0 for _ in range(len(text2)+1)]
+        for i in range(len(text1)):
+            dp_list_temp = [0 for _ in range(len(text2)+1)]
+            for j in range(len(text2)):
+                if text1[i] == text2[j]:
+                    dp_list_temp[j+1] = dp_list[j]+1
+                else:
+                    dp_list_temp[j+1] = max(dp_list_temp[j], dp_list[j+1])  # 关键是前面计算会覆盖一定的数据，被覆盖的数据会对后面的数据产生影响
+            dp_list = dp_list_temp
+        return dp_list[-1]
 
 
 if __name__ == '__main__':
@@ -240,5 +248,6 @@ if __name__ == '__main__':
     matrix = [["1", "0", "0", "1"], ["1", "1", "0", "1"], ["1", "1", "1", "1"], ["0", "1", "1", "1"], ["0", "1", "1", "1"]]
     # result = solu.maximalSquare(matrix)
     # result = solu.maximalRectangle(matrix)
+    # result = solu.longestCommonSubsequence("g", "gg")
     result = solu.longestCommonSubsequence("pmjghexybyrgzczy", "hafcdqbgncrcbihkd")
     pass

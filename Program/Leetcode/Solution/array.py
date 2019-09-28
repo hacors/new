@@ -1,4 +1,5 @@
 import random
+random.seed(666)
 
 
 class Solution():
@@ -51,6 +52,7 @@ class Solution():
         sortarray.append(temp)
         return sortarray
         '''
+        '''        
         # 快排实现一：从两端往中间分割的方法
         # 既然需要两端交替，那么可以安排每一轮两端都看一下，使用while循环嵌套while循环
         def temp_sort(left, right):  # 一定要清楚left和right代表的意义
@@ -71,7 +73,25 @@ class Solution():
             temp_sort(midindex+1, right)  # 注意refer在的位置是已经确定的
         temp_sort(0, len(nums))
         return(nums)
-
+        '''
+        # 快排实现一：简化版
+        def temp_sort(left, right):  # 此时选取的left和right为闭区间
+            if left >= right:
+                return
+            refer = nums[left]  # 随机选择一个数
+            left_pos, right_pos = left, right  # 定义遍历起点
+            while left_pos < right_pos:  # 使用三个循环实现左右左右左右的依次操作
+                while nums[right_pos] >= refer and left_pos < right_pos:
+                    right_pos -= 1
+                nums[left_pos] = nums[right_pos]
+                while nums[left_pos] <= refer and left_pos < right_pos:
+                    left_pos += 1
+                nums[right_pos] = nums[left_pos]
+            nums[left_pos] = refer
+            temp_sort(left, left_pos-1)
+            temp_sort(right_pos+1, right)  # 注意refer在的位置是已经确定的
+        temp_sort(0, len(nums)-1)
+        return(nums)
         '''
         # 快排实现二：关键是将数组分成三段，其中[left+1,mid)是小于部分，[mid,k)是大于部分，而[k,right)是未遍历部分
         def temp_sort(left, right):

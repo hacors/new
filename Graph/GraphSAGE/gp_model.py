@@ -38,7 +38,6 @@ class SampleAndAggregate(object):
     def sample(self, inputs, layer_infos, batch_size=None):
         '''
         inputs为一系列的结点（一系列边中的结点）
-        
         '''
         if batch_size is None:
             batch_size = self.batch_size
