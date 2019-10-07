@@ -1,4 +1,5 @@
 import random
+import math
 random.seed(666)
 
 
@@ -157,9 +158,27 @@ class Solution():
                 temp_result = 0
         return result
 
+    def maximumGap(self, nums):
+        # 数组中的最大间隔，使用桶分割元素快速计算
+        if len(nums) < 2:
+            return 0
+        max_num, min_num = max(nums), min(nums)
+        box_size = max((max_num-min_num)//(len(nums)-1), 1)  # 选取box大小，确保n个box涵盖数值区域，且最后一个桶一定涵盖最后一个元素，防止取0
+        box_num = (max_num-min_num)//box_size+1  # 这种情况下桶的个数会超过n
+        box_list = [[] for _ in range(box_num)]
+        for num in nums:
+            box_index = (num-min_num)//box_size
+            box_list[box_index].append(num)
+        new_list = [box for box in box_list if box]  # 剔除空元素
+        result = 0
+        for box_index in range(1, len(new_list)):
+            result = max(result, min(new_list[box_index])-max(new_list[box_index-1]))  # 鸽巢原理可以保证两个box之间的差异大于box内部的差异
+        return result
+
 
 if __name__ == '__main__':
     solu = Solution()
-    result = solu.sortArray([5, 2, 3, 1])
+    # result = solu.sortArray([5, 2, 3, 1])
     # result = solu.trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])
+    result = solu.maximumGap([1, 1, 1, 1])
     pass

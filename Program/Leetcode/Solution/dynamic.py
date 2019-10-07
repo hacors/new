@@ -155,7 +155,7 @@ class Solution():
 
     def maximalSquare(self, matrix):
         '''
-        # 寻找最大正方形
+        # 二维7数组中寻找最大正方形
         if not(len(matrix)):
             return 0
         matrix = [list(map(int, row)) for row in matrix]
@@ -200,6 +200,7 @@ class Solution():
         return result*result
 
     def maximalRectangle(self, matrix):
+        # 二维数组中寻找最大矩形
         result = 0
         if len(matrix) == 0:
             return result
@@ -219,6 +220,8 @@ class Solution():
         return result
 
     def longestCommonSubsequence(self, text1, text2):
+        # 寻找两个字符串的最长公共子串，注意这个公共子串可以是不连续的
+        # 关键是考虑当前比对的两个符号对前面有什么影响
         '''
         dp_matrix = [[0 for j in range(len(text2)+1)]for i in range(len(text1)+1)]
         for i in range(len(text1)):
