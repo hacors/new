@@ -1,9 +1,5 @@
-#! /usr/bin/env python2.7
-# -*- coding: utf-8 -*-
-# File: feature_extract.py
-# Date: 2016-10-28
-# Author: Chaos <xinchaoxt@gmail.com>
-
+# -*- coding: UTF-8 -*-
+# Competition/O2O/O2O-Coupon-Usage-Forecast-master/code/charles/season 1/feature_extract.py
 import pandas as pd
 from config import *
 
@@ -399,7 +395,8 @@ def merchant_coupon_discount_floor_others_rate(df):
     return grouped[frame.name].mean().join(normalized_frame)
 
 
-merchant_coupon_discount_floor_rates = [merchant_coupon_discount_floor_50_rate, merchant_coupon_discount_floor_200_rate, merchant_coupon_discount_floor_500_rate, merchant_coupon_discount_floor_others_rate]
+merchant_coupon_discount_floor_rates = [merchant_coupon_discount_floor_50_rate, merchant_coupon_discount_floor_200_rate,
+                                        merchant_coupon_discount_floor_500_rate, merchant_coupon_discount_floor_others_rate]
 
 
 def merchant_average_discount_rate(df):
@@ -643,11 +640,15 @@ def add_offline_online_features(offline_data, active_online_data):
 
     user_online_feature_data = new_offline_data.merge(new_active_data, on=user_label, how='left')
     user_online_feature_data.fillna(0, inplace=True)
-    user_online_feature_data = user_online_feature_data.join(calc_rate(user_online_feature_data['offline_normal_consume_count'], user_online_feature_data['online_normal_consume_count'], 'offline_normal_consume_rate'))
-    user_online_feature_data = user_online_feature_data.join(calc_rate(user_online_feature_data['offline_none_consume_count'], user_online_feature_data['online_none_consume_count'], 'offline_none_consume_rate'))
-    user_online_feature_data = user_online_feature_data.join(calc_rate(user_online_feature_data['offline_coupon_consume_count'], user_online_feature_data['online_coupon_consume_count'], 'offline_coupon_consume_rate'))
+    user_online_feature_data = user_online_feature_data.join(
+        calc_rate(user_online_feature_data['offline_normal_consume_count'], user_online_feature_data['online_normal_consume_count'], 'offline_normal_consume_rate'))
+    user_online_feature_data = user_online_feature_data.join(
+        calc_rate(user_online_feature_data['offline_none_consume_count'], user_online_feature_data['online_none_consume_count'], 'offline_none_consume_rate'))
+    user_online_feature_data = user_online_feature_data.join(
+        calc_rate(user_online_feature_data['offline_coupon_consume_count'], user_online_feature_data['online_coupon_consume_count'], 'offline_coupon_consume_rate'))
     user_online_feature_data = user_online_feature_data.join(calc_rate(user_online_feature_data['offline_count'], user_online_feature_data['online_count'], 'offline_rate'))
-    user_online_feature_data = user_online_feature_data[[user_label, 'online_normal_consume_count_normalized', 'online_none_consume_count_normalized', 'online_coupon_consume_count_normalized', 'online_count_normalized', 'offline_normal_consume_rate', 'offline_none_consume_rate', 'offline_coupon_consume_rate', 'offline_rate']]
+    user_online_feature_data = user_online_feature_data[[user_label, 'online_normal_consume_count_normalized', 'online_none_consume_count_normalized',
+                                                         'online_coupon_consume_count_normalized', 'online_count_normalized', 'offline_normal_consume_rate', 'offline_none_consume_rate', 'offline_coupon_consume_rate', 'offline_rate']]
 
     return user_online_feature_data
 
