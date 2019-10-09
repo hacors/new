@@ -1,22 +1,26 @@
-# -*- coding: UTF-8 -*-
-# Competition\O2O\O2O-master\code\charles\season1\feature_extract.py
+#! /usr/bin/env python2.7
+# -*- coding: utf-8 -*-
+# File: feature_extract.py
+# Date: 2016-10-28
+# Author: Chaos <xinchaoxt@gmail.com>
+
 import pandas as pd
 from config import *
 
 
 def get_time_diff(date_received, date_consumed):
     # 计算时间差
-    month_diff = int(date_consumed[-4:-2]) - int(date_received[-4:-2])
+    month_diff = int(date_consumed[-6:-4]) - int(date_received[-6:-4])
     if month_diff == 0:
-        return int(date_consumed[-2:]) - int(date_received[-2:])
+        return int(date_consumed[-4:-2]) - int(date_received[-4:-2])
     else:
-        return int(date_consumed[-2:]) - int(date_received[-2:]) + month_diff * 30
+        return int(date_consumed[-4:-2]) - int(date_received[-4:-2]) + month_diff * 30
 
 
 def discount_floor_partition(x):
     # 满减下限分类
     x = str(x)
-    if x == 'null':
+    if x == 'nan':
         return -1
     # fixed暂记为1,其实应该也算缺失值
     elif x == 'fixed':
@@ -42,7 +46,7 @@ def discount_floor_partition(x):
 def discount_rate_calculation(x):
     # 计算折率
     x = str(x)
-    if x == 'null' or x == 'fixed':
+    if x == 'nan' or x == 'fixed':
         return -1
     elif x.find(':') == -1:
         return float(x)
@@ -66,7 +70,7 @@ def min_max_normalize(df, name):
 
 def user_normal_consume_rate(df, online=False):
     # 用户无优惠券消费率及次数归一化
-    frame = pd.Series(list(map(lambda x, y: 1. if x != 'null' and y == 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x != 'nan' and y == 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'user_normal_consume_rate' if not online else 'online_user_normal_consume_rate'
     normal_consume_user = df[[user_label]].join(frame)
     grouped = normal_consume_user.groupby(user_label, as_index=False)
@@ -77,7 +81,7 @@ def user_normal_consume_rate(df, online=False):
 
 def user_none_consume_rate(df, online=False):
     # 用户获得优惠券但没有消费率及次数归一化
-    frame = pd.Series(list(map(lambda x, y: 1. if x == 'null' and y != 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x == 'nan' and y != 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'user_none_consume_rate' if not online else 'online_user_none_consume_rate'
     none_consume_user = df[[user_label]].join(frame)
     grouped = none_consume_user.groupby(user_label, as_index=False)
@@ -88,7 +92,7 @@ def user_none_consume_rate(df, online=False):
 
 def user_coupon_consume_rate(df, online=False):
     # 用户优惠券消费率及次数归一化
-    frame = pd.Series(list(map(lambda x, y: 1. if x != 'null' and y != 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x != 'nan' and y != 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'user_coupon_consume_rate' if not online else 'online_user_coupon_consume_rate'
     coupon_consume_user = df[[user_label]].join(frame)
     grouped = coupon_consume_user.groupby(user_label, as_index=False)
@@ -99,10 +103,10 @@ def user_coupon_consume_rate(df, online=False):
 
 def user_consume_coupon_rate(df, online=False):
     # 用户领取优惠券后进行核销率
-    frame = pd.Series(list(map(lambda x, y: 1. if x != 'null' and y != 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x != 'nan' and y != 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'user_consume_coupon_counts'
     coupon_consume_user = df[[user_label]].join(frame)
-    frame = df[coupon_label].map(lambda x: 1. if x != 'null' else 0.)
+    frame = df[coupon_label].map(lambda x: 1. if x != 'nan' else 0.)
     frame.name = 'user_received_coupon_counts'
     coupon_consume_user = coupon_consume_user.join(frame)
     grouped = coupon_consume_user.groupby(user_label, as_index=False).sum()
@@ -116,7 +120,7 @@ user_consume_rates = [user_normal_consume_rate, user_none_consume_rate, user_cou
 
 def user_coupon_discount_floor_50_rate(df, online=False):
     # 用户优惠券消费中满0~50折扣率及次数归一化
-    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'null' and y != 'null' and (z == 2 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
+    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'nan' and y != 'nan' and (z == 2 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
     frame.name = 'user_coupon_discount_floor_50_rate' if not online else 'online_user_coupon_discount_floor_50_rate'
     coupon_discount_user = df[[user_label]].join(frame)
     grouped = coupon_discount_user.groupby(user_label, as_index=False)
@@ -127,7 +131,7 @@ def user_coupon_discount_floor_50_rate(df, online=False):
 
 def user_coupon_discount_floor_200_rate(df, online=False):
     # 用户优惠券消费中满50~200折扣次数归一化
-    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'null' and y != 'null' and (z == 3 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
+    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'nan' and y != 'nan' and (z == 3 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
     frame.name = 'user_coupon_discount_floor_200_rate' if not online else 'online_user_coupon_discount_floor_200_rate'
     coupon_discount_user = df[[user_label]].join(frame)
     grouped = coupon_discount_user.groupby(user_label, as_index=False)
@@ -138,7 +142,7 @@ def user_coupon_discount_floor_200_rate(df, online=False):
 
 def user_coupon_discount_floor_500_rate(df, online=False):
     # 用户优惠券消费中满200~500折扣次数归一化
-    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'null' and y != 'null' and (z == 4 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
+    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'nan' and y != 'nan' and (z == 4 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
     frame.name = 'user_coupon_discount_floor_500_rate' if not online else 'online_user_coupon_discount_floor_500_rate'
     coupon_discount_user = df[[user_label]].join(frame)
     grouped = coupon_discount_user.groupby(user_label, as_index=False)
@@ -149,7 +153,7 @@ def user_coupon_discount_floor_500_rate(df, online=False):
 
 def user_coupon_discount_floor_others_rate(df, online=False):
     # 用户优惠券消费中其他满减次数归一化
-    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'null' and y != 'null' and (z == 5 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
+    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'nan' and y != 'nan' and (z == 5 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
     frame.name = 'user_coupon_discount_floor_others_rate' if not online else 'online_user_coupon_discount_floor_others_rate'
     coupon_discount_user = df[[user_label]].join(frame)
     grouped = coupon_discount_user.groupby(user_label, as_index=False)
@@ -163,7 +167,7 @@ user_coupon_discount_floor_rates = [user_coupon_discount_floor_50_rate, user_cou
 
 def user_average_discount_rate(df, online=False):
     # 用户优惠券消费平均消费折率
-    mask = pd.Series(list(map(lambda x, y, z: True if x != 'null' and y != 'null' and z != -1 else False, df[date_consumed_label], df[coupon_label], df['discount_rate'])))
+    mask = pd.Series(list(map(lambda x, y, z: True if x != 'nan' and y != 'nan' and z != -1 else False, df[date_consumed_label], df[coupon_label], df['discount_rate'])))
     discount_rates = df[mask][[user_label, 'discount_rate']]
     discount_rates['discount_rate'] = discount_rates['discount_rate'].astype(float)
     grouped = discount_rates.groupby(user_label, as_index=False)
@@ -172,7 +176,7 @@ def user_average_discount_rate(df, online=False):
 
 def user_direct_discount_rate(df, online=False):
     # 用户优惠券消费中直接折扣消费(非满减)率及次数归一化
-    mask = pd.Series(list(map(lambda x, y, z: True if x != 'null' and y != 'null' and z != 'null' else False, df[date_consumed_label], df[coupon_label], df[discount_label])))
+    mask = pd.Series(list(map(lambda x, y, z: True if x != 'nan' and y != 'nan' and z != 'nan' else False, df[date_consumed_label], df[coupon_label], df[discount_label])))
     discount_users = df[mask]
     frame = discount_users[discount_label].map(lambda x: 1. if str(x).find(':') == -1 else 0.)
     frame.name = 'user_direct_discount_rate' if not online else 'online_user_direct_discount_rate'
@@ -186,7 +190,7 @@ def user_direct_discount_rate(df, online=False):
 def user_fixed_discount_rate(df, online=False):
     # 用户优惠券消费中限时低价消费率及次数归一化
     assert online, 'no fixed offline discount '
-    mask = pd.Series(list(map(lambda x, y, z: True if x != 'null' and y != 'null' and z != 'null' else False, df[date_consumed_label], df[coupon_label], df[discount_label])))
+    mask = pd.Series(list(map(lambda x, y, z: True if x != 'nan' and y != 'nan' and z != 'nan' else False, df[date_consumed_label], df[coupon_label], df[discount_label])))
     discount_users = df[mask]
     frame = discount_users[discount_label].map(lambda x: 1. if str(x) == 'fixed' else 0.)
     frame.name = 'user_fixed_discount_rate' if not online else 'online_user_fixed_discount_rate'
@@ -199,9 +203,9 @@ def user_fixed_discount_rate(df, online=False):
 
 def user_consume_time_rate(df, online=False):
     # 用户获得优惠券后到使用消费券之间的平均等待时间计算率
-    valid_time_user = df.loc[df[date_consumed_label] != 'null'].loc[df[date_received_label] != 'null']
-    date_consumed = valid_time_user[date_consumed_label].map(lambda x: int(x[-4:-2]) * 30 + int(x[-2:]))
-    date_received = valid_time_user[date_received_label].map(lambda x: int(x[-4:-2]) * 30 + int(x[-2:]))
+    valid_time_user = df.loc[df[date_consumed_label] != 'nan'].loc[df[date_received_label] != 'nan']
+    date_consumed = valid_time_user[date_consumed_label].map(lambda x: int(x[-6:-4]) * 30 + int(x[-4:-2]))
+    date_received = valid_time_user[date_received_label].map(lambda x: int(x[-6:-4]) * 30 + int(x[-4:-2]))
     frame = pd.Series(list(map(lambda x, y: 1. - float(x - y) / 15 if x - y < 15 else 0., date_consumed, date_received)), index=valid_time_user.index)
     frame.name = 'user_consume_time_rate' if not online else 'online_user_consume_time_rate'
     valid_time_user = valid_time_user[[user_label]].join(frame)
@@ -210,14 +214,14 @@ def user_consume_time_rate(df, online=False):
 
 def user_consume_merchants(df, online=False):
     # 用户优惠券消费过的不同商家数量归一化
-    mask = pd.Series(list(map(lambda x, y: True if x != 'null' and y != 'null' else False, df[date_consumed_label], df[coupon_label])))
+    mask = pd.Series(list(map(lambda x, y: True if x != 'nan' and y != 'nan' else False, df[date_consumed_label], df[coupon_label])))
     grouped = df[mask][[user_label, merchant_label]].groupby(user_label)[merchant_label].nunique().reset_index()
     return min_max_normalize(grouped, merchant_label).rename(columns={merchant_label: 'user_consume_merchants_rate' if not online else 'online_user_consume_merchants_rate'})
 
 
 def user_consume_coupons(df, online=False):
     # 用户优惠券消费过的不同优惠券数量归一化
-    mask = pd.Series(list(map(lambda x, y: True if x != 'null' and y != 'null' else False, df[date_consumed_label], df[coupon_label])))
+    mask = pd.Series(list(map(lambda x, y: True if x != 'nan' and y != 'nan' else False, df[date_consumed_label], df[coupon_label])))
     grouped = df[mask][[user_label, coupon_label]].groupby(user_label)[coupon_label].nunique().reset_index()
     return min_max_normalize(grouped, coupon_label).rename(columns={coupon_label: 'user_consume_coupons_rate' if not online else 'online_user_consume_coupons_rate'})
 
@@ -303,7 +307,7 @@ def add_user_coupon_features(df, online=False):
 
 def merchant_normal_consume_rate(df):
     # 商家无优惠券消费率及次数归一化
-    frame = pd.Series(list(map(lambda x, y: 1. if x != 'null' and y == 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x != 'nan' and y == 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'merchant_normal_consume_rate'
     normal_consume_merchant = df[[merchant_label]].join(frame)
     grouped = normal_consume_merchant.groupby(merchant_label, as_index=False)
@@ -314,7 +318,7 @@ def merchant_normal_consume_rate(df):
 
 def merchant_none_consume_rate(df):
     # 商家获得优惠券但没有消费率及次数归一化
-    frame = pd.Series(list(map(lambda x, y: 1. if x == 'null' and y != 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x == 'nan' and y != 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'merchant_none_consume_rate'
     none_consume_merchant = df[[merchant_label]].join(frame)
     grouped = none_consume_merchant.groupby(merchant_label, as_index=False)
@@ -325,7 +329,7 @@ def merchant_none_consume_rate(df):
 
 def merchant_coupon_consume_rate(df):
     # 商家优惠券消费率及次数归一化
-    frame = pd.Series(list(map(lambda x, y: 1. if x != 'null' and y != 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x != 'nan' and y != 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'merchant_coupon_consume_rate'
     coupon_consume_merchant = df[[merchant_label]].join(frame)
     grouped = coupon_consume_merchant.groupby(merchant_label, as_index=False)
@@ -336,10 +340,10 @@ def merchant_coupon_consume_rate(df):
 
 def merchant_consume_coupon_rate(df):
     # 商家的优惠券被领取后的核销率
-    frame = pd.Series(list(map(lambda x, y: 1. if x != 'null' and y != 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x != 'nan' and y != 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'merchant_consume_coupon_counts'
     coupon_consume_merchant = df[[merchant_label]].join(frame)
-    frame = df[coupon_label].map(lambda x: 1. if x != 'null' else 0.)
+    frame = df[coupon_label].map(lambda x: 1. if x != 'nan' else 0.)
     frame.name = 'merchant_received_coupon_counts'
     coupon_consume_merchant = coupon_consume_merchant.join(frame)
     grouped = coupon_consume_merchant.groupby(merchant_label, as_index=False).sum()
@@ -353,7 +357,7 @@ merchant_consume_rates = [merchant_normal_consume_rate, merchant_none_consume_ra
 
 def merchant_coupon_discount_floor_50_rate(df):
     # 用户正常消费中满0~50折扣率及次数归一化
-    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'null' and y != 'null' and (z == 2 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
+    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'nan' and y != 'nan' and (z == 2 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
     frame.name = 'merchant_coupon_discount_floor_50_rate'
     coupon_discount_merchant = df[[merchant_label]].join(frame)
     grouped = coupon_discount_merchant.groupby(merchant_label, as_index=False)
@@ -364,7 +368,7 @@ def merchant_coupon_discount_floor_50_rate(df):
 
 def merchant_coupon_discount_floor_200_rate(df):
     # 用户正常消费中满50~200折扣率及次数归一化
-    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'null' and y != 'null' and (z == 3 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
+    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'nan' and y != 'nan' and (z == 3 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
     frame.name = 'merchant_coupon_discount_floor_200_rate'
     coupon_discount_merchant = df[[merchant_label]].join(frame)
     grouped = coupon_discount_merchant.groupby(merchant_label, as_index=False)
@@ -375,7 +379,7 @@ def merchant_coupon_discount_floor_200_rate(df):
 
 def merchant_coupon_discount_floor_500_rate(df):
     # 用户正常消费中满200~500折扣率及次数归一化
-    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'null' and y != 'null' and (z == 4 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
+    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'nan' and y != 'nan' and (z == 4 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
     frame.name = 'merchant_coupon_discount_floor_500_rate'
     coupon_discount_merchant = df[[merchant_label]].join(frame)
     grouped = coupon_discount_merchant.groupby(merchant_label, as_index=False)
@@ -386,7 +390,7 @@ def merchant_coupon_discount_floor_500_rate(df):
 
 def merchant_coupon_discount_floor_others_rate(df):
     # 用户正常消费中其他折扣率及次数归一化
-    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'null' and y != 'null' and (z == 5 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
+    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'nan' and y != 'nan' and (z == 5 or z == 0) else 0., df[date_consumed_label], df[coupon_label], df['discount_floor_partition'])))
     frame.name = 'merchant_coupon_discount_floor_others_rate'
     coupon_discount_merchant = df[[merchant_label]].join(frame)
     grouped = coupon_discount_merchant.groupby(merchant_label, as_index=False)
@@ -395,13 +399,12 @@ def merchant_coupon_discount_floor_others_rate(df):
     return grouped[frame.name].mean().join(normalized_frame)
 
 
-merchant_coupon_discount_floor_rates = [merchant_coupon_discount_floor_50_rate, merchant_coupon_discount_floor_200_rate,
-                                        merchant_coupon_discount_floor_500_rate, merchant_coupon_discount_floor_others_rate]
+merchant_coupon_discount_floor_rates = [merchant_coupon_discount_floor_50_rate, merchant_coupon_discount_floor_200_rate, merchant_coupon_discount_floor_500_rate, merchant_coupon_discount_floor_others_rate]
 
 
 def merchant_average_discount_rate(df):
     # 商家优惠券消费平均消费折率
-    mask = pd.Series(list(map(lambda x, y, z: True if x != 'null' and y != 'null' and z != 'null' else False, df[date_consumed_label], df[coupon_label], df['discount_rate'])))
+    mask = pd.Series(list(map(lambda x, y, z: True if x != 'nan' and y != 'nan' and z != 'nan' else False, df[date_consumed_label], df[coupon_label], df['discount_rate'])))
     discount_rates = df[mask][[merchant_label, 'discount_rate']]
     discount_rates['discount_rate'] = discount_rates['discount_rate'].astype(float)
     grouped = discount_rates.groupby(merchant_label, as_index=False)
@@ -410,7 +413,7 @@ def merchant_average_discount_rate(df):
 
 def merchant_direct_discount_rate(df):
     # 商家优惠券消费中直接折扣消费(非满减)率及次数归一化
-    mask = pd.Series(list(map(lambda x, y, z: True if x != 'null' and y != 'null' and z != 'null' else False, df[date_consumed_label], df[coupon_label], df[discount_label])))
+    mask = pd.Series(list(map(lambda x, y, z: True if x != 'nan' and y != 'nan' and z != 'nan' else False, df[date_consumed_label], df[coupon_label], df[discount_label])))
     discount_merchants = df[mask]
     frame = discount_merchants[discount_label].map(lambda x: 1. if str(x).find(':') == -1 else 0.)
     frame.name = 'merchant_direct_discount_rate'
@@ -423,9 +426,9 @@ def merchant_direct_discount_rate(df):
 
 def merchant_consume_time_rate(df):
     # 商家被消费的优惠券从被用户获得到使用之间的时间计算率
-    valid_time_merchant = df.loc[df[date_consumed_label] != 'null'].loc[df[date_received_label] != 'null']
-    date_consumed = valid_time_merchant[date_consumed_label].map(lambda x: int(x[-4:-2]) * 30 + int(x[-2:]))
-    date_received = valid_time_merchant[date_received_label].map(lambda x: int(x[-4:-2]) * 30 + int(x[-2:]))
+    valid_time_merchant = df.loc[df[date_consumed_label] != 'nan'].loc[df[date_received_label] != 'nan']
+    date_consumed = valid_time_merchant[date_consumed_label].map(lambda x: int(x[-6:-4]) * 30 + int(x[-4:-2]))
+    date_received = valid_time_merchant[date_received_label].map(lambda x: int(x[-6:-4]) * 30 + int(x[-4:-2]))
     frame = pd.Series(list(map(lambda x, y: 1. - float(x - y) / 15 if x - y < 15 else 0., date_consumed, date_received)), index=valid_time_merchant.index)
     frame.name = 'merchant_consume_time_rate'
     valid_time_merchant = valid_time_merchant[[merchant_label]].join(frame)
@@ -434,14 +437,14 @@ def merchant_consume_time_rate(df):
 
 def merchant_consume_users(df):
     # 消费过商家优惠券的不同用户数量归一化
-    mask = pd.Series(list(map(lambda x, y: True if x != 'null' and y != 'null' else False, df[date_consumed_label], df[coupon_label])))
+    mask = pd.Series(list(map(lambda x, y: True if x != 'nan' and y != 'nan' else False, df[date_consumed_label], df[coupon_label])))
     grouped = df[mask][[user_label, merchant_label]].groupby(merchant_label)[user_label].nunique().reset_index()
     return min_max_normalize(grouped, user_label).rename(columns={user_label: 'merchant_consume_users_rate'})
 
 
 def merchant_consume_coupons(df):
     # 商家被消费过的不同优惠券数量归一化
-    mask = pd.Series(list(map(lambda x, y: True if x != 'null' and y != 'null' else False, df[date_consumed_label], df[coupon_label])))
+    mask = pd.Series(list(map(lambda x, y: True if x != 'nan' and y != 'nan' else False, df[date_consumed_label], df[coupon_label])))
     grouped = df[mask][[coupon_label, merchant_label]].groupby(merchant_label)[coupon_label].nunique().reset_index()
     return min_max_normalize(grouped, coupon_label).rename(columns={coupon_label: 'merchant_consume_coupons_rate'})
 
@@ -489,7 +492,7 @@ def add_merchant_coupon_features(df):
 
 def user_merchant_normal_consume_rate(df):
     # 用户对商家的所有消费中,普通消费率及次数归一化
-    frame = pd.Series(list(map(lambda x, y: 1. if x != 'null' and y == 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x != 'nan' and y == 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'user_merchant_normal_consume_rate'
     normal_consume_user_merchant = df[[user_label, merchant_label]].join(frame)
     grouped = normal_consume_user_merchant.groupby([user_label, merchant_label], as_index=False)
@@ -500,7 +503,7 @@ def user_merchant_normal_consume_rate(df):
 
 def user_merchant_none_consume_rate(df):
     # 用户对商家的所有消费中,不消费率及次数归一化
-    frame = pd.Series(list(map(lambda x, y: 1. if x == 'null' and y != 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x == 'nan' and y != 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'user_merchant_none_consume_rate'
     none_consume_user_merchant = df[[user_label, merchant_label]].join(frame)
     grouped = none_consume_user_merchant.groupby([user_label, merchant_label], as_index=False)
@@ -511,7 +514,7 @@ def user_merchant_none_consume_rate(df):
 
 def user_merchant_coupon_consume_rate(df):
     # 用户对商家的所有消费中,优惠券消费率及次数归一化
-    frame = pd.Series(list(map(lambda x, y: 1. if x != 'null' and y == 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x != 'nan' and y == 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'user_merchant_coupon_consume_rate'
     coupon_consume_user_merchant = df[[user_label, merchant_label]].join(frame)
     grouped = coupon_consume_user_merchant.groupby([user_label, merchant_label], as_index=False)
@@ -522,10 +525,10 @@ def user_merchant_coupon_consume_rate(df):
 
 def user_merchant_consume_coupon_rate(df):
     # 用户领取商家的优惠券后的核销率
-    frame = pd.Series(list(map(lambda x, y: 1. if x != 'null' and y != 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x != 'nan' and y != 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'user_merchant_consume_coupon_counts'
     coupon_consume_merchant = df[[user_label, merchant_label]].join(frame)
-    frame = df[coupon_label].map(lambda x: 1. if x != 'null' else 0.)
+    frame = df[coupon_label].map(lambda x: 1. if x != 'nan' else 0.)
     frame.name = 'user_merchant_received_coupon_counts'
     coupon_consume_merchant = coupon_consume_merchant.join(frame)
     grouped = coupon_consume_merchant.groupby([user_label, merchant_label], as_index=False).sum()
@@ -539,7 +542,7 @@ user_merchant_consume_rate = [user_merchant_normal_consume_rate, user_merchant_n
 
 def user_normal_consume_merchant_rate(df):
     # 用户对每个商家的普通消费次数占用户普通消费所有商家的比重
-    frame = pd.Series(list(map(lambda x, y: 1. if x != 'null' and y == 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x != 'nan' and y == 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'normal_consume'
     normal_consume_user_merchant = df[[user_label, merchant_label]].join(frame)
     user_dicts = dict(normal_consume_user_merchant.groupby(user_label)[frame.name].sum())
@@ -552,7 +555,7 @@ def user_normal_consume_merchant_rate(df):
 
 def user_none_consume_merchant_rate(df):
     # 用户对每个商家的不消费次数占用户不消费的所有商家的比重
-    frame = pd.Series(list(map(lambda x, y: 1. if x == 'null' and y != 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x == 'nan' and y != 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'none_consume'
     none_consume_user_merchant = df[[user_label, merchant_label]].join(frame)
     user_dicts = dict(none_consume_user_merchant.groupby(user_label)[frame.name].sum())
@@ -565,7 +568,7 @@ def user_none_consume_merchant_rate(df):
 
 def user_coupon_consume_merchant_rate(df):
     # 用户对每个商家的优惠券消费次数占用户优惠券消费所有商家的比重
-    frame = pd.Series(list(map(lambda x, y: 1. if x != 'null' and y != 'null' else 0., df[date_consumed_label], df[coupon_label])))
+    frame = pd.Series(list(map(lambda x, y: 1. if x != 'nan' and y != 'nan' else 0., df[date_consumed_label], df[coupon_label])))
     frame.name = 'coupon_consume'
     coupon_consume_user_merchant = df[[user_label, merchant_label]].join(frame)
     user_dicts = dict(coupon_consume_user_merchant.groupby(user_label)[frame.name].sum())
@@ -620,18 +623,18 @@ def calc_rate(offline_column, online_column, name):
 
 
 def add_offline_online_features(offline_data, active_online_data):
-    active_normal_consume = active_online_data.loc[active_online_data[date_consumed_label] != 'null'].loc[active_online_data[coupon_label] == 'null']
-    active_none_consume = active_online_data.loc[active_online_data[date_consumed_label] == 'null'].loc[active_online_data[coupon_label] != 'null']
-    active_coupon_consume = active_online_data.loc[active_online_data[date_consumed_label] != 'null'].loc[active_online_data[coupon_label] != 'null']
+    active_normal_consume = active_online_data.loc[active_online_data[date_consumed_label] != 'nan'].loc[active_online_data[coupon_label] == 'nan']
+    active_none_consume = active_online_data.loc[active_online_data[date_consumed_label] == 'nan'].loc[active_online_data[coupon_label] != 'nan']
+    active_coupon_consume = active_online_data.loc[active_online_data[date_consumed_label] != 'nan'].loc[active_online_data[coupon_label] != 'nan']
     new_active_data = active_online_data[[user_label]].drop_duplicates()
     new_active_data = add_count_users(new_active_data, active_normal_consume[[user_label]], 'online_normal_consume_count', online=True)
     new_active_data = add_count_users(new_active_data, active_none_consume[[user_label]], 'online_none_consume_count', online=True)
     new_active_data = add_count_users(new_active_data, active_coupon_consume[[user_label]], 'online_coupon_consume_count', online=True)
     new_active_data = add_count_users(new_active_data, active_online_data[[user_label]], 'online_count', online=True)
 
-    offline_normal_consume = offline_data.loc[offline_data[date_consumed_label] != 'null'].loc[offline_data[coupon_label] == 'null']
-    offline_none_consume = offline_data.loc[offline_data[date_consumed_label] == 'null'].loc[offline_data[coupon_label] != 'null']
-    offline_coupon_consume = offline_data.loc[offline_data[date_consumed_label] != 'null'].loc[offline_data[coupon_label] != 'null']
+    offline_normal_consume = offline_data.loc[offline_data[date_consumed_label] != 'nan'].loc[offline_data[coupon_label] == 'nan']
+    offline_none_consume = offline_data.loc[offline_data[date_consumed_label] == 'nan'].loc[offline_data[coupon_label] != 'nan']
+    offline_coupon_consume = offline_data.loc[offline_data[date_consumed_label] != 'nan'].loc[offline_data[coupon_label] != 'nan']
     new_offline_data = offline_data[[user_label]].drop_duplicates()
     new_offline_data = add_count_users(new_offline_data, offline_normal_consume[[user_label]], 'offline_normal_consume_count')
     new_offline_data = add_count_users(new_offline_data, offline_none_consume[[user_label]], 'offline_none_consume_count')
@@ -640,15 +643,11 @@ def add_offline_online_features(offline_data, active_online_data):
 
     user_online_feature_data = new_offline_data.merge(new_active_data, on=user_label, how='left')
     user_online_feature_data.fillna(0, inplace=True)
-    user_online_feature_data = user_online_feature_data.join(
-        calc_rate(user_online_feature_data['offline_normal_consume_count'], user_online_feature_data['online_normal_consume_count'], 'offline_normal_consume_rate'))
-    user_online_feature_data = user_online_feature_data.join(
-        calc_rate(user_online_feature_data['offline_none_consume_count'], user_online_feature_data['online_none_consume_count'], 'offline_none_consume_rate'))
-    user_online_feature_data = user_online_feature_data.join(
-        calc_rate(user_online_feature_data['offline_coupon_consume_count'], user_online_feature_data['online_coupon_consume_count'], 'offline_coupon_consume_rate'))
+    user_online_feature_data = user_online_feature_data.join(calc_rate(user_online_feature_data['offline_normal_consume_count'], user_online_feature_data['online_normal_consume_count'], 'offline_normal_consume_rate'))
+    user_online_feature_data = user_online_feature_data.join(calc_rate(user_online_feature_data['offline_none_consume_count'], user_online_feature_data['online_none_consume_count'], 'offline_none_consume_rate'))
+    user_online_feature_data = user_online_feature_data.join(calc_rate(user_online_feature_data['offline_coupon_consume_count'], user_online_feature_data['online_coupon_consume_count'], 'offline_coupon_consume_rate'))
     user_online_feature_data = user_online_feature_data.join(calc_rate(user_online_feature_data['offline_count'], user_online_feature_data['online_count'], 'offline_rate'))
-    user_online_feature_data = user_online_feature_data[[user_label, 'online_normal_consume_count_normalized', 'online_none_consume_count_normalized',
-                                                         'online_coupon_consume_count_normalized', 'online_count_normalized', 'offline_normal_consume_rate', 'offline_none_consume_rate', 'offline_coupon_consume_rate', 'offline_rate']]
+    user_online_feature_data = user_online_feature_data[[user_label, 'online_normal_consume_count_normalized', 'online_none_consume_count_normalized', 'online_coupon_consume_count_normalized', 'online_count_normalized', 'offline_normal_consume_rate', 'offline_none_consume_rate', 'offline_coupon_consume_rate', 'offline_rate']]
 
     return user_online_feature_data
 
@@ -659,9 +658,9 @@ def add_offline_online_features(offline_data, active_online_data):
 def add_distance_rate(df):
     # 距离特征
     # how to deal with distance == null? mean?
-    # mean = df[df[distance_label] != 'null'][distance_label].astype(float).mean()
+    # mean = df[df[distance_label] != 'nan'][distance_label].astype(float).mean()
     # print 'distance_rate_mean: ', mean
-    frame = df[distance_label].map(lambda x: float(x) / 10 if x != 'null' else -1)
+    frame = df[distance_label].map(lambda x: float(x) / 10 if x != 'nan' else -1)
     frame.name = 'distance_rate'
     df = df.join(frame)
     return df
@@ -672,7 +671,7 @@ def add_distance_rate(df):
 
 def coupon_type(df):
     # 优惠券类型
-    frame = df[discount_label].map(lambda x: -1 if x == 'null' else 0 if str(x).find(':') == -1 else 1)
+    frame = df[discount_label].map(lambda x: -1 if x == 'nan' else 0 if str(x).find(':') == -1 else 1)
     frame.name = 'coupon_type'
     return frame
 
@@ -705,7 +704,7 @@ def add_coupon_features(df):
 
 def user_received_counts(df):
     # 用户领取的所有优惠券数目及归一化
-    frame = df[coupon_label].map(lambda x: 1. if x != 'null' else 0.)
+    frame = df[coupon_label].map(lambda x: 1. if x != 'nan' else 0.)
     frame.name = 'user_received_counts'
     received_users = df[[user_label]].join(frame)
     grouped = received_users.groupby(user_label, as_index=False).sum()
@@ -717,7 +716,7 @@ def user_received_counts(df):
 
 def user_received_coupon_counts(df):
     # 用户领取的特定优惠券数目及归一化
-    frame = df[coupon_label].map(lambda x: 1. if x != 'null' else 0.)
+    frame = df[coupon_label].map(lambda x: 1. if x != 'nan' else 0.)
     frame.name = 'user_received_coupon_counts'
     received_users = df[[user_label, coupon_label]].join(frame)
     grouped = received_users.groupby([user_label, coupon_label], as_index=False).sum()
@@ -729,7 +728,7 @@ def user_received_coupon_counts(df):
 
 def merchant_received_counts(df):
     # 商家被领取的优惠券数目及归一化
-    frame = df[coupon_label].map(lambda x: 1. if x != 'null' else 0.)
+    frame = df[coupon_label].map(lambda x: 1. if x != 'nan' else 0.)
     frame.name = 'merchant_received_counts'
     received_merchants = df[[merchant_label]].join(frame)
     grouped = received_merchants.groupby(merchant_label, as_index=False).sum()
@@ -741,7 +740,7 @@ def merchant_received_counts(df):
 
 def merchant_received_coupon_counts(df):
     # 商家被领取的特定优惠券数目及归一化
-    frame = df[coupon_label].map(lambda x: 1. if x != 'null' else 0.)
+    frame = df[coupon_label].map(lambda x: 1. if x != 'nan' else 0.)
     frame.name = 'merchant_received_coupon_counts'
     received_merchants = df[[merchant_label, coupon_label]].join(frame)
     grouped = received_merchants.groupby([merchant_label, coupon_label], as_index=False).sum()
@@ -753,7 +752,7 @@ def merchant_received_coupon_counts(df):
 
 def user_merchant_received_counts(df):
     # 用户领取特定商家的优惠券数目及归一化
-    frame = df[coupon_label].map(lambda x: 1. if x != 'null' else 0.)
+    frame = df[coupon_label].map(lambda x: 1. if x != 'nan' else 0.)
     frame.name = 'user_merchant_received_counts'
     received_user_merchants = df[[user_label, merchant_label]].join(frame)
     grouped = received_user_merchants.groupby([user_label, merchant_label], as_index=False).sum()
@@ -801,7 +800,7 @@ def add_dataset_features(df):
 
 
 def add_label(df):
-    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'null' and y != 'null' and get_time_diff(z, y) <= 15 else 0., df[coupon_label], df[date_consumed_label], df[date_received_label])))
+    frame = pd.Series(list(map(lambda x, y, z: 1. if x != 'nan' and y != 'nan' and get_time_diff(z, y) <= 15 else 0., df[coupon_label], df[date_consumed_label], df[date_received_label])))
     frame.name = 'Label'
     print 'pos_counts: {0}, neg_counts: {1}'.format(sum(frame == 1), sum(frame == 0))
     df = df.join(frame)

@@ -6,6 +6,7 @@
 
 from feature_extract import *
 import pandas as pd
+import numpy as np
 
 
 def gen_feature_data(features_dir, dataset, output):

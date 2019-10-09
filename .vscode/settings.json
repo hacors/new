@@ -1,5 +1,6 @@
 {
     "python.linting.flake8Enabled": true,
+    //"python.pythonPath": "D:\\software\\Anaconda\\envs\\python2.7\\python.exe",
     "python.pythonPath": "D:\\software\\Anaconda\\python.exe",
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Args": [
