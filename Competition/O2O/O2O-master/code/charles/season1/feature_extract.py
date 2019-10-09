@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# Competition\O2O\O2O-master\code\charles\season 1\feature_extract.py
+# Competition\O2O\O2O-master\code\charles\season1\feature_extract.py
 import pandas as pd
 from config import *
 
