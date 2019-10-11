@@ -40,23 +40,27 @@ class Convolve(tf.keras.Model):
                                                          ),
                                                          (2, 0, 1, 3)
                                                      ),
-                                                     arguments={'neighbor_set': neighbor_set}
-                                                     )(embeddings)
+                                                     arguments={'neighbor_set': neighbor_set}  # 用于给lambda函数添加dict参数
+                                                     )(embeddings)  # 用于填充位置参数
         # neighbor_hiddens.shape = (batch, node_number, neighbor number, hidden channels)
         neighbor_hiddens = self.Q(neighbor_embeddings)
-        # indices.shape = (node_number, neighbor number, 2)
+        # 输入为batch,node_num,neighbor_number,hidden_channels，输出为对最后一层做一次全连接之后的数据，数据格式为batch,noode_num,neighbor_num,10（10为第一个全连接层的结点数）
+
+        # indices.shape = (node_number, neighbor number, 2)，注意其中2代表着每一个neighbor关系的中心结点和邻居结点对
         node_nums = tf.keras.layers.Lambda(lambda x: tf.tile(tf.expand_dims(tf.range(tf.shape(x)[0]), axis=1), (1, tf.shape(x)[1])))(neighbor_set)
         indices = tf.keras.layers.Lambda(lambda x: tf.stack(x, axis=-1))([node_nums, neighbor_set])
-        # neighbor weights.shape = (node number, neighbor number)
+        # neighbor weights.shape = (node number, neighbor number)，本质就是将矩阵中每一对关系转换为权重值，形成一个node，nei的二维权重矩阵
         neighbor_weights = tf.keras.layers.Lambda(lambda x, indices: tf.gather_nd(x, indices), arguments={'indices': indices})(weights)
         # neighbor_weights.shape = (1, node number, neighbor number, 1)
         neighbor_weights = tf.keras.layers.Lambda(lambda x: tf.expand_dims(tf.expand_dims(x, 0), -1))(neighbor_weights)
+
         # weighted_sum_hidden.shape = (batch, node_number, hidden channels)
+        #前面一个计算是各个batch中每一个长度为10的隐层表示添加一个系数（这个系数由结点对之间的权重决定），最终得到每一个结点的邻居表示10
         weighted_sum_hidden = tf.keras.layers.Lambda(lambda x: tf.math.reduce_sum(x[0] * x[1], axis=2) / (tf.math.reduce_sum(x[1], axis=2) + 1e-6))([neighbor_hiddens, neighbor_weights])
         # concated_hidden.shape = (batch, node number, in_channels + hidden channels)
-        concated_hidden = tf.keras.layers.Concatenate(axis=-1)([embeddings, weighted_sum_hidden])
+        concated_hidden = tf.keras.layers.Concatenate(axis=-1)([embeddings, weighted_sum_hidden])#最终得到hidden+10的表示
         # hidden_new.shape = (batch, node number, hidden_channels)
-        hidden_new = self.W(concated_hidden)
+        hidden_new = self.W(concated_hidden)#聚合之后再卷积
         # normalized.shape = (batch, node number, hidden_channels)
         normalized = tf.keras.layers.Lambda(lambda x: x / (tf.norm(x, axis=2, keepdims=True) + 1e-6))(hidden_new)
         return normalized
@@ -127,7 +131,7 @@ class PinSage(tf.keras.Model):
         line_sum = tf.math.reduce_sum(weights, axis=1, keepdims=True) + 1e-6
         normalized = weights / line_sum
         return normalized
-        #每一个结点按照邻居的权重大小分配权重
+        # 每一个结点按照邻居的权重大小分配权重
 
 
 if __name__ == "__main__":
