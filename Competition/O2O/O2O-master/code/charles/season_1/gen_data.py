@@ -3,7 +3,7 @@
 # File: feature_extract.py
 # Date: 2016-10-30
 # Author: Chaos <xinchaoxt@gmail.com>
-
+# 用于融合数据
 from feature_extract import *
 import pandas as pd
 import numpy as np

@@ -89,7 +89,7 @@ if __name__ == '__main__':
     }
     num_round = 400
     model = xgb.Booster(params=param)
-    model.load_model(active_model_file_path)
+    model.load_model(active_model_file_path)                                    
 
     print 'predicting'
     active_labels = model.predict(predict_data)
