@@ -91,12 +91,24 @@ class lgb_model(model_demo):
         train_predict = self.model.predict(self.train_feed)
         train_auc = metrics.roc_auc_score(self.train_target, train_predict)
         test_predict = self.model.predict(self.test_feed)
+        test_predict = self.ajust(test_predict)
         test_auc = metrics.roc_auc_score(self.test_target, test_predict)
         print(train_auc, ' ', test_auc)
 
     def get_result(self):
         submit_predict = self.model.predict(self.submit_feed)
         return submit_predict
+
+    def ajust(self, predict):
+        result = []
+        for num in list(predict):
+            if num < 0:
+                result.append(0)
+            elif num > 0:
+                result.append(1)
+            else:
+                result.append(num)
+        return np.array(result)
 
 
 if __name__ == '__main__':
