@@ -1,3 +1,3 @@
-    validate_target = origin_train_target[:config.SPLIT_VAL_TEST_target]
-    test_target = origin_train_target[config.SPLIT_VAL_TEST_target:config.SPLIT_TEST_TRAIN_target]
-    train_target = origin_train_target[config.SPLIT_TEST_TRAIN_target:]
+print(len(set(submit_group_feature['residentAddr'])-set(train_group_feature['residentAddr'])-set(test_group_feature['residentAddr'])))
+print(len(set(submit_group_feature['residentAddr'])))
+ ['residentAddr', 'residentAddr', 'residentAddr', 'residentAddr']

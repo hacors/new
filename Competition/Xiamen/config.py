@@ -38,6 +38,7 @@ submit_feed = submit_dir+'feed.csv'
 
 result_dir = DIR+'result/'
 model_dir = DIR+'model/'
+global_feature_dir = DIR+'global_feature/'
 
 # 其他数据
 SPLIT_TEST_TRAIN = 47833
@@ -48,6 +49,7 @@ def mkdirector(director):
     director = director[:-1]  # 去除最后一个斜杠
     if os.path.exists(director):
         shutil.rmtree(director)
+        os.mkdir(director)
     else:
         os.mkdir(director)
 
