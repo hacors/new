@@ -2,6 +2,7 @@ import config
 import pandas as pd
 import time
 import numpy as np
+from imblearn.over_sampling import SMOTE
 
 
 refer_columns = ['certId', 'dist', 'bankCard', 'residentAddr']
@@ -47,8 +48,8 @@ def preprocess(origin_data):
     date_feature = lefted_feature[date_columns]
     refer_feature = (lefted_feature[refer_columns].astype(np.float64)).astype(np.int64)
     int_feature = (lefted_feature[int_columns].astype(np.float64)).astype(np.int64)
-    base_feature = (int_feature.join(date_feature)).join(float_feature)
-    return base_feature, append_feature, refer_feature
+    base_feature = ((refer_feature.join(int_feature)).join(date_feature)).join(float_feature)
+    return base_feature, append_feature
 
 
 # 产生针对每一条数据的feature
@@ -62,49 +63,20 @@ def generate_id_feature(base_feature):
     id_depend_feature['date_month'] = id_depend_feature['certValidBegin_date'].dt.month
     # id_depend_feature['date_year'] = id_depend_feature['certValidBegin_date'].dt.year
     id_depend_feature['date_year_use'] = id_depend_feature['certValidStop_date'].dt.year - id_depend_feature['certValidBegin_date'].dt.year
+    id_depend_feature['date_year_use'] = id_depend_feature['date_year_use']//10
     id_depend_feature = id_depend_feature.drop(['certValidBegin_date'], axis=1)
     id_depend_feature = id_depend_feature.drop(['certValidStop_date'], axis=1)
+
+    # id_depend_feature.drop(['isNew'], axis=1, inplace=True)
+    # id_depend_feature.drop(['edu'], axis=1, inplace=True)
+    id_depend_feature.drop(['5yearBadloan'], axis=1, inplace=True)
+    id_depend_feature['highest_edu_99'] = np.where(id_depend_feature['highestEdu'] == 99, 1, 0)
+
+    id_depend_feature = id_depend_feature.drop(['certId'], axis=1)
+    id_depend_feature = id_depend_feature.drop(['dist'], axis=1)
+    id_depend_feature = id_depend_feature.drop(['bankCard'], axis=1)
+    id_depend_feature = id_depend_feature.drop(['residentAddr'], axis=1)
     return id_depend_feature
-
-
-def generate_group_feature(group_id_feature, group_target, group_refer_feature):
-    depend_feature = group_id_feature.join(group_target)
-    group_feature_list = []
-    for refer_name in refer_columns:
-        group_feature_input = group_refer_feature[[refer_name]]
-        group_feature_input = group_feature_input.join(depend_feature['target'])
-        # 依据depend添加其他feature
-        grouped_data = group_feature_input.groupby([refer_name])
-        group_feature_mean = grouped_data.mean()
-        '''
-        group_feature_sum = grouped_data.sum()
-        if refer_name in ['bankCard', 'residentAddr']:  # 存在大量空值的列对应的sum属性去除，即对group之后的target属性不需要计算sum值
-            group_feature_sum = group_feature_sum.drop(['target'], axis=1)
-        suf = ('_%s_sum' % refer_name, '_%s_mean' % refer_name)
-        group_feature_output = pd.merge(group_feature_sum, group_feature_mean, left_index=True, right_index=True, suffixes=suf)
-        '''
-        group_feature_output = group_feature_mean
-        group_feature_list.append(group_feature_output)
-    return group_feature_list
-
-
-# 由预处理的数据和特征数据融合成最终的数据，并且存储最终数据
-def merge(id_depend_feature, refer_feature, group_feature_list):
-    merged_feature = refer_feature
-    for index in range(len(refer_columns)):
-        refer_name = refer_columns[index]
-        group_feature = group_feature_list[index]
-        refer_feature = pd.merge(refer_feature, group_feature, left_on=refer_name, right_index=True, how='left')
-        refer_feature = refer_feature.drop([refer_name], axis=1)
-    merged_feature = merged_feature.join(refer_feature)
-
-    # 以均值填补所有的空值
-    columns_havena = list(merged_feature.isnull().any())
-    columns_names = merged_feature.columns
-    for index, havena in enumerate(columns_havena):
-        if havena:
-            merged_feature[columns_names[index]].fillna(merged_feature[columns_names[index]].mean(), inplace=True)
-    return merged_feature
 
 
 # 存储最终数据
@@ -115,46 +87,43 @@ def store_feed(merged_data, feed_path):
 def only_read(feature_dir):
     base_feature = pd.read_csv(feature_dir+'base_feature.csv')
     append_feature = pd.read_csv(feature_dir+'append_feature.csv')
-    refer_feature = pd.read_csv(feature_dir+'refer_feature.csv')
-    return base_feature, append_feature, refer_feature
+    return base_feature, append_feature
 
 
 def main():
     dataset_names = config.DATASET_NAMES
-    # 首先生成临时数据
-    group_base_feature, _, group_refer_feature = preprocess(pd.read_csv(config.train_data))
-    group_id_feature = generate_id_feature(group_base_feature)
-    group_target = pd.read_csv(config.train_target)
-    group_feature_list = generate_group_feature(group_id_feature, group_target, group_refer_feature)
-    # 存储featurelist
-    config.mkdirector(config.global_feature_dir)
-    for index in range(len(refer_columns)):
-        refer_name = refer_columns[index]
-        group_feature = group_feature_list[index]
-        group_feature.to_csv(config.global_feature_dir+refer_name+'.csv', index=False)
-
     # 按照数据集生成feature
     for dataset_name in dataset_names:
         director = config.split_dir+dataset_name+'/'
         feature_dir = director+'feature/'
 
-        config.mkdirector(feature_dir)
-        # base_feature, append_feature, refer_feature = preprocess(pd.read_csv(director+'/feed.csv'))
+        base_feature, append_feature = preprocess(pd.read_csv(director+'/data.csv'))
+        # base_feature, append_feature = only_read(feature_dir)
 
-        base_feature, append_feature, refer_feature = only_read(feature_dir)
+        id_depend_feature = generate_id_feature(base_feature)
+        merged_feature = id_depend_feature.join(append_feature)
+        
         base_feature.to_csv(feature_dir+'base_feature.csv', index=False)
         append_feature.to_csv(feature_dir+'append_feature.csv', index=False)
-        refer_feature.to_csv(feature_dir+'refer_feature.csv', index=False)
-        id_depend_feature = generate_id_feature(base_feature)
         id_depend_feature.to_csv(feature_dir+'id_depend_feature.csv', index=False)
-        # merged_feature = merge(id_depend_feature, append_feature, refer_feature, group_feature_list)
-        merged_feature = id_depend_feature
-
-        merged_feature = merged_feature.join(append_feature)
         merged_feature.to_csv(feature_dir+'merged_feature.csv', index=False)
+        
         # 存储feed数据
-        store_feed(merged_feature, director+'/data.csv')
+        store_feed(merged_feature, director+'/feed.csv')
+
+
+def balance():
+    train_dir = 'Datasets/Xiamen_data/split/train/'
+    target_dir = 'Datasets/Xiamen_data/split/train/'
+    smo = SMOTE(ratio={1: 10000}, random_state=42)
+    X_smo, y_smo = smo.fit_sample(pd.read_csv(train_dir+'feed.csv'), pd.read_csv(target_dir+'target.csv'))
+    columns = pd.read_csv(train_dir+'feed.csv').columns
+    X_smo = pd.DataFrame(X_smo, columns=columns)
+    y_smo = pd.DataFrame(y_smo, columns=['target'])
+    X_smo.to_csv(train_dir+'feed_b.csv', index=False)
+    y_smo.to_csv(target_dir+'target_b.csv', index=False)
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    balance()

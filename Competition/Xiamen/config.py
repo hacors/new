@@ -24,6 +24,8 @@ train_feature_dir = split_dir+'train/feature/'
 train_data = train_dir+'data.csv'
 train_feed = train_dir+'feed.csv'
 train_target = train_dir+'target.csv'
+train_feed_b = train_dir+'feed_b.csv'
+train_target_b = train_dir+'target_b.csv'
 
 test_dir = split_dir+'test/'
 test_feature_dir = split_dir+'test/feature/'

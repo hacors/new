@@ -4,6 +4,7 @@ import pandas as pd
 import config
 from sklearn.model_selection import train_test_split
 
+
 if __name__ == '__main__':
     origin_train_data = pd.read_csv(config.origin_train_data_path)
     origin_train_target = pd.read_csv(config.origin_train_target_path).drop(['id'], axis=1)  # 删除无关数据
@@ -17,6 +18,11 @@ if __name__ == '__main__':
     config.mkdirector(config.train_dir)
     config.mkdirector(config.test_dir)
     config.mkdirector(config.submit_dir)
+
+    config.mkdirector(config.train_feature_dir)
+    config.mkdirector(config.test_feature_dir)
+    config.mkdirector(config.submit_feature_dir)
+    config.mkdirector(config.global_feature_dir)
 
     # 分割并存储数据
     '''
