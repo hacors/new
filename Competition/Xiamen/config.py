@@ -49,9 +49,7 @@ def mkdirector(director):
     director = director[:-1]  # 去除最后一个斜杠
     if os.path.exists(director):
         shutil.rmtree(director)
-        os.mkdir(director)
-    else:
-        os.mkdir(director)
+    os.mkdir(director)
 
 
 if __name__ == '__main__':

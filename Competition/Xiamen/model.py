@@ -56,11 +56,14 @@ class xgb_model(model_demo):
 
     def train(self):
         model = xgboost.XGBClassifier()
+        '''
         param_search = self.grid_paras
-        searcher = model_selection.GridSearchCV(estimator=model, param_grid=param_search, cv=4, n_jobs=-1)
+        searcher = model_selection.GridSearchCV(estimator=model, param_grid=param_search, cv=2, n_jobs=-1)
         searcher.fit(self.train_feed, self.train_target)
         print(searcher.best_params_, searcher.best_score_)
         self.model = searcher.best_estimator_
+        '''
+        self.model = model.fit(self.train_feed, self.train_target)
 
     def test(self):
         train_predict = self.model.predict_proba(self.train_feed)[:, 1]
@@ -113,14 +116,16 @@ class lgb_model(model_demo):
 
 if __name__ == '__main__':
     xgb_origin_grid_paras = {
-        'max_depth': list(range(4, 5, 1)),
+        'max_depth': list(range(4, 5, 1))
+    }
+    '''
         'colsample_bytree': [0.4, 0.5, 0.6],
         'min_child_weight': [4, 6, 8],
         'reg_alpha': [0.2, 1, 5],
         'reg_lambda': [5, 10, 20],
         'learning_rate': [0.08, 0.1, 0.12],
         'max_delta_step': [3, 5, 7]
-    }
+    '''
     xgb_origin = xgb_model(xgb_origin_grid_paras, 'xgb_origin')
     lgb_origin_param = {
         'max_depth': 6,
