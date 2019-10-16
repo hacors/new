@@ -101,13 +101,13 @@ def main():
         # base_feature, append_feature = only_read(feature_dir)
 
         id_depend_feature = generate_id_feature(base_feature)
-        merged_feature = id_depend_feature.join(append_feature)
-        
+        # merged_feature = id_depend_feature.join(append_feature)
+        merged_feature = id_depend_feature
         base_feature.to_csv(feature_dir+'base_feature.csv', index=False)
         append_feature.to_csv(feature_dir+'append_feature.csv', index=False)
         id_depend_feature.to_csv(feature_dir+'id_depend_feature.csv', index=False)
         merged_feature.to_csv(feature_dir+'merged_feature.csv', index=False)
-        
+
         # 存储feed数据
         store_feed(merged_feature, director+'/feed.csv')
 
@@ -115,15 +115,19 @@ def main():
 def balance():
     train_dir = 'Datasets/Xiamen_data/split/train/'
     target_dir = 'Datasets/Xiamen_data/split/train/'
+    train_feed = pd.read_csv(train_dir+'feed.csv')
+    train_target = pd.read_csv(target_dir+'target.csv')
+    '''
     smo = SMOTE(ratio={1: 10000}, random_state=42)
-    X_smo, y_smo = smo.fit_sample(pd.read_csv(train_dir+'feed.csv'), pd.read_csv(target_dir+'target.csv'))
+    train_feed, train_target = smo.fit_sample(pd.read_csv(train_feed, train_target))
     columns = pd.read_csv(train_dir+'feed.csv').columns
-    X_smo = pd.DataFrame(X_smo, columns=columns)
-    y_smo = pd.DataFrame(y_smo, columns=['target'])
-    X_smo.to_csv(train_dir+'feed_b.csv', index=False)
-    y_smo.to_csv(target_dir+'target_b.csv', index=False)
+    train_feed = pd.DataFrame(train_feed, columns=columns)
+    train_target = pd.DataFrame(train_target, columns=['target'])
+    '''
+    train_feed.to_csv(train_dir+'feed_b.csv', index=False)
+    train_target.to_csv(target_dir+'target_b.csv', index=False)
 
 
 if __name__ == '__main__':
-    # main()
+    main()
     balance()

@@ -20,9 +20,9 @@ class model_demo():
     def read_csvs(self):
         self.columns = pd.read_csv(config.train_feed).columns
         self.train_feed = pd.read_csv(config.train_feed_b).astype(float).values
-        self.train_target = pd.read_csv(config.train_target_b).astype(int).values.flatten()
+        self.train_target = pd.read_csv(config.train_target_b).astype(int).values
         self.test_feed = pd.read_csv(config.test_feed).astype(float).values
-        self.test_target = pd.read_csv(config.test_target).astype(int).values.flatten()
+        self.test_target = pd.read_csv(config.test_target).astype(int).values
         self.submit_feed = pd.read_csv(config.submit_feed).astype(float).values
 
     def train(self):  # 获取模型
@@ -54,8 +54,10 @@ class xgb_model(model_demo):
         self.run_all()
 
     def train(self):
+        '''
         model = xgboost.XGBClassifier()
         self.model = model.fit(self.train_feed, self.train_target)
+        '''
         '''
         param_search = self.grid_paras
         searcher = model_selection.GridSearchCV(estimator=model, param_grid=param_search, cv=5, n_jobs=-1)
@@ -63,17 +65,36 @@ class xgb_model(model_demo):
         print(searcher.best_params_, searcher.best_score_)
         self.model = searcher.best_estimator_
         '''
+        '''
+        eval_set = [(self.train_feed, self.train_target), (self.test_feed, self.test_target)]
+        model = xgboost.XGBRegressor(objective='binary:logistic')
+        self.model = model.fit(self.train_feed, self.train_target, eval_metric='auc', eval_set=eval_set, verbose=True, num_boost_round=1000, early_stopping_rounds=200)
+        '''
+        self.train_matrix = xgboost.DMatrix(self.train_feed, label=self.train_target, feature_names=self.columns)
+        self.test_matrix = xgboost.DMatrix(self.test_feed, label=self.test_target, feature_names=self.columns)
+        self.submit_matrix = xgboost.DMatrix(self.submit_feed, feature_names=self.columns)
+        watch_list = [(self.train_matrix, 'train'), (self.test_matrix, 'test')]
+        self.model = xgboost.train({'subsample': 0.5, 'l2': 100},
+                                   self.train_matrix, feval=self.auc_feval, evals=watch_list, num_boost_round=2000, early_stopping_rounds=30)
 
     def test(self):
-        train_predict = self.model.predict_proba(self.train_feed)[:, 1]
-        train_auc = metrics.roc_auc_score(self.train_target, train_predict)
-        test_predict = self.model.predict_proba(self.test_feed)[:, 1]
-        test_auc = metrics.roc_auc_score(self.test_target, test_predict)
+        train_predict = self.model.predict(self.train_matrix)
+        train_auc = metrics.roc_auc_score(self.train_matrix.get_label(), train_predict)
+        test_predict = self.model.predict(self.test_matrix)
+        test_auc = metrics.roc_auc_score(self.test_matrix.get_label(), test_predict)
         print(train_auc, ' ', test_auc)
 
     def get_result(self):
-        submit_predict = self.model.predict_proba(self.submit_feed)[:, 1]
+        submit_predict = self.model.predict(self.submit_matrix)
         return submit_predict
+
+    def auc_feval(self, preds, xgbtrain):
+        label = xgbtrain.get_label()
+        score = -metrics.roc_auc_score(label, preds)  # 需要添加负数
+        return 'myFeval', score
+
+    def reg_objedt(self):
+        pass
 
 
 if __name__ == '__main__':
