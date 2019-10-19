@@ -1,9 +1,14 @@
-import config
-import pandas as pd
+import random as rd
 import time
-import numpy as np
-from imblearn.over_sampling import SMOTE
 
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from imblearn.over_sampling import SMOTE
+from matplotlib import pyplot as plt
+from scipy.stats import pearsonr
+
+import config
 
 refer_columns = ['certId', 'dist', 'bankCard', 'residentAddr']
 
@@ -58,10 +63,9 @@ def generate_id_feature(base_feature):
     id_depend_feature['certValidBegin_date'] = pd.to_datetime(id_depend_feature['certValidBegin_date'])
     id_depend_feature['certValidStop_date'] = pd.to_datetime(id_depend_feature['certValidStop_date'])
     id_depend_feature['date_weedofday'] = id_depend_feature['certValidBegin_date'].dt.dayofweek
-    id_depend_feature['date_weekend'] = np.where(id_depend_feature['date_weedofday'] >= 5, 1, 0)
-    id_depend_feature['date_day'] = id_depend_feature['certValidBegin_date'].dt.day
+    # id_depend_feature['date_weekend'] = np.where(id_depend_feature['date_weedofday'] >= 5, 1, 0) #不具有相关性
+    # id_depend_feature['date_day'] = id_depend_feature['certValidBegin_date'].dt.day #不具有相关性
     id_depend_feature['date_month'] = id_depend_feature['certValidBegin_date'].dt.month
-    # id_depend_feature['date_year'] = id_depend_feature['certValidBegin_date'].dt.year
     id_depend_feature['date_year_use'] = id_depend_feature['certValidStop_date'].dt.year - id_depend_feature['certValidBegin_date'].dt.year
     id_depend_feature['date_year_use'] = id_depend_feature['date_year_use']//10
     id_depend_feature = id_depend_feature.drop(['certValidBegin_date'], axis=1)
@@ -70,7 +74,7 @@ def generate_id_feature(base_feature):
     # id_depend_feature.drop(['isNew'], axis=1, inplace=True)
     # id_depend_feature.drop(['edu'], axis=1, inplace=True)
     id_depend_feature.drop(['5yearBadloan'], axis=1, inplace=True)
-    id_depend_feature['highest_edu_99'] = np.where(id_depend_feature['highestEdu'] == 99, 1, 0)
+    # id_depend_feature['highest_edu_99'] = np.where(id_depend_feature['highestEdu'] == 99, 1, 0)#无效特征
 
     id_depend_feature = id_depend_feature.drop(['certId'], axis=1)
     id_depend_feature = id_depend_feature.drop(['dist'], axis=1)
@@ -79,15 +83,58 @@ def generate_id_feature(base_feature):
     return id_depend_feature
 
 
+def simplify_append_feature(append_feature):
+    def num2col(num):
+        return 'x_'+str(num)
+    need_del_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 18, 19, 22, 23, 24, 37, 38, 39, 40, 58, 59, 60, 78]
+    need_del_colname = list(map(num2col, need_del_list))
+    for column in need_del_colname:
+        append_feature.drop(column, axis=1, inplace=True)
+    return append_feature
+
+
+def add_random_feature(index_feature):
+    row_size = index_feature.shape[0]
+    for index_range in range(200):
+        exp_num = rd.randint(0, 2)
+        mult_num = rd.randint(1, 5)
+        bias_num = rd.randint(-5, 5)
+        simbol = rd.randint(0, 1)
+        random_data = np.random.random(row_size)-0.5
+        random_data = (random_data*pow(10, exp_num)*mult_num+bias_num)*pow(-1, simbol)
+        index_feature['add_%s' % index_range] = random_data.copy()  # 为什么？
+    index_feature = index_feature.drop(index_feature.columns[0], axis=1)
+    return index_feature
+
+
 # 存储最终数据
 def store_feed(merged_data, feed_path):
     merged_data.to_csv(feed_path, index=False)
 
 
-def only_read(feature_dir):
+def only_read_base_append(feature_dir):
     base_feature = pd.read_csv(feature_dir+'base_feature.csv')
     append_feature = pd.read_csv(feature_dir+'append_feature.csv')
     return base_feature, append_feature
+
+
+def im_show(feature_map):  # 定义热力图函数
+    columns = feature_map.columns
+    size = len(columns)
+    matrix = np.zeros((size, size))
+    for i in range(size):
+        for j in range(size):
+            matrix[i][j] = pearsonr(feature_map[columns[i]], feature_map[columns[j]])[0]
+    matrix = np.around(matrix, 3)
+    print(columns)
+    print(matrix[-1])
+    _, ax = plt.subplots(figsize=(50, 38))
+    sns.heatmap(matrix, annot=True, vmax=1, vmin=0, square=True)
+    ax.set_xticklabels(columns)
+    ax.set_yticklabels(columns)
+    plt.setp(ax.get_yticklabels(), rotation=360)
+    plt.setp(ax.get_xticklabels(), rotation=90)
+    plt.show()
 
 
 def main():
@@ -98,11 +145,16 @@ def main():
         feature_dir = director+'feature/'
 
         base_feature, append_feature = preprocess(pd.read_csv(director+'/data.csv'))
-        # base_feature, append_feature = only_read(feature_dir)
+        # base_feature, append_feature = only_read_base_append(feature_dir)
 
         id_depend_feature = generate_id_feature(base_feature)
-        # merged_feature = id_depend_feature.join(append_feature)
+        append_feature = simplify_append_feature(append_feature)
+        add_feature = add_random_feature(append_feature.iloc[:, [0]])
         merged_feature = id_depend_feature
+        # merged_feature = merged_feature.join(append_feature)
+        merged_feature = merged_feature.join(add_feature)
+        merged_feature = add_feature  # 假如只有随机数据
+
         base_feature.to_csv(feature_dir+'base_feature.csv', index=False)
         append_feature.to_csv(feature_dir+'append_feature.csv', index=False)
         id_depend_feature.to_csv(feature_dir+'id_depend_feature.csv', index=False)
@@ -112,22 +164,27 @@ def main():
         store_feed(merged_feature, director+'/feed.csv')
 
 
-def balance():
+def balance(pos_num=None):  # 给定正样本扩充后的数值
     train_dir = 'Datasets/Xiamen_data/split/train/'
     target_dir = 'Datasets/Xiamen_data/split/train/'
     train_feed = pd.read_csv(train_dir+'feed.csv')
     train_target = pd.read_csv(target_dir+'target.csv')
-    '''
-    smo = SMOTE(ratio={1: 10000}, random_state=42)
-    train_feed, train_target = smo.fit_sample(pd.read_csv(train_feed, train_target))
-    columns = pd.read_csv(train_dir+'feed.csv').columns
-    train_feed = pd.DataFrame(train_feed, columns=columns)
-    train_target = pd.DataFrame(train_target, columns=['target'])
-    '''
+    if pos_num:
+        # smo = SMOTE(ratio={1: pos_num}, random_state=42)
+        smo = SMOTE(random_state=42)
+        train_feed, train_target = smo.fit_sample(train_feed.values, train_target.values)
+        columns = pd.read_csv(train_dir+'feed.csv').columns
+        train_feed = pd.DataFrame(train_feed, columns=columns)
+        train_target = pd.DataFrame(train_target, columns=['target'])
     train_feed.to_csv(train_dir+'feed_b.csv', index=False)
     train_target.to_csv(target_dir+'target_b.csv', index=False)
 
 
 if __name__ == '__main__':
     main()
+
+    feed = pd.read_csv('Datasets/Xiamen_data/split/train/feed.csv')
+    target = pd.read_csv('Datasets/Xiamen_data/split/train/target.csv')
+    # im_show(feed.join(target))
+
     balance()

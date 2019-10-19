@@ -2,6 +2,7 @@
 import xgboost
 from sklearn import metrics
 from sklearn import model_selection
+from sklearn import ensemble
 import config
 import pandas as pd
 import numpy as np
@@ -48,9 +49,8 @@ class model_demo():
 
 
 class xgb_model(model_demo):
-    def __init__(self, grid_paras, model_name):
+    def __init__(self, model_name):
         super().__init__(model_name)
-        self.grid_paras = grid_paras
         self.run_all()
 
     def train(self):
@@ -59,7 +59,7 @@ class xgb_model(model_demo):
         self.model = model.fit(self.train_feed, self.train_target)
         '''
         '''
-        param_search = self.grid_paras
+        param_search = {'max_depth':[4,5,6]}
         searcher = model_selection.GridSearchCV(estimator=model, param_grid=param_search, cv=5, n_jobs=-1)
         searcher.fit(self.train_feed, self.train_target)
         print(searcher.best_params_, searcher.best_score_)
@@ -74,7 +74,7 @@ class xgb_model(model_demo):
         self.test_matrix = xgboost.DMatrix(self.test_feed, label=self.test_target, feature_names=self.columns)
         self.submit_matrix = xgboost.DMatrix(self.submit_feed, feature_names=self.columns)
         watch_list = [(self.train_matrix, 'train'), (self.test_matrix, 'test')]
-        self.model = xgboost.train({'subsample': 0.5, 'l2': 100},
+        self.model = xgboost.train({'subsample': 0.8, 'l1': 5, 'l2': 10, 'max_delta_step': 10, 'objective': 'binary:logistic', 'max_depth': 4, 'scale_pos_weight': 100, 'eta': 0.1},
                                    self.train_matrix, feval=self.auc_feval, evals=watch_list, num_boost_round=2000, early_stopping_rounds=30)
 
     def test(self):
@@ -82,6 +82,37 @@ class xgb_model(model_demo):
         train_auc = metrics.roc_auc_score(self.train_matrix.get_label(), train_predict)
         test_predict = self.model.predict(self.test_matrix)
         test_auc = metrics.roc_auc_score(self.test_matrix.get_label(), test_predict)
+
+        print(train_auc, ' ', test_auc)
+
+    def get_result(self):
+        submit_predict = self.model.predict(self.submit_matrix)
+        return submit_predict
+
+    def auc_feval(self, preds, xgbtrain):
+        label = xgbtrain.get_label()
+        score = -metrics.roc_auc_score(label, preds)  # 需要添加负数
+        return 'myFeval', score
+
+    def reg_objedt(self):
+        pass
+
+
+class rd_forest(model_demo):
+    def __init__(self, model_name):
+        super().__init__(model_name)
+        self.run_all()
+
+    def train(self):
+        model = ensemble.RandomForestRegressor()
+        self.model = model.fit(self.train_feed, self.train_target)
+
+    def test(self):
+        train_predict = self.model.predict(self.train_feed)
+        train_auc = metrics.roc_auc_score(self.train_target, train_predict)
+        test_predict = self.model.predict(self.test_feed)
+        test_auc = metrics.roc_auc_score(self.test_target, test_predict)
+
         print(train_auc, ' ', test_auc)
 
     def get_result(self):
@@ -98,15 +129,5 @@ class xgb_model(model_demo):
 
 
 if __name__ == '__main__':
-    xgb_origin_grid_paras = {
-        'max_depth': list(range(4, 5, 1))
-    }
-    '''
-        'colsample_bytree': [0.4, 0.5, 0.6],
-        'min_child_weight': [4, 6, 8],
-        'reg_alpha': [0.2, 1, 5],
-        'reg_lambda': [5, 10, 20],
-        'learning_rate': [0.08, 0.1, 0.12],
-        'max_delta_step': [3, 5, 7]
-    '''
-    xgb_origin = xgb_model(xgb_origin_grid_paras, 'xgb_origin')
+    xgb_origin = xgb_model('xgb_origin')
+    # rd_forest = rd_forest('rd_forest')
