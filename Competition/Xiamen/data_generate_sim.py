@@ -73,7 +73,7 @@ def generate_id_feature(base_feature):
 
     # id_depend_feature.drop(['isNew'], axis=1, inplace=True)
     # id_depend_feature.drop(['edu'], axis=1, inplace=True)
-    id_depend_feature.drop(['5yearBadloan'], axis=1, inplace=True)
+    # id_depend_feature.drop(['5yearBadloan'], axis=1, inplace=True)
     # id_depend_feature['highest_edu_99'] = np.where(id_depend_feature['highestEdu'] == 99, 1, 0)#无效特征
 
     id_depend_feature = id_depend_feature.drop(['certId'], axis=1)
@@ -149,11 +149,14 @@ def main():
 
         id_depend_feature = generate_id_feature(base_feature)
         append_feature = simplify_append_feature(append_feature)
-        add_feature = add_random_feature(append_feature.iloc[:, [0]])
+        
         merged_feature = id_depend_feature
-        # merged_feature = merged_feature.join(append_feature)
+        merged_feature = merged_feature.join(append_feature)
+        '''
+        add_feature = add_random_feature(append_feature.iloc[:, [0]])
         merged_feature = merged_feature.join(add_feature)
-        merged_feature = add_feature  # 假如只有随机数据
+        '''
+        # merged_feature = add_feature  # 假如只有随机数据
 
         base_feature.to_csv(feature_dir+'base_feature.csv', index=False)
         append_feature.to_csv(feature_dir+'append_feature.csv', index=False)
@@ -170,12 +173,13 @@ def balance(pos_num=None):  # 给定正样本扩充后的数值
     train_feed = pd.read_csv(train_dir+'feed.csv')
     train_target = pd.read_csv(target_dir+'target.csv')
     if pos_num:
-        # smo = SMOTE(ratio={1: pos_num}, random_state=42)
-        smo = SMOTE(random_state=42)
+        smo = SMOTE(ratio={1: pos_num}, random_state=42)
         train_feed, train_target = smo.fit_sample(train_feed.values, train_target.values)
-        columns = pd.read_csv(train_dir+'feed.csv').columns
-        train_feed = pd.DataFrame(train_feed, columns=columns)
-        train_target = pd.DataFrame(train_target, columns=['target'])
+    else:
+        train_feed, train_target = train_feed.values, train_target.values
+    columns = pd.read_csv(train_dir+'feed.csv').columns
+    train_feed = pd.DataFrame(train_feed, columns=columns)
+    train_target = pd.DataFrame(train_target, columns=['target'])
     train_feed.to_csv(train_dir+'feed_b.csv', index=False)
     train_target.to_csv(target_dir+'target_b.csv', index=False)
 
