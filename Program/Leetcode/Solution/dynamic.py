@@ -243,6 +243,18 @@ class Solution():
             dp_list = dp_list_temp
         return dp_list[-1]
 
+    def maxProfit(self, k, prices):
+        if k > prices//2:
+            k = prices//2
+        prices = [0]+prices  # 经过操作选择后的状态
+        k = k+1  # 当前处于第i次交易中，是一个左闭右开的区间
+        dp_maxtrix = [[[0, -max(prices)]for trade in range(k)] for day in range(len(prices))]  # 其中每一个状态都表示在这个状态下的盈利
+        for day in range(1, len(prices)):
+            for trade in range(1, k):
+                dp_maxtrix[day][trade][0] = max(dp_maxtrix[day-1][trade][0], dp_maxtrix[day-1][trade][1]+prices[day])
+                dp_maxtrix[day][trade][1] = max(dp_maxtrix[day-1][trade][1], dp_maxtrix[day-1][trade-1][0]-prices[day])
+        return dp_maxtrix[-1][-1][0]
+
 
 if __name__ == '__main__':
     solu = Solution()
@@ -252,5 +264,6 @@ if __name__ == '__main__':
     # result = solu.maximalSquare(matrix)
     # result = solu.maximalRectangle(matrix)
     # result = solu.longestCommonSubsequence("g", "gg")
-    result = solu.longestCommonSubsequence("pmjghexybyrgzczy", "hafcdqbgncrcbihkd")
+    # result = solu.longestCommonSubsequence("pmjghexybyrgzczy", "hafcdqbgncrcbihkd")
+    result = solu.maxProfit(2, [3, 3, 5, 0, 0, 3, 1, 4])
     pass

@@ -29,15 +29,17 @@ def get_tree(tree_num):
 
 class Solution:
     def lowestCommonAncestor(self, root, p, q):
-        def find(temp_root, position_p, position_q):
-            return True
-        left_result = find(root.left, p, q)
-        right_result = find(root.right, p, q)
-        if root in [p, q] or (left_result and right_result):
-            return root
-        elif left_result:
-            root.left
-        pass
+        def find(temp_root: TreeNode):
+            if temp_root is None:
+                return False
+            left = find(temp_root.left)
+            right = find(temp_root.right)
+            mid = temp_root in [p, q]
+            if left+right+mid == 2:
+                self.result = temp_root
+            return left or right or mid
+        find(root)
+        return self.result
 
 
 if __name__ == '__main__':
