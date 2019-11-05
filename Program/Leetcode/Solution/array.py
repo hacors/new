@@ -1,5 +1,6 @@
 import random
 import math
+import sys
 random.seed(666)
 
 
@@ -175,10 +176,39 @@ class Solution():
             result = max(result, min(new_list[box_index])-max(new_list[box_index-1]))  # 鸽巢原理可以保证两个box之间的差异大于box内部的差异
         return result
 
+    def searchRange(self, nums, target):
+        # 排序数组定位某一个元素的边界，采用二分查找
+        # 首先明确问题的定义，找到大于目标结点的最小index，找到小于目标结点得最大index，注意如果直接找相等的边界不好定义
+        # 明确定义后需要处理边界条件
+        nums = [-sys.maxsize-1]+nums+[sys.maxsize]
+
+        def find_right(left, right):  # 在范围内返回大于target的最小idnex
+            if left == right:
+                return left
+            mid = (left+right)//2
+            if nums[mid] <= target:
+                return find_right(mid+1, right)
+            else:
+                return find_right(left, mid)
+
+        def find_left(left, right):
+            if left == right:
+                return left
+            mid = (left+right+1)//2  # 注意此时取上整
+            if nums[mid] >= target:
+                return find_left(left, mid-1)
+            else:
+                return find_left(mid, right)
+
+        right_index = find_right(0, len(nums)-1)
+        left_index = find_left(0, len(nums)-1)
+        return [left_index, right_index-2] if right_index-left_index > 1 else [-1, -1]
+
 
 if __name__ == '__main__':
     solu = Solution()
     # result = solu.sortArray([5, 2, 3, 1])
     # result = solu.trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])
-    result = solu.maximumGap([1, 1, 1, 1])
+    # result = solu.maximumGap([1, 1, 1, 1])
+    result = solu.searchRange([5, 7, 7, 8, 8, 10], 8)
     pass
