@@ -1,15 +1,26 @@
 import numpy as np
 np.random.seed(666)
-
-temp_stru = [[10, 8], [8, 3], [3, 1]]
+# 网络中一共4层10,8,5,1,以此为第0,1,2,3层,其中10-8为第一层全连接
+net_struc = [{'input_dims': 10, 'output_dims': 8, 'activation': 'relu'},
+             {'input_dims': 8, 'output_dims': 5, 'activation': 'relu'},
+             {'input_dims': 5, 'output_dims': 1, 'activation': 'sigmoid'}
+             ]
 
 
 def init_layers(struct_list):
-    pass
+    params_values = {}
+    for index, struct in enumerate(struct_list):
+        layer_index = index+1
+        layer_input_size = struct['input_dims']
+        layer_output_size = struct['output_dims']
+        
+
+    return params_values
 
 
 if __name__ == '__main__':
-    init_layers(temp_stru)
+    init_layers(net_struc)
+
 
 '''
 def init_layers(nn_architecture, seed = 99):
