@@ -1,1 +1,1 @@
-ROOT = 'Datasets/Protein/'
+
