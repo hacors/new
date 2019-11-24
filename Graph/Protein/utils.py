@@ -1,1 +1,1 @@
-Data_root = 'Datasets/Protein'
+ROOT = 'Datasets/Protein/'
