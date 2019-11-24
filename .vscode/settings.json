@@ -4,11 +4,11 @@
     "python.pythonPath": "D:\\software\\Anaconda\\python.exe",
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Args": [
-        "--max-line-length=300"
+        "--max-line-length=250"
     ],
     "python.formatting.provider": "autopep8",
     "python.formatting.autopep8Args": [
-        "--max-line-length=200"
+        "--max-line-length=250"
     ],
     "editor.fontFamily": "consolas, 'Courier New', monospace",
     "editor.fontSize": 16,
