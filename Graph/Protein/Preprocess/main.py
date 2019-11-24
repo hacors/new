@@ -26,6 +26,26 @@ def download_essens_file(director, url):
         with open(director+name, 'wb') as file:
             file.write(req.content)
         '''
+        '''import urllib
+# import urllib2
+import requests
+
+
+def Schedule(a, b, c):
+    '''''
+    a:已经下载的数据块
+    b:数据块的大小
+    c:远程文件的大小
+   '''
+    per = 100.0 * a * b / c
+    if per > 100:
+        per = 100
+    print('%.2f%%' % per)
+
+
+url = "http://origin.tubic.org/deg/public/static/download/deg-p-15.2.zip"
+urllib.request.urlretrieve(url, 'Temp/temp.zip', Schedule)
+'''
 
 
 def get_origin_data(director):
