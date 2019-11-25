@@ -35,9 +35,12 @@ def download_essens_file(director, url):  # 在网上下载关键基因的所有
 def download_pnet_info(director, organ, url):
     make_dir(director)
     temp_url = url+'?species_text=%s' % organ
-    reaponse = requests.get('https://string-db.org/cgi/download.pl?sessionId=PuMANPvRvuzh&species_text=Staphylococcus+aureus')
+    reaponse = requests.get(temp_url)
     soup = BeautifulSoup(reaponse.text, features='lxml')
-    links = soup.find_all('div')
+    divs = soup.find_all('div', {'class': 'download_table_data_row'})
+    links = []
+    for div in divs:
+        links.append(div.find('a').attrs['href'])
     pass
 
 
@@ -65,7 +68,7 @@ def get_origin_data(director):
     # make_dir(director)
     essens_file_dir = director+'Essens_file/'
     # download_essens_file(essens_file_dir, r'http://origin.tubic.org/deg/public/index.php/download')
-    # organ_list = get_related_organism(essens_file_dir)
+    organ_list = get_related_organism(essens_file_dir)
     '''
     organ_list = ['Bacillus subtilis 168', 'Agrobacterium fabrum str. C58 chromosome circular', 'Staphylococcus aureus NCTC 8325', 'Salmonella enterica serovar Typhimurium SL1344',
                   'Agrobacterium fabrum str. C58 chromosome linear', 'Bacteroides thetaiotaomicron VPI-5482', 'Mycobacterium tuberculosis H37Rv II', 'Caenorhabditis elegans', 'Salmonella typhimurium LT2',
