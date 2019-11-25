@@ -24,11 +24,11 @@ def download_essens_file(director, url):  # 在网上下载关键基因的所有
     table = soup.find('table')
     links = table.find_all('a')
     for link in links:
-        down_url = 'http://origin.tubic.org'+link.attrs['href']
+        down_link = 'http://origin.tubic.org'+link.attrs['href']
         down_name = link.attrs['href'].split('/')[-1]
         down_dir = director + down_name
         print('To download %s....' % down_name, end=' ')
-        urllib.request.urlretrieve(down_url, down_dir)
+        urllib.request.urlretrieve(down_link, down_dir)
         print('Done!')
 
 
@@ -41,6 +41,20 @@ def download_pnet_info(director, organ, url):
     links = []
     for div in divs:
         links.append(div.find('a').attrs['href'])
+
+    headers = {
+        'Accept-Language': 'zh-CN',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
+    }
+    headers = {'User-Agent': 'Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19'}
+    interact_link = links[3]
+    interact_dir = director+'protein.actions.txt.gz'
+    urllib.request.Request(interact_link, None, headers)
+    urllib.request.urlretrieve(interact_link, interact_dir)
+
+    protinfo_link = links[6]
+    protinfo_dir = director+'protein.info.txt.gz'
+    urllib.request.urlretrieve(protinfo_link, protinfo_dir)
     pass
 
 
