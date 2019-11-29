@@ -1,21 +1,20 @@
+'''
+在网上爬取的原始数据
+从http://www.essentialgene.org/ 下载所有的关键蛋白信息
+从https://www.ncbi.nlm.nih.gov/ 查找不同标准的生物的ID对应关系，存储于单独的文件夹
+从https://string-db.org/ 下载所有相关生物的蛋白质相互作用信息，按照生物ID分类存储
+从https://www.uniprot.org/ 查找所有相关的蛋白质注释信息，按照生物ID分类存储
+'''
 import os
 import shutil
 import urllib
 import zipfile
+import global_config
 from fake_useragent import UserAgent
 import requests
 import random
 import time
 from bs4 import BeautifulSoup
-
-'''
-在网上爬取的原始数据
-Essens_info是从http://www.essentialgene.org/ 下载的7个文件,存储于Data/Origin_data/Essens_info/
-Protein_file是查看Essense_info中出现过的生物，从https://string-db.org/ 爬取文件，按照生物类别建立文件夹，存储于Data/Origin_data/Protein_file/
-'''
-
-
-ROOT = 'Graph/Protein/'
 
 
 def make_dir(director):
@@ -26,9 +25,35 @@ def make_dir(director):
 
 
 def internet_environment():  # 准备好爬取数据的网络环境
+    internet_env = set()
+    return internet_env
+
+
+def main(path):
+    path_list = config.PATH_LIST
+    download_essens_file(path_list['ess'])
+    nc_id_list = get
+    taxo_id_list = get_organ_taxo_id(path_list['ess'])
+
     pass
 
 
+def download_essens_file(director):  # 在deg网站下载关键基因的所有数据，数据结构为基因名字和生物名字的数据对
+    pass
+
+
+def get_organ_nc_id(ess_dir):
+    nc_id_list = list()
+    return nc_id_list
+
+
+def get_organ_taxo_id(ess_dir):
+    nc_id_list = list()
+    taxo_id_list = list()
+    return nc_id_list, taxo_id_list
+
+
+'''
 def download_essens_file(director, url):  # 在deg网站下载关键基因的所有数据，数据结构为基因名字和生物名字的数据对
     make_dir(director)
     reaponse = requests.get(url)
@@ -42,6 +67,7 @@ def download_essens_file(director, url):  # 在deg网站下载关键基因的所
         print('To download %s....' % down_name, end=' ')
         urllib.request.urlretrieve(down_link, down_dir)
         print('Done!')
+'''
 
 
 def download_pnet_info(director, organ, url):  # 在string网站下载对应生物的蛋白质数据，包括蛋白质网络数据和蛋白质描述数据
