@@ -25,32 +25,71 @@ def make_dir(director):
 
 
 def internet_environment():  # 准备好爬取数据的网络环境
-    internet_env = set()
+    uagent = UserAgent()
+    chrome_uagent = uagent.data_browsers['chrome']
+    headers = {'User-Agent': random.choice(chrome_uagent)}
+    internet_env = dict()
+    internet_env['headers'] = headers
     return internet_env
 
 
-def main(path):
-    path_list = config.PATH_LIST
-    download_essens_file(path_list['ess'])
-    nc_id_list = get
-    taxo_id_list = get_organ_taxo_id(path_list['ess'])
+def main():
+    print('Making directors and downloading......')
+    # make_dir(global_config.DATA_ROOT)
+    path_list = global_config.PATH_LIST
+    # download_deg_files(path=path_list['DEG'])
+    download_string_files(path=path_list['STRING'])
+    download_uniport_files(path=path_list['UNIPORT'])
+    print('Origin data is ready!')
 
+
+def download_deg_files(path):
+    make_dir(path)
+    reaponse = requests.get('http://origin.tubic.org/deg/public/index.php/download')
+    soup = BeautifulSoup(reaponse.text, features='lxml')
+    links = soup.find('table').find_all('a')
+    for index, link in enumerate(links[:3]):  # deg-p-15.2.zip,deg-p-15.2.zip,deg-e-15.2.zip
+        down_link = 'http://origin.tubic.org'+link.attrs['href']
+        down_name = global_config.DEG_BIO_CLASS[index]+'.zip'
+        down_path = os.path.join(path, down_name)
+        print('To download %s...  ' % down_name, end='')
+        urllib.request.urlretrieve(down_link, down_path)
+        print('Done!')
+
+
+def download_string_files(path):
+    make_dir(path)
+    taxon_name_id_list = list(global_config.ID_MAP[name] for name in global_config.ID_MAP)
+    taxon_id_set = set()
+    for name_id in taxon_name_id_list:
+        if not name_id[1] in taxon_id_set:
+            taxon_id_set.add(name_id[1])
+            down_path = os.path.join(path, name_id[0]+' '+name_id[1])
+            download_string_file(down_path, name_id[1])
+            time.sleep(60)
+    print('Finish download string files')
+
+
+def download_string_file(path, taxon_id):
+    download_url = 'https://string-db.org/cgi/download.pl'+'?species_text=%s' % taxon_id
+    reaponse = requests.get(download_url)
+    soup = BeautifulSoup(reaponse.text, features='lxml')
+    links = soup.find_all('div', {'class': 'download_table_data_row'})
+    links_selected = list((links[3], links[6], links[7]))  # protein.actions.v11.0.txt.gz,protein.info.v11.0.txt.gz,protein.sequences.v11.0.fa.gz
+    for index, link in enumerate(links_selected):
+        down_link = link.find('a').attrs['href']
+        down_name = global_config.STRING_FILES[index]+'.gz'
+        down_path = os.path.join(path, down_name)
+        down_env = internet_environment()
+        down_file = requests.get(down_link, headers=down_env['headers'])
+        with open(down_path, 'wb') as file:
+            file.write(down_file.content)
+
+    print(len(links), ' ', taxon_id)
+
+
+def download_uniport_files(path):
     pass
-
-
-def download_essens_file(director):  # 在deg网站下载关键基因的所有数据，数据结构为基因名字和生物名字的数据对
-    pass
-
-
-def get_organ_nc_id(ess_dir):
-    nc_id_list = list()
-    return nc_id_list
-
-
-def get_organ_taxo_id(ess_dir):
-    nc_id_list = list()
-    taxo_id_list = list()
-    return nc_id_list, taxo_id_list
 
 
 '''
@@ -162,36 +201,6 @@ def get_origin_data(director):
         print('sleeping...')
         time.sleep(100)
     return organ_degname_list, organ_stringname_list
-
-
-def main():
-    data_dir = ROOT+'Data/'
-    # make_dir(data_dir)
-
-    origin_data_dir = data_dir+'Origin_data/'
-    # degnames, stringnames = get_origin_data(origin_data_dir)
-    degnames = ['Bacillus subtilis 168', 'Agrobacterium fabrum str. C58 chromosome circular', 'Staphylococcus aureus NCTC 8325', 'Salmonella enterica serovar Typhimurium SL1344',
-                'Agrobacterium fabrum str. C58 chromosome linear', 'Bacteroides thetaiotaomicron VPI-5482', 'Mycobacterium tuberculosis H37Rv II', 'Caenorhabditis elegans', 'Salmonella typhimurium LT2',
-                'Streptococcus agalactiae A909', 'Drosophila melanogaster', 'Rhodopseudomonas palustris CGA009', 'Salmonella enterica subsp. enterica serovar Typhimurium str. 14028S',
-                'Mycobacterium tuberculosis H37Rv III', 'Bacillus thuringiensis BMB171', 'Escherichia coli MG1655 II', 'Haemophilus influenzae Rd KW20', 'Acinetobacter baumannii ATCC 17978',
-                'Streptococcus pyogenes NZ131', 'Streptococcus sanguinis', 'Caulobacter crescentus', 'Mycobacterium tuberculosis H37Rv', 'Mus musculus', 'Bacillus thuringiensis BMB171 plasmid pBMB171',
-                'Salmonella enterica serovar Typhi', 'Mycoplasma genitalium G37', 'Saccharomyces cerevisiae', 'Staphylococcus aureus N315', 'Campylobacter jejuni subsp. jejuni 81-176', 'Burkholderia thailandensis E264',
-                'Aspergillus fumigatus', 'Escherichia coli ST131 strain EC958', 'Schizosaccharomyces pombe 972h-', 'Porphyromonas gingivalis ATCC 33277', 'Synechococcus elongatus PCC 7942', 'Acinetobacter baylyi ADP1',
-                'Pseudomonas aeruginosa PAO1', 'Arabidopsis thaliana', 'Salmonella enterica serovar Typhi Ty2', 'Escherichia coli MG1655 I', 'Helicobacter pylori 26695', 'Synechococcus elongatus PCC 7942 plasmid 1',
-                'Brevundimonas subvibrioides ATCC 15264', 'Bacteroides fragilis 638R', 'Streptococcus pyogenes MGAS5448', 'Shewanella oneidensis MR-1', 'Vibrio cholerae N16961', 'Danio rerio', 'Mycoplasma pulmonis UAB CTIP',
-                'Francisella novicida U112', 'Campylobacter jejuni subsp. jejuni NCTC 11168 = ATCC 700819', 'Streptococcus pneumoniae', 'Burkholderia pseudomallei K96243', 'Sphingomonas wittichii RW1', 'Homo sapiens',
-                'Pseudomonas aeruginosa UCBPP-PA14', 'Methanococcus maripaludis S2']
-    stringnames = ['Bacillus subtilis 168', 'Agrobacterium fabrum str. C58', 'Staphylococcus aureus', 'Salmonella enterica serovar Typhimurium',
-                   'Agrobacterium fabrum str. C58', 'Bacteroides thetaiotaomicron VPI-5482', 'Mycobacterium tuberculosis H37Rv', 'Caenorhabditis elegans', 'Salmonella typhimurium',
-                   'None', 'Drosophila melanogaster', 'Rhodopseudomonas palustris CGA009', 'Salmonella enterica subsp. enterica serovar Typhimurium',
-                   'Mycobacterium tuberculosis H37Rv', 'None', 'Escherichia coli MG1655', 'Haemophilus influenzae Rd KW20', 'Acinetobacter baumannii',
-                   'Streptococcus pyogenes', 'None', 'None', 'Mycobacterium tuberculosis H37Rv', 'Mus musculus', 'None',
-                   'Salmonella enterica serovar Typhimurium', 'Mycoplasma genitalium G37', 'Saccharomyces cerevisiae', 'Staphylococcus aureus', 'Campylobacter jejuni subsp. jejuni 81-176', 'None',
-                   'Aspergillus fumigatus', 'None', 'Schizosaccharomyces pombe', 'Porphyromonas gingivalis ATCC 33277', 'Synechococcus elongatus PCC 7942', 'Acinetobacter baylyi ADP1',
-                   'Pseudomonas aeruginosa', 'Arabidopsis thaliana', 'Salmonella enterica serovar Typhimurium', 'Escherichia coli MG1655', 'Helicobacter pylori 26695', 'Synechococcus elongatus PCC 7942',
-                   'Brevundimonas subvibrioides ATCC 15264', 'None', 'Streptococcus pyogenes', 'Shewanella oneidensis', 'None', 'Danio rerio', 'Mycoplasma pulmonis UAB CTIP',
-                   'None', 'Campylobacter jejuni subsp. jejuni NCTC 11168', 'None', 'Burkholderia pseudomallei K96243', 'Sphingomonas wittichii RW1', 'Homo sapiens',
-                   'Pseudomonas aeruginosa', 'Methanococcus maripaludis S2']
 
 
 if __name__ == '__main__':
