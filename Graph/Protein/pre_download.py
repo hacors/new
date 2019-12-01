@@ -118,8 +118,9 @@ def download_uniport_file(down_path, protein_id_list):
     options = webdriver.ChromeOptions()
     prefs = {'profile.default_content_settings.popups': 0, 'download.default_directory': os.path.abspath(down_path)}
     options.add_experimental_option('prefs', prefs)
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(chrome_options=options)
+    # options.add_argument('--headless')
+    driver = webdriver.Chrome(options=options)
+    time.sleep(5)
     # 获取查询的下载链接
     driver.get('https://www.uniprot.org/uploadlists/')
     select = webdriver.support.select.Select(driver.find_element_by_id('from-database'))
@@ -130,15 +131,19 @@ def download_uniport_file(down_path, protein_id_list):
     uniprot_id = uniprot_list.replace('yourlist:', '')
     final_url = 'https://www.uniprot.org/uniprot/?query=yourlist:%s&sort=yourlist:%s&columns=yourlist(%s)' % (uniprot_id, uniprot_id, uniprot_id) + \
         ',id,entry%20name,protein%20names,genes,organism,length,features,go-id'  # 初步使用的特征
+    time.sleep(5)
     # 开始下载
     driver.get(final_url)
     driver.find_element_by_id('download-button').click()
     select = webdriver.support.select.Select(driver.find_element_by_id('format'))
     select.select_by_value('tab')
     driver.find_element_by_id('menu-go').click()  # 下载文件
+    time.sleep(5)
     # 改名
-    while not os.path.exists():
-        os.rename(os.path.join(down_abs_path, 'uniprot-yourlist_%s.tab.gz' % uniprot_id), os.path.join(down_abs_path, '123.gz'))
+    file_name = 'uniprot-yourlist_%s.tab.gz' % uniprot_id
+    while file_name not in os.listdir(down_path):
+        time.sleep(1)
+    os.rename(os.path.join(down_path, file_name), os.path.join(down_path, 'protein_feature.gz'))
     driver.quit()
 
 
