@@ -121,42 +121,25 @@ def download_uniport_file(down_path, protein_id_list):
     options.add_argument('--headless')
     driver = webdriver.Chrome(chrome_options=options)
     # 获取查询的下载链接
-
-    driver = webdriver.Chrome()
     driver.get('https://www.uniprot.org/uploadlists/')
     select = webdriver.support.select.Select(driver.find_element_by_id('from-database'))
     select.select_by_value('STRING_ID')
-    driver.find_element_by_id('uploadfile').send_keys(temp_file_abs_path)
-    time.sleep(2)
+    driver.find_element_by_id('uploadfile').send_keys(os.path.abspath(temp_file_path))
     driver.find_element_by_id('upload-submit').click()
-    time.sleep(2)
     uniprot_list = driver.find_element_by_id('query').get_attribute('value')
     uniprot_id = uniprot_list.replace('yourlist:', '')
     final_url = 'https://www.uniprot.org/uniprot/?query=yourlist:%s&sort=yourlist:%s&columns=yourlist(%s)' % (uniprot_id, uniprot_id, uniprot_id) + \
         ',id,entry%20name,protein%20names,genes,organism,length,features,go-id'  # 初步使用的特征
-    driver.quit()
-    time.sleep(2)
-
     # 开始下载
-
-    options = webdriver.ChromeOptions()
-    prefs = {'profile.default_content_settings.popups': 0, 'download.default_directory': os.path.abspath(down_path)}
-    options.add_experimental_option('prefs', prefs)
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(chrome_options=options)
     driver.get(final_url)
     driver.find_element_by_id('download-button').click()
-    time.sleep(2)
     select = webdriver.support.select.Select(driver.find_element_by_id('format'))
     select.select_by_value('tab')
-    time.sleep(2)
     driver.find_element_by_id('menu-go').click()  # 下载文件
-    time.sleep(2)
+    # 改名
     while not os.path.exists():
-        pass
-    os.rename(os.path.join(down_abs_path, 'uniprot-yourlist_%s.tab.gz' % uniprot_id), os.path.join(down_abs_path, '123.gz'))
+        os.rename(os.path.join(down_abs_path, 'uniprot-yourlist_%s.tab.gz' % uniprot_id), os.path.join(down_abs_path, '123.gz'))
     driver.quit()
-    time.sleep(2)
 
 
 if __name__ == '__main__':
