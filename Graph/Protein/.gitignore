@@ -1,2 +1,3 @@
-Data/Origin_data/*
+Data/*
+Data_test/*
 __pycache__/*

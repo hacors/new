@@ -2,13 +2,14 @@
 设置全局的配置文件，比如下载地址，运行环境等等
 '''
 import os
-DATA_ROOT = os.path.join(os.getcwd(), 'Data_test')
+DATA_ROOT = os.path.join('Data_test')
 PATH_LIST = {'DEG': os.path.join(DATA_ROOT, 'DEG'),
              'STRING': os.path.join(DATA_ROOT, 'STRING'),
              'UNIPROT': os.path.join(DATA_ROOT, 'UNIPROT')
              }
 DEG_BIO_CLASS = ['Bacteria', 'Archaea', 'Eukaryotes']
 STRING_FILES = ['protein_actions', 'protein_info', 'protein_sequences']
+UNIPROT_COLUMNS=['']
 ID_INFO = {'-': '0',
            'Acinetobacter baumannii ATCC 17978': '400667',  # 存在通用ID:470,name:Acinetobacter baumannii
            'Acinetobacter baylyi ADP1': '62977',
