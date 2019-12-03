@@ -11,14 +11,13 @@ import random
 import shutil
 import time
 import urllib
-import zipfile
 
 import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
+from selenium import webdriver
 
 import global_config
-from selenium import webdriver
 
 
 def make_dir(director):
@@ -39,11 +38,13 @@ def internet_environment():  # 准备好爬取数据的网络环境
 
 def main():
     print('Making directors and downloading......')
-    # make_dir(global_config.DATA_ROOT)
+    '''
+    make_dir(global_config.DATA_ROOT)
     path_list = global_config.PATH_LIST
-    # download_deg_files(path=path_list['DEG'])
-    # download_string_files(path=path_list['STRING'])
+    download_deg_files(path=path_list['DEG'])
+    download_string_files(path=path_list['STRING'])
     download_uniport_files(string_path=path_list['STRING'], path=path_list['UNIPROT'])
+    '''
     print('Origin data is ready!')
 
 
@@ -104,7 +105,9 @@ def download_uniport_files(string_path, path):
                 row_split = str(row, encoding='utf-8').split('\t')
                 protein_id_list.append(row_split[0])
         down_path = os.path.join(path, string_organ)
+        print('To download uniprot %s ...... ' % down_path, end='')
         download_uniport_file(down_path, protein_id_list)
+        print('Done!')
 
 
 def download_uniport_file(down_path, protein_id_list):
@@ -118,7 +121,8 @@ def download_uniport_file(down_path, protein_id_list):
     options = webdriver.ChromeOptions()
     prefs = {'profile.default_content_settings.popups': 0, 'download.default_directory': os.path.abspath(down_path)}
     options.add_experimental_option('prefs', prefs)
-    # options.add_argument('--headless')
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])  # 不弹出log信息
+    options.add_argument('--headless')  # 隐身执行
     driver = webdriver.Chrome(options=options)
     time.sleep(5)
     # 获取查询的下载链接
@@ -129,12 +133,15 @@ def download_uniport_file(down_path, protein_id_list):
     driver.find_element_by_id('upload-submit').click()
     uniprot_list = driver.find_element_by_id('query').get_attribute('value')
     uniprot_id = uniprot_list.replace('yourlist:', '')
+    # 通过url控制需要下载的数据
     final_url = 'https://www.uniprot.org/uniprot/?query=yourlist:%s&sort=yourlist:%s&columns=yourlist(%s)' % (uniprot_id, uniprot_id, uniprot_id) + \
         ',id,entry%20name,protein%20names,genes,organism,length,features,go-id'  # 初步使用的特征
-    time.sleep(5)
     # 开始下载
     driver.get(final_url)
+    if driver.find_element_by_id('privacy-panel-accept'):
+        driver.find_element_by_id('privacy-panel-accept').click()
     driver.find_element_by_id('download-button').click()
+    time.sleep(5)
     select = webdriver.support.select.Select(driver.find_element_by_id('format'))
     select.select_by_value('tab')
     driver.find_element_by_id('menu-go').click()  # 下载文件
@@ -143,7 +150,7 @@ def download_uniport_file(down_path, protein_id_list):
     file_name = 'uniprot-yourlist_%s.tab.gz' % uniprot_id
     while file_name not in os.listdir(down_path):
         time.sleep(1)
-    os.rename(os.path.join(down_path, file_name), os.path.join(down_path, 'protein_feature.gz'))
+    os.rename(os.path.join(down_path, file_name), os.path.join(down_path, 'protein_feature.txt.gz'))
     driver.quit()
 
 

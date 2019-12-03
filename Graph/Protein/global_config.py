@@ -9,7 +9,6 @@ PATH_LIST = {'DEG': os.path.join(DATA_ROOT, 'DEG'),
              }
 DEG_BIO_CLASS = ['Bacteria', 'Archaea', 'Eukaryotes']
 STRING_FILES = ['protein_actions', 'protein_info', 'protein_sequences']
-UNIPROT_COLUMNS=['']
 ID_INFO = {'-': '0',
            'Acinetobacter baumannii ATCC 17978': '400667',  # 存在通用ID:470,name:Acinetobacter baumannii
            'Acinetobacter baylyi ADP1': '62977',
